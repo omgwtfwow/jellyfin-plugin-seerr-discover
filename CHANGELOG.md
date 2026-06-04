@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.2.4.0 - Unreleased
+## 0.2.5.0 - Unreleased
+
+- Treat TMDB-matched Jellyfin library items as available even when Seerr still reports a requested/processing status.
+- Split card type and availability into separate borderless badges.
+
+## 0.2.4.0
 
 - Hide watched Jellyfin items from Discover/search lists when they match by TMDB ID and `UserData.Played` is true.
 - Render card years inline beside titles and subtly color available/requested badges with Jellyfin theme variables.
