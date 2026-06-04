@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Sanitized native search integration screenshot</title>
+  <desc id="desc">A sanitized Jellyfin Web screenshot showing native search results with a Requestable from Seerr row.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#10151d"/>
+      <stop offset="1" stop-color="#202225"/>
+    </linearGradient>
+    <linearGradient id="card1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2db5a3"/>
+      <stop offset="1" stop-color="#4c54a8"/>
+    </linearGradient>
+    <linearGradient id="card2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#cf6a57"/>
+      <stop offset="1" stop-color="#7f4db2"/>
+    </linearGradient>
+    <linearGradient id="card3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e0b64a"/>
+      <stop offset="1" stop-color="#2f8d70"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1280" height="72" fill="#0b0f14"/>
+  <circle cx="40" cy="36" r="18" fill="#00a4dc"/>
+  <text x="72" y="43" fill="#f2f6f9" font-family="Arial, sans-serif" font-size="24" font-weight="700">Jellyfin</text>
+  <rect x="912" y="19" width="304" height="34" rx="17" fill="#19222d"/>
+  <text x="938" y="42" fill="#dbe5ee" font-family="Arial, sans-serif" font-size="15">Search: distant signal</text>
+
+  <g transform="translate(66 118)">
+    <text x="0" y="0" fill="#ffffff" font-family="Arial, sans-serif" font-size="34" font-weight="700">Search</text>
+    <rect x="0" y="38" width="760" height="54" rx="12" fill="#151c25" stroke="#2c3948"/>
+    <text x="24" y="72" fill="#e9eef3" font-family="Arial, sans-serif" font-size="18">distant signal</text>
+    <rect x="790" y="38" width="118" height="54" rx="12" fill="#00a4dc"/>
+    <text x="826" y="72" fill="#ffffff" font-family="Arial, sans-serif" font-size="17" font-weight="700">Search</text>
+
+    <g transform="translate(0 148)">
+      <text x="0" y="0" fill="#ffffff" font-family="Arial, sans-serif" font-size="24" font-weight="700">Movies</text>
+      <g transform="translate(0 26)">
+        <rect x="0" y="0" width="170" height="96" rx="8" fill="#202a36"/>
+        <rect x="16" y="16" width="48" height="64" rx="6" fill="#304253"/>
+        <text x="82" y="44" fill="#ffffff" font-family="Arial, sans-serif" font-size="16" font-weight="700">Signal Archive</text>
+        <text x="82" y="68" fill="#9faab6" font-family="Arial, sans-serif" font-size="14">In library</text>
+      </g>
+    </g>
+
+    <g transform="translate(0 316)">
+      <text x="0" y="0" fill="#ffffff" font-family="Arial, sans-serif" font-size="24" font-weight="700">Requestable from Seerr</text>
+      <text x="0" y="28" fill="#aeb7c1" font-family="Arial, sans-serif" font-size="15">Seerr results appear beside native Jellyfin search without exposing the Seerr API key.</text>
+      <g transform="translate(0 58)">
+        <rect x="0" y="0" width="136" height="204" rx="8" fill="url(#card1)"/>
+        <text x="0" y="232" fill="#ffffff" font-family="Arial, sans-serif" font-size="16" font-weight="700">Distant Signal</text>
+        <text x="0" y="254" fill="#9faab6" font-family="Arial, sans-serif" font-size="14">Requestable</text>
+      </g>
+      <g transform="translate(164 58)">
+        <rect x="0" y="0" width="136" height="204" rx="8" fill="url(#card2)"/>
+        <text x="0" y="232" fill="#ffffff" font-family="Arial, sans-serif" font-size="16" font-weight="700">Signal North</text>
+        <text x="0" y="254" fill="#9faab6" font-family="Arial, sans-serif" font-size="14">Available</text>
+      </g>
+      <g transform="translate(328 58)">
+        <rect x="0" y="0" width="136" height="204" rx="8" fill="url(#card3)"/>
+        <text x="0" y="232" fill="#ffffff" font-family="Arial, sans-serif" font-size="16" font-weight="700">Radio Harbor</text>
+        <text x="0" y="254" fill="#9faab6" font-family="Arial, sans-serif" font-size="14">Requested</text>
+      </g>
+      <rect x="514" y="58" width="510" height="204" rx="14" fill="#151c25"/>
+      <text x="544" y="106" fill="#ffffff" font-family="Arial, sans-serif" font-size="20" font-weight="700">Native search stays native</text>
+      <text x="544" y="140" fill="#aeb7c1" font-family="Arial, sans-serif" font-size="16">The injected row mounts only when Jellyfin Web search is active.</text>
+      <text x="544" y="168" fill="#aeb7c1" font-family="Arial, sans-serif" font-size="16">Duplicates are hidden when Jellyfin already has the TMDB item.</text>
+      <rect x="544" y="196" width="148" height="34" rx="17" fill="#233244"/>
+      <text x="567" y="218" fill="#dbe5ee" font-family="Arial, sans-serif" font-size="14">/SeerrDiscover/*</text>
+    </g>
+  </g>
+</svg>
