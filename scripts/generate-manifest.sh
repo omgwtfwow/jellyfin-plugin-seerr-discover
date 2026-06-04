@@ -30,7 +30,7 @@ zip_name="seerr-discover_${version}.zip"
 zip_path="$DIST_DIR/$zip_name"
 checksum_path="${zip_path}.sha256"
 manifest_path="$DIST_DIR/manifest.json"
-release_changelog="Make the Discover tab rails-only, remove the Discover heading, and document native Jellyfin search integration."
+release_changelog="Keep the Seerr native search row stable while Jellyfin search page DOM mutations continue after rendering."
 
 if [ ! -f "$zip_path" ] || [ ! -f "$checksum_path" ]; then
   echo "Missing $zip_name or checksum. Run scripts/package-plugin.sh first." >&2

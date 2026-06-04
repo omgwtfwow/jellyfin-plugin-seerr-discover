@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.10.0
+
+- Fix native Jellyfin search row flashing by ignoring unchanged active queries
+  during repeated DOM observer mount attempts.
+- Keep existing Seerr search results visible while refreshing the same query.
+
 ## 0.2.9.0
 
 - Make the Discover tab rails-only by removing the tab-local search form,

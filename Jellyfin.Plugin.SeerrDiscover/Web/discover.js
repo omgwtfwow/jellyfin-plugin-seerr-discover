@@ -22,6 +22,9 @@
     enabled: null,
     enabledPromise: null,
     lastQuery: '',
+    pendingQuery: '',
+    loadingQuery: '',
+    renderedQuery: '',
     repositionObserver: null,
     repositionTimeout: 0,
   };
@@ -1613,11 +1616,18 @@
   }
 
   function nativeSearchPage() {
-    return document.querySelector('#searchPage:not(.hide)') || document.querySelector('#searchPage');
+    const visiblePage = document.querySelector('#searchPage:not(.hide)');
+    if (visiblePage) return visiblePage;
+
+    return (window.location.hash || '').includes('/search') ? document.querySelector('#searchPage') : null;
   }
 
   function nativeSearchInput() {
     return nativeSearchPage()?.querySelector('#searchTextInput') || null;
+  }
+
+  function nativeSearchSection() {
+    return document.querySelector('[data-seerr-native-search]');
   }
 
   function ensureNativeSearchEnabled() {
@@ -1654,12 +1664,20 @@
   function tryAttachNativeSearch() {
     const input = nativeSearchInput();
     if (!input) {
+      nativeSearch.lastQuery = '';
+      nativeSearch.pendingQuery = '';
+      nativeSearch.loadingQuery = '';
+      nativeSearch.requestId += 1;
       removeNativeSearchSection();
       nativeSearch.input = null;
       return;
     }
 
     ensureNativeSearchEnabled().then((enabled) => {
+      if (input !== nativeSearchInput()) {
+        return;
+      }
+
       if (!enabled) {
         removeNativeSearchSection();
         return;
@@ -1679,15 +1697,27 @@
   function handleNativeSearchInput() {
     const input = nativeSearchInput();
     const query = String(input?.value || '').trim();
-    window.clearTimeout(nativeSearch.debounceId);
 
     if (!query) {
       nativeSearch.lastQuery = '';
+      nativeSearch.pendingQuery = '';
+      nativeSearch.loadingQuery = '';
       nativeSearch.requestId += 1;
+      window.clearTimeout(nativeSearch.debounceId);
       removeNativeSearchSection();
       return;
     }
 
+    if (
+      nativeSearch.pendingQuery === query
+      || nativeSearch.loadingQuery === query
+      || (nativeSearch.renderedQuery === query && nativeSearchSection())
+    ) {
+      return;
+    }
+
+    window.clearTimeout(nativeSearch.debounceId);
+    nativeSearch.pendingQuery = query;
     nativeSearch.debounceId = window.setTimeout(() => runNativeSearch(query), 500);
   }
 
@@ -1698,24 +1728,33 @@
     }
 
     const requestId = nativeSearch.requestId + 1;
+    const hasSameRenderedSection = nativeSearch.renderedQuery === query && nativeSearchSection();
     nativeSearch.requestId = requestId;
     nativeSearch.lastQuery = query;
-    removeNativeSearchSection();
+    nativeSearch.pendingQuery = '';
+    nativeSearch.loadingQuery = query;
+    if (!hasSameRenderedSection) {
+      removeNativeSearchSection();
+    }
 
     apiFetch(`/SeerrDiscover/search?query=${encodeURIComponent(query)}&page=1`)
       .then((data) => filterNativeSearchItems(data.results))
       .then((items) => {
         if (requestId !== nativeSearch.requestId || query !== nativeSearch.lastQuery) return;
+        nativeSearch.loadingQuery = '';
         if (!items.length) {
           removeNativeSearchSection();
           return;
         }
-        renderNativeSearchSection(items);
+        renderNativeSearchSection(items, query);
       })
       .catch((error) => {
         if (requestId !== nativeSearch.requestId) return;
+        nativeSearch.loadingQuery = '';
         console.warn('Seerr Discover native search failed', error);
-        removeNativeSearchSection();
+        if (!hasSameRenderedSection) {
+          removeNativeSearchSection();
+        }
       });
   }
 
@@ -1727,6 +1766,7 @@
   }
 
   function removeNativeSearchSection() {
+    nativeSearch.renderedQuery = '';
     if (nativeSearch.repositionObserver) {
       nativeSearch.repositionObserver.disconnect();
       nativeSearch.repositionObserver = null;
@@ -1743,7 +1783,7 @@
     });
   }
 
-  function renderNativeSearchSection(items) {
+  function renderNativeSearchSection(items, query) {
     ensureStyle();
     const page = nativeSearchPage();
     if (!page) return;
@@ -1752,6 +1792,7 @@
     const section = document.createElement('section');
     section.className = 'verticalSection seerr-native-search';
     section.setAttribute('data-seerr-native-search', 'true');
+    section.setAttribute('data-seerr-query', query);
     section.innerHTML = `
       <h2 class="sectionTitle sectionTitle-cards focuscontainer-x padded-left padded-right">Requestable from Seerr</h2>
       <div class="seerr-discover__scroller padded-left padded-right">
@@ -1760,6 +1801,7 @@
     `;
 
     placeNativeSearchSection(page, section);
+    nativeSearch.renderedQuery = query;
     bindNativeSearchSection(section);
     watchNativeSearchPlacement(page, section);
   }
