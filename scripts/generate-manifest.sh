@@ -30,7 +30,7 @@ zip_name="seerr-discover_${version}.zip"
 zip_path="$DIST_DIR/$zip_name"
 checksum_path="${zip_path}.sha256"
 manifest_path="$DIST_DIR/manifest.json"
-release_changelog="Prepare third-party release documentation and improve Discover tab spacing in desktop and mobile Jellyfin web clients."
+release_changelog="Remove the Discover subtitle and use overlap-based Custom Tabs spacing for desktop and mobile Jellyfin clients."
 
 if [ ! -f "$zip_path" ] || [ ! -f "$checksum_path" ]; then
   echo "Missing $zip_name or checksum. Run scripts/package-plugin.sh first." >&2

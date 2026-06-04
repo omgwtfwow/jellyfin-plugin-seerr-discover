@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.7.0
+
+- Remove the Discover page subtitle.
+- Use overlap-based spacing against the rendered Custom Tabs navigation so
+  Discover clears client headers without adding large blank gaps.
+
 ## 0.2.6.0
 
 - Rework public documentation for third-party Jellyfin repository distribution.

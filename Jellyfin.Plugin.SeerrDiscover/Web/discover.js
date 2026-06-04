@@ -16,6 +16,7 @@
     autoplayKey: '',
   };
   let nextToastId = 1;
+  let spacingFrame = 0;
 
   const rails = [
     { id: 'trending', title: 'Trending', feed: 'trending' },
@@ -208,17 +209,22 @@
         gap: 1.4rem;
         box-sizing: border-box;
         min-width: 0;
+        margin-top: var(--seerr-content-overlap-offset, 0px);
         padding: 0 clamp(0.85rem, 2.6vw, 2.25rem) clamp(2rem, 4vh, 3rem);
         color: var(--seerr-text);
       }
       .seerr-discover-tab-content {
+        --seerr-tab-top-offset-fallback: calc(clamp(5.2rem, 8.5vh, 7rem) + env(safe-area-inset-top));
         box-sizing: border-box;
         min-height: 100%;
         padding:
-          calc(clamp(5.2rem, 8.5vh, 7rem) + env(safe-area-inset-top))
+          env(safe-area-inset-top)
           max(clamp(0.75rem, 1.5vw, 1.25rem), env(safe-area-inset-right))
           calc(clamp(1.6rem, 4vh, 3rem) + env(safe-area-inset-bottom))
           max(clamp(0.75rem, 1.5vw, 1.25rem), env(safe-area-inset-left));
+      }
+      .seerr-discover-tab-content[data-seerr-pane-source="fallback"] {
+        padding-top: var(--seerr-tab-top-offset-fallback);
       }
       .seerr-discover-tab-content > .sections {
         box-sizing: border-box;
@@ -255,11 +261,6 @@
         font-size: 1.65rem;
         font-weight: 650;
         letter-spacing: 0;
-      }
-      .seerr-discover__subtitle {
-        margin: 0.25rem 0 0;
-        color: var(--seerr-muted);
-        font-size: 0.95rem;
       }
       .seerr-discover__search {
         display: flex;
@@ -771,8 +772,9 @@
       }
       @media (max-width: 720px) {
         .seerr-discover-tab-content {
+          --seerr-tab-top-offset-fallback: calc(clamp(4.7rem, 9vh, 6rem) + env(safe-area-inset-top));
           padding:
-            calc(clamp(4.7rem, 9vh, 6rem) + env(safe-area-inset-top))
+            env(safe-area-inset-top)
             max(0.5rem, env(safe-area-inset-right))
             calc(1.5rem + env(safe-area-inset-bottom))
             max(0.5rem, env(safe-area-inset-left));
@@ -817,11 +819,36 @@
   }
 
   function isDiscoverTabButton(element) {
-    return Boolean(element && element.id && element.id.startsWith('customTabButton_') && element.textContent.trim() === 'Discover');
+    return Boolean(element
+      && element.textContent.trim() === 'Discover'
+      && (element.id?.startsWith('customTabButton_') || element.closest('.emby-tabs-slider, .emby-tabs')));
+  }
+
+  function customTabButtons() {
+    return [...document.querySelectorAll('.emby-tabs-slider button, .emby-tabs button, button[id^="customTabButton_"]')];
+  }
+
+  function tabButtonForPane(pane) {
+    if (!pane?.id?.startsWith('customTab_')) return null;
+    return document.getElementById(`customTabButton_${pane.id.replace('customTab_', '')}`);
+  }
+
+  function discoverRootPane() {
+    const root = document.querySelector(rootSelector);
+    return root?.closest('.seerr-discover-tab-content, .tabContent, .pageTabContent') || null;
+  }
+
+  function markDiscoverPane() {
+    const pane = discoverRootPane();
+    if (pane) {
+      pane.classList.add('seerr-discover-tab-content');
+      pane.dataset.seerrPaneSource = pane.dataset.seerrPaneSource || 'custom-tabs';
+    }
+    return pane;
   }
 
   function discoverTabButton() {
-    return [...document.querySelectorAll('.emby-tabs-slider button')].find(isDiscoverTabButton);
+    return tabButtonForPane(markDiscoverPane()) || customTabButtons().find(isDiscoverTabButton);
   }
 
   function isActiveTabButton(element) {
@@ -838,6 +865,49 @@
     return document.getElementById(`customTab_${suffix}`) || document.querySelector('.seerr-discover-tab-content');
   }
 
+  function visibleBottom(element) {
+    if (!element || typeof element.getBoundingClientRect !== 'function') return null;
+    const rect = element.getBoundingClientRect();
+    if (!rect.width || !rect.height || rect.bottom <= 0 || rect.top >= window.innerHeight) return null;
+    return rect.bottom;
+  }
+
+  function updateDiscoverSpacing() {
+    const button = discoverTabButton();
+    const pane = markDiscoverPane() || discoverTabPane(button);
+    if (!pane) return;
+
+    const candidates = [
+      button,
+      button?.closest('.emby-tabs-slider'),
+      button?.closest('.emby-tabs'),
+      button?.closest('[class*="tabs"]'),
+    ].map(visibleBottom).filter((bottom) => bottom !== null);
+
+    const content = pane.querySelector('.seerr-discover');
+    if (!content) return;
+
+    if (!candidates.length) {
+      content.style.setProperty('--seerr-content-overlap-offset', '0px');
+      return;
+    }
+
+    const currentOffset = Number.parseFloat(content.style.getPropertyValue('--seerr-content-overlap-offset')) || 0;
+    const contentTop = (content.getBoundingClientRect().top || 0) - currentOffset;
+    const spacing = window.innerWidth <= 720 ? 18 : 20;
+    const measured = Math.max(0, Math.ceil(Math.max(...candidates) - contentTop + spacing));
+    content.style.setProperty('--seerr-content-overlap-offset', `${measured}px`);
+  }
+
+  function scheduleDiscoverSpacing() {
+    window.cancelAnimationFrame(spacingFrame);
+    spacingFrame = window.requestAnimationFrame(() => {
+      updateDiscoverSpacing();
+      window.setTimeout(updateDiscoverSpacing, 120);
+      window.setTimeout(updateDiscoverSpacing, 450);
+    });
+  }
+
   function syncCustomTabVisibility() {
     const button = discoverTabButton();
     const pane = discoverTabPane(button);
@@ -850,10 +920,12 @@
       pane.hidden = false;
       pane.removeAttribute('hidden');
     }
+    scheduleDiscoverSpacing();
   }
 
   function ensureCustomTabRoot() {
     if (document.querySelector(rootSelector)) {
+      markDiscoverPane();
       syncCustomTabVisibility();
       return true;
     }
@@ -872,6 +944,7 @@
     pane.id = paneId;
     pane.className = 'tabContent pageTabContent seerr-discover-tab-content';
     pane.setAttribute('data-index', paneIndex);
+    pane.dataset.seerrPaneSource = 'fallback';
     pane.dataset.seerrActive = 'true';
     pane.setAttribute('aria-hidden', 'false');
     pane.innerHTML = `<div class="sections"><div id="${rootSelector.slice(1)}"></div></div>`;
@@ -962,7 +1035,6 @@
         <div class="seerr-discover__top">
           <div>
             <h2 class="seerr-discover__title">Discover</h2>
-            <p class="seerr-discover__subtitle">Search and request from Seerr without leaving Jellyfin.</p>
           </div>
           <form class="seerr-discover__search" data-seerr-search>
             <input type="search" name="query" value="${escapeHtml(state.searchQuery)}" placeholder="Search movies and shows">
@@ -978,6 +1050,7 @@
       </div>
     `;
     bindRoot(root);
+    scheduleDiscoverSpacing();
   }
 
   function bindRoot(root) {
@@ -1767,6 +1840,9 @@
     window.setTimeout(mount, 50);
     window.setTimeout(mount, 350);
     window.setTimeout(mount, 1000);
+    window.setTimeout(scheduleDiscoverSpacing, 80);
+    window.setTimeout(scheduleDiscoverSpacing, 400);
+    window.setTimeout(scheduleDiscoverSpacing, 1100);
     window.setTimeout(() => maybeStartJellyfinPlayback(), 350);
     window.setTimeout(() => maybeStartJellyfinPlayback(), 1200);
   }
@@ -1784,6 +1860,8 @@
   window.addEventListener('popstate', () => {
     scheduleMount();
   });
+  window.addEventListener('resize', scheduleDiscoverSpacing);
+  window.addEventListener('orientationchange', scheduleDiscoverSpacing);
   document.addEventListener('click', (event) => {
     const button = event.target && event.target.closest ? event.target.closest('button') : null;
     if (button && button.closest('.emby-tabs-slider')) {
