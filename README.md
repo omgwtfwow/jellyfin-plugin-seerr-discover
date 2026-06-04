@@ -29,10 +29,6 @@ These screenshots were captured from a live Jellyfin Web session and show the pl
 | --- | --- |
 | ![Screenshot of Seerr Discover browse rails in Jellyfin Web](docs/assets/screenshots/discover-rails.jpg) | ![Screenshot of requestable Seerr results in Jellyfin native search](docs/assets/screenshots/native-search.jpg) |
 
-| Requestable movie | Requestable series |
-| --- | --- |
-| ![Screenshot of an unrequested Seerr movie with an enabled Request button](docs/assets/screenshots/requestable-movie.jpg) | ![Screenshot of an unrequested Seerr series with an enabled Request button](docs/assets/screenshots/requestable-series.jpg) |
-
 | Detail modal | Mobile layout |
 | --- | --- |
 | ![Screenshot of the Seerr Discover detail modal](docs/assets/screenshots/detail-modal.jpg) | ![Screenshot of Seerr Discover on a narrow mobile layout](docs/assets/screenshots/mobile-layout.jpg) |
