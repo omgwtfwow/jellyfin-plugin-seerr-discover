@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.2.5.0 - Unreleased
+## 0.2.6.0
+
+- Rework public documentation for third-party Jellyfin repository distribution.
+- Add companion plugin setup and troubleshooting docs.
+- Improve Discover tab safe-area spacing for Jellyfin Desktop and mobile webview clients.
+
+## 0.2.5.0
 
 - Treat TMDB-matched Jellyfin library items as available even when Seerr still reports a requested/processing status.
 - Split card type and availability into separate borderless badges.

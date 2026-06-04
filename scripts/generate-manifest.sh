@@ -30,7 +30,7 @@ zip_name="seerr-discover_${version}.zip"
 zip_path="$DIST_DIR/$zip_name"
 checksum_path="${zip_path}.sha256"
 manifest_path="$DIST_DIR/manifest.json"
-release_changelog="Treat TMDB-matched Jellyfin library items as available even when Seerr still reports them as requested or processing, and split card type/status into subtler borderless badges."
+release_changelog="Prepare third-party release documentation and improve Discover tab spacing in desktop and mobile Jellyfin web clients."
 
 if [ ! -f "$zip_path" ] || [ ! -f "$checksum_path" ]; then
   echo "Missing $zip_name or checksum. Run scripts/package-plugin.sh first." >&2

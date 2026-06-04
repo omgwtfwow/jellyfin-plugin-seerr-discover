@@ -1,28 +1,29 @@
 # Release Process
 
-1. Update `Directory.Build.props`, `build.yaml`, and `CHANGELOG.md`.
+1. Update `Directory.Build.props`, `build.yaml`, and the release changelog text in `scripts/package-plugin.sh` and `scripts/generate-manifest.sh`.
 2. Run local checks:
 
    ```bash
+   version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Directory.Build.props | head -n1)"
    dotnet test Jellyfin.Plugin.SeerrDiscover.sln
    node --check Jellyfin.Plugin.SeerrDiscover/Web/discover.js
    bash -n scripts/package-plugin.sh scripts/generate-manifest.sh
    shellcheck scripts/*.sh
    scripts/package-plugin.sh
-   scripts/generate-manifest.sh --base-url "https://github.com/omgwtfwow/jellyfin-plugin-seerr-discover/releases/download/v0.2.0.0"
+   scripts/generate-manifest.sh --base-url "https://github.com/omgwtfwow/jellyfin-plugin-seerr-discover/releases/download/v${version}"
    ```
 
 3. Commit and tag:
 
    ```bash
-   git tag v0.2.0.0
-   git push origin main v0.2.0.0
+   git tag "v${version}"
+   git push origin main "v${version}"
    ```
 
 4. Confirm the GitHub release contains:
 
-   - `seerr-discover_0.2.0.0.zip`
-   - `seerr-discover_0.2.0.0.zip.sha256`
+   - `seerr-discover_<version>.zip`
+   - `seerr-discover_<version>.zip.sha256`
    - `manifest.json`
 
 5. Install from the release zip on a clean Jellyfin instance.
@@ -41,10 +42,16 @@
 8. Verify the release-asset fallback still works:
 
    ```text
-   https://github.com/omgwtfwow/jellyfin-plugin-seerr-discover/releases/download/v0.2.0.0/manifest.json
+   https://github.com/omgwtfwow/jellyfin-plugin-seerr-discover/releases/download/v<version>/manifest.json
    ```
 
 9. Complete live visual QA before marking the release as stable.
+
+## Release Posture
+
+- `0.2.x` releases remain prerelease while the third-party install docs, companion plugin docs, and client visual QA settle.
+- The first stable third-party release is planned as `0.3.0.0`.
+- Keep release assets compatible with Jellyfin repository installs: plugin zip, SHA-256 checksum, and `manifest.json`.
 
 ## GitHub Markdown Hygiene
 

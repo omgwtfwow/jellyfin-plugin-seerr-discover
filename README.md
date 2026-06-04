@@ -4,11 +4,25 @@ Seerr Discover is a Jellyfin server plugin that adds a native-looking Discover t
 
 ## Status
 
-This repository has a public `0.2.0.0` release candidate. The long-term target is official Jellyfin plugin catalog submission, but the first supported install paths are manual zip installation and a self-hosted Jellyfin plugin repository.
+Seerr Discover is distributed as a third-party Jellyfin plugin through a self-hosted Jellyfin plugin repository. The `0.2.x` line is a prerelease line while install docs, dependency docs, and visual QA are completed. The first stable third-party release is planned for `0.3.0.0`.
+
+Repository URL:
+
+```text
+https://omgwtfwow.github.io/jellyfin-plugin-seerr-discover/manifest.json
+```
+
+## Quick Start
+
+1. Add the repository URL in Jellyfin: Dashboard > Plugins > Repositories.
+2. Install Seerr Discover from Dashboard > Plugins > Catalog, then restart Jellyfin.
+3. Configure Seerr Discover with your internal Seerr URL, public Seerr URL, and Seerr API key.
+4. Install and configure the companion plugins listed below.
+5. Hard-refresh Jellyfin Web or restart the client app.
 
 ## Requirements
 
-- Jellyfin Server `10.11.x` matching `targetAbi: 10.11.10.0`
+- Jellyfin Server `10.11.x`; current releases target `targetAbi: 10.11.10.0`
 - Seerr reachable from the Jellyfin server
 - Seerr API key
 - Seerr Jellyfin user import/mapping enabled for request creation
@@ -16,7 +30,7 @@ This repository has a public `0.2.0.0` release candidate. The long-term target i
 - JavaScript Injector plugin
 - File Transformation plugin, if required by your JavaScript Injector installation
 
-Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI surface. The server plugin provides the API proxy and web asset; Custom Tabs provides the Jellyfin Web mount point.
+Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI surface. The server plugin provides the API proxy and web asset; Custom Tabs provides the Jellyfin Web mount point. See [Companion Plugins](docs/COMPANION-PLUGINS.md).
 
 ## Features
 
@@ -29,15 +43,20 @@ Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI s
 - Theme-aware Jellyfin Web styling
 - Server-side cache for discover, details, search, and mapped user lookups
 
-## Installation
+## Compatibility
+
+| Client or surface | Status | Notes |
+| --- | --- | --- |
+| Jellyfin Web | Supported | Primary target. |
+| Jellyfin Desktop | Supported through Jellyfin Web UI | Hard refresh or client restart may be required after loader changes. |
+| Jellyfin mobile apps | Best effort through embedded web UI | Trailer handoff behavior depends on the client/webview. |
+| Android TV and native TV clients | Not supported | These clients do not expose the custom Jellyfin Web tab surface. |
+
+## Installation and Setup
 
 See [docs/INSTALL.md](docs/INSTALL.md).
 
-Self-hosted Jellyfin repository URL:
-
-```text
-https://omgwtfwow.github.io/jellyfin-plugin-seerr-discover/manifest.json
-```
+See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) if the plugin does not appear, the Discover tab is blank, or the client needs a cache refresh.
 
 ## Configuration
 
@@ -76,10 +95,17 @@ scripts/package-plugin.sh
 Generate a Jellyfin repository manifest for the built zip:
 
 ```bash
+version="$(sed -n 's:.*<Version>\\(.*\\)</Version>.*:\\1:p' Directory.Build.props | head -n1)"
 scripts/generate-manifest.sh \
-  --base-url "https://github.com/omgwtfwow/jellyfin-plugin-seerr-discover/releases/download/v0.2.0.0"
+  --base-url "https://github.com/omgwtfwow/jellyfin-plugin-seerr-discover/releases/download/v${version}"
 ```
 
-## Catalog candidacy
+## Support
 
-See [docs/CATALOG-CANDIDACY.md](docs/CATALOG-CANDIDACY.md).
+When reporting issues, include:
+
+- Jellyfin server version
+- Seerr Discover version
+- Custom Tabs, JavaScript Injector, and File Transformation versions
+- Client type: browser, Jellyfin Desktop, iOS, Android, or other
+- Redacted Jellyfin logs and browser console errors
