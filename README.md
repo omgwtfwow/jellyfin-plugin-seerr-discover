@@ -4,7 +4,7 @@ Seerr Discover is a Jellyfin server plugin that adds Seerr-backed Discover rails
 
 ## Status
 
-Seerr Discover is distributed as a third-party Jellyfin plugin through a self-hosted Jellyfin plugin repository. The `0.2.x` line is a prerelease line while install docs, dependency docs, and visual QA are completed. The first stable third-party release is planned for `0.3.0.0`.
+Seerr Discover is distributed as a third-party Jellyfin plugin through a self-hosted Jellyfin plugin repository. The `0.2.x` line remains the active release line while install docs, dependency docs, and visual QA are completed.
 
 Repository URL:
 
@@ -23,15 +23,19 @@ https://omgwtfwow.github.io/jellyfin-plugin-seerr-discover/manifest.json
 
 ## Screenshots
 
-These sanitized screenshots use generated media titles and do not include private server data.
+These screenshots were captured from a live Jellyfin Web session and show the plugin UI without configuration pages or API secrets.
 
 | Discover rails | Native search integration |
 | --- | --- |
-| ![Sanitized screenshot of Seerr Discover browse rails in Jellyfin Web](docs/assets/screenshots/discover-rails.svg) | ![Sanitized screenshot of requestable Seerr results in Jellyfin native search](docs/assets/screenshots/native-search.svg) |
+| ![Screenshot of Seerr Discover browse rails in Jellyfin Web](docs/assets/screenshots/discover-rails.jpg) | ![Screenshot of requestable Seerr results in Jellyfin native search](docs/assets/screenshots/native-search.jpg) |
+
+| Requestable movie | Requestable series |
+| --- | --- |
+| ![Screenshot of an unrequested Seerr movie with an enabled Request button](docs/assets/screenshots/requestable-movie.jpg) | ![Screenshot of an unrequested Seerr series with an enabled Request button](docs/assets/screenshots/requestable-series.jpg) |
 
 | Detail modal | Mobile layout |
 | --- | --- |
-| ![Sanitized screenshot of the Seerr Discover detail modal](docs/assets/screenshots/detail-modal.svg) | ![Sanitized screenshot of Seerr Discover on a narrow mobile layout](docs/assets/screenshots/mobile-layout.svg) |
+| ![Screenshot of the Seerr Discover detail modal](docs/assets/screenshots/detail-modal.jpg) | ![Screenshot of Seerr Discover on a narrow mobile layout](docs/assets/screenshots/mobile-layout.jpg) |
 
 ## Requirements
 

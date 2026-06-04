@@ -49,8 +49,8 @@
 
 ## Release Posture
 
-- `0.2.x` releases remain prerelease while the third-party install docs, companion plugin docs, and client visual QA settle.
-- The first stable third-party release is planned as `0.3.0.0`.
+- `0.2.x` releases remain the active release line while the third-party install docs, companion plugin docs, and client visual QA settle.
+- Do not start a `0.3.0.0` release until visual QA is accepted and the version strategy is explicitly approved.
 - Keep release assets compatible with Jellyfin repository installs: plugin zip, SHA-256 checksum, and `manifest.json`.
 
 ## GitHub Markdown Hygiene
