@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.2.3.0 - Unreleased
+## 0.2.4.0 - Unreleased
+
+- Hide watched Jellyfin items from Discover/search lists when they match by TMDB ID and `UserData.Played` is true.
+- Render card years inline beside titles and subtly color available/requested badges with Jellyfin theme variables.
+
+## 0.2.3.0
 
 - Replace persistent request banners with auto-dismissing toasts for async request start, success, and failure feedback.
 
