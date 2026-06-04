@@ -12,6 +12,7 @@
     loading: new Set(),
     error: '',
     toasts: [],
+    watchedCache: new Map(),
     autoplayKey: '',
   };
   let nextToastId = 1;
@@ -426,6 +427,7 @@
         top: 0.45rem;
         left: 0.45rem;
         max-width: calc(100% - 0.9rem);
+        border: 1px solid transparent;
         border-radius: 999px;
         padding: 0.22rem 0.45rem;
         background: rgb(var(--seerr-bg-channel) / 0.78);
@@ -435,6 +437,16 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+      .seerr-card__badge--available {
+        border-color: var(--jf-palette-success-main, #4caf50);
+        background: var(--jf-palette-Alert-successStandardBg, rgb(76 175 80 / 0.18));
+        color: var(--jf-palette-Alert-successColor, var(--seerr-text));
+      }
+      .seerr-card__badge--requested {
+        border-color: var(--jf-palette-info-main, var(--seerr-primary));
+        background: var(--jf-palette-Alert-infoStandardBg, rgb(var(--seerr-primary-channel) / 0.18));
+        color: var(--jf-palette-Alert-infoColor, var(--seerr-text));
       }
       .seerr-card__meta {
         min-width: 0;
@@ -449,10 +461,9 @@
         font-size: 0.95rem;
         line-height: 1.15;
       }
-      .seerr-card__date {
-        margin-top: 0.22rem;
+      .seerr-card__year {
         color: var(--seerr-disabled);
-        font-size: 0.78rem;
+        font-size: 0.82em;
       }
       .seerr-modal {
         position: fixed;
@@ -850,18 +861,29 @@
 
   function card(item) {
     const poster = tmdbImage(item.posterPath || item.backdropPath, 'w342');
+    const status = statusLabel(item);
+    const year = (mediaDate(item) || '').slice(0, 4);
+    const badgeClass = cardBadgeClass(status);
     return `
       <button class="seerr-card" data-seerr-type="${escapeHtml(mediaType(item))}" data-seerr-id="${escapeHtml(item.id)}">
         <span class="seerr-card__image">
           ${poster ? `<img loading="lazy" src="${escapeHtml(poster)}" alt="">` : ''}
-          <span class="seerr-card__badge">${escapeHtml(statusLabel(item))}</span>
+          <span class="seerr-card__badge ${escapeHtml(badgeClass)}">${escapeHtml(status)}</span>
         </span>
         <span class="seerr-card__meta">
-          <span class="seerr-card__title">${escapeHtml(mediaTitle(item))}</span>
-          <span class="seerr-card__date">${escapeHtml((mediaDate(item) || '').slice(0, 4))}</span>
+          <span class="seerr-card__title">
+            ${escapeHtml(mediaTitle(item))}${year ? ` <span class="seerr-card__year">${escapeHtml(year)}</span>` : ''}
+          </span>
         </span>
       </button>
     `;
+  }
+
+  function cardBadgeClass(status) {
+    const normalized = String(status || '').toLowerCase();
+    if (normalized === 'available') return 'seerr-card__badge--available';
+    if (normalized === 'requested') return 'seerr-card__badge--requested';
+    return '';
   }
 
   function railTemplate(rail, items) {
@@ -1415,8 +1437,44 @@
       });
   }
 
+  function filterUnwatchedItems(items) {
+    const results = supportedResults(items);
+    return Promise.all(results.map((item) => {
+      return isWatchedInJellyfin(item).then((watched) => ({ item, watched }));
+    })).then((entries) => entries
+      .filter((entry) => !entry.watched)
+      .map((entry) => entry.item));
+  }
+
+  function isWatchedInJellyfin(item) {
+    const key = jellyfinLookupKey(item);
+    if (!key) return Promise.resolve(false);
+    if (state.watchedCache.has(key)) return Promise.resolve(state.watchedCache.get(key));
+
+    return findJellyfinItem(item)
+      .then((jellyfinItem) => {
+        const watched = Boolean(jellyfinItem?.UserData?.Played);
+        state.watchedCache.set(key, watched);
+        return watched;
+      })
+      .catch((error) => {
+        console.warn('Seerr Discover watched lookup failed', error);
+        state.watchedCache.set(key, false);
+        return false;
+      });
+  }
+
+  function jellyfinLookupKey(item) {
+    const tmdbId = tmdbIdFor(item);
+    return tmdbId ? `${mediaType(item)}:${tmdbId}` : '';
+  }
+
+  function tmdbIdFor(item) {
+    return String(item?.mediaInfo?.tmdbId || item?.id || '');
+  }
+
   function findJellyfinItem(detail) {
-    const tmdbId = String(detail.mediaInfo?.tmdbId || detail.id || '');
+    const tmdbId = tmdbIdFor(detail);
     if (!tmdbId) return Promise.resolve(null);
 
     const params = new URLSearchParams({
@@ -1424,6 +1482,8 @@
       IncludeItemTypes: mediaType(detail) === 'tv' ? 'Series' : 'Movie',
       SearchTerm: mediaTitle(detail),
       Fields: 'ProviderIds',
+      EnableUserData: 'true',
+      Limit: '12',
     });
 
     return jellyfinFetch(`/Items?${params.toString()}`)
@@ -1559,7 +1619,8 @@
     root.__seerrRailData = root.__seerrRailData || {};
     return Promise.all(rails.map((rail) => {
       return apiFetch(`/SeerrDiscover/discover?feed=${encodeURIComponent(rail.feed)}&page=1`)
-        .then((data) => { root.__seerrRailData[rail.id] = supportedResults(data.results); })
+        .then((data) => filterUnwatchedItems(data.results))
+        .then((items) => { root.__seerrRailData[rail.id] = items; })
         .catch((error) => {
           root.__seerrRailData[rail.id] = [];
           console.warn('Seerr Discover rail failed', rail.id, error);
@@ -1579,8 +1640,9 @@
     state.error = '';
     render();
     apiFetch(`/SeerrDiscover/search?query=${encodeURIComponent(query)}&page=1`)
+      .then((data) => filterUnwatchedItems(data.results).then((results) => ({ ...data, results })))
       .then((data) => {
-        state.searchResults = { ...data, results: supportedResults(data.results) };
+        state.searchResults = data;
         render();
       })
       .catch((error) => setError(`Search failed: ${error.message || error}`));

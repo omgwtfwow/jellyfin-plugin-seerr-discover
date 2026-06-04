@@ -30,7 +30,7 @@ zip_name="seerr-discover_${version}.zip"
 zip_path="$DIST_DIR/$zip_name"
 checksum_path="${zip_path}.sha256"
 manifest_path="$DIST_DIR/manifest.json"
-release_changelog="Replace persistent request banners with auto-dismissing toasts for async request start, success, and failure feedback."
+release_changelog="Add auto-dismissing request toasts, hide watched Jellyfin items from Discover lists, and polish card metadata/badges."
 
 if [ ! -f "$zip_path" ] || [ ! -f "$checksum_path" ]; then
   echo "Missing $zip_name or checksum. Run scripts/package-plugin.sh first." >&2
