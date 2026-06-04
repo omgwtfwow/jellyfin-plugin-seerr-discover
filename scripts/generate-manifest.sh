@@ -30,6 +30,7 @@ zip_name="seerr-discover_${version}.zip"
 zip_path="$DIST_DIR/$zip_name"
 checksum_path="${zip_path}.sha256"
 manifest_path="$DIST_DIR/manifest.json"
+release_changelog="Prevent mobile clients from being trapped after opening YouTube trailer links from the Discover detail modal."
 
 if [ ! -f "$zip_path" ] || [ ! -f "$checksum_path" ]; then
   echo "Missing $zip_name or checksum. Run scripts/package-plugin.sh first." >&2
@@ -52,7 +53,7 @@ cat >"$manifest_path" <<MANIFEST
     "versions": [
       {
         "checksum": "$checksum",
-        "changelog": "Prepare public release packaging and redact admin configuration secrets.",
+        "changelog": "$release_changelog",
         "sourceUrl": "$source_url",
         "targetAbi": "$target_abi",
         "timestamp": "$timestamp",

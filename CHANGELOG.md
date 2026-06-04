@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.2.0.0 - Unreleased
+## 0.2.1.0 - Unreleased
+
+- Prevent mobile clients from being trapped after opening YouTube trailer links by copying trailer URLs on mobile/touch/narrow contexts instead of navigating away from Jellyfin.
+
+## 0.2.0.0
 
 - Prepare standalone public release packaging.
 - Add redacted admin configuration endpoints.
