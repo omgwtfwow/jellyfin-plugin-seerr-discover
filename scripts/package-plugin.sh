@@ -11,6 +11,7 @@ version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' "$ROOT_DIR/Directory.Bu
 guid="$(sed -n 's/^guid: "\(.*\)"/\1/p' "$ROOT_DIR/build.yaml" | head -n1)"
 target_abi="$(sed -n 's/^targetAbi: "\(.*\)"/\1/p' "$ROOT_DIR/build.yaml" | head -n1)"
 zip_path="$DIST_DIR/seerr-discover_${version}.zip"
+release_changelog="Prevent mobile clients from being trapped after opening YouTube trailer links from the Discover detail modal."
 
 if [ -z "$version" ] || [ -z "$guid" ] || [ -z "$target_abi" ]; then
   echo "Unable to read version, guid, or targetAbi." >&2
@@ -41,7 +42,7 @@ timestamp="$(date -u +%Y-%m-%dT%H:%M:%S.0000000Z)"
 cat >"$STAGING_DIR/meta.json" <<META
 {
   "category": "General",
-  "changelog": "Prepare public release packaging and redact admin configuration secrets.",
+  "changelog": "$release_changelog",
   "description": "Native Jellyfin Discover page backed by Seerr API proxy endpoints.",
   "guid": "$guid",
   "name": "Seerr Discover",

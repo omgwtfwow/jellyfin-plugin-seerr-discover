@@ -540,6 +540,29 @@
       .seerr-modal__trailer-link:hover {
         background: var(--seerr-hover);
       }
+      .seerr-modal__trailer-link {
+        width: 100%;
+        border: 0;
+        margin: 0;
+        background: transparent;
+        text-align: left;
+        font: inherit;
+        cursor: pointer;
+      }
+      .seerr-modal__inline-notice {
+        display: none;
+        margin-top: 0.65rem;
+        border: 1px solid var(--jf-palette-success-main, var(--seerr-border));
+        border-radius: 0.45rem;
+        padding: 0.6rem 0.75rem;
+        background: var(--jf-palette-Alert-successStandardBg, rgb(var(--seerr-primary-channel) / 0.14));
+        color: var(--jf-palette-Alert-successColor, var(--seerr-text));
+        font-size: 0.9rem;
+        word-break: break-word;
+      }
+      .seerr-modal__inline-notice[data-visible="true"] {
+        display: block;
+      }
       .seerr-modal__meta {
         display: flex;
         flex-wrap: wrap;
@@ -931,6 +954,13 @@
       event.stopPropagation();
       setTrailerMenuOpen(trailerMenu, trailerMenu?.getAttribute('data-open') !== 'true');
     });
+    modal.querySelectorAll('[data-seerr-trailer-url]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        handleTrailerClick(modal, button.getAttribute('data-seerr-trailer-url'));
+      });
+    });
     modal.querySelector('[data-seerr-request]')?.addEventListener('click', () => requestMedia(type, detail));
     modal.querySelector('.seerr-modal__close')?.focus();
   }
@@ -972,27 +1002,79 @@
     if (!trailers.length) return '';
 
     const primary = trailers[0];
+    const primaryLabel = isMobileTrailerContext() ? 'Copy Trailer Link' : 'Watch Trailer';
     return `
       <div class="seerr-modal__trailer-menu" data-seerr-trailer-menu>
         <div class="seerr-modal__trailer-split">
-          <a class="seerr-discover__button emby-button seerr-discover__button--secondary seerr-modal__trailer-main" href="${escapeHtml(primary.url)}" target="_blank" rel="noopener noreferrer">
+          <button class="seerr-discover__button emby-button seerr-discover__button--secondary seerr-modal__trailer-main" type="button" data-seerr-trailer-url="${escapeHtml(primary.url)}">
             <span class="seerr-modal__play-icon" aria-hidden="true"></span>
-            <span>Watch Trailer</span>
-          </a>
+            <span>${primaryLabel}</span>
+          </button>
           <button class="seerr-discover__button emby-button seerr-discover__button--secondary seerr-modal__trailer-toggle" type="button" data-seerr-trailer-toggle aria-label="Choose trailer" aria-expanded="false">
             <span class="seerr-modal__trailer-caret" aria-hidden="true"></span>
           </button>
         </div>
         <div class="seerr-modal__trailer-list" role="menu">
           ${trailers.map((video, index) => `
-            <a class="seerr-modal__trailer-link" href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer" role="menuitem">
+            <button class="seerr-modal__trailer-link" type="button" data-seerr-trailer-url="${escapeHtml(video.url)}" role="menuitem">
               <span class="seerr-modal__play-icon" aria-hidden="true"></span>
               <span>${escapeHtml(video.name || `Trailer ${index + 1}`)}</span>
-            </a>
+            </button>
           `).join('')}
         </div>
+        <div class="seerr-modal__inline-notice" data-seerr-trailer-notice></div>
       </div>
     `;
+  }
+
+  function handleTrailerClick(modal, url) {
+    if (!url) return;
+    setTrailerMenuOpen(modal.querySelector('[data-seerr-trailer-menu]'), false);
+
+    if (!isMobileTrailerContext()) {
+      const opened = window.open(url, '_blank', 'noopener,noreferrer');
+      if (opened) return;
+    }
+
+    copyText(url)
+      .then(() => showTrailerNotice(modal, 'Trailer link copied. Open it in your browser to watch.'))
+      .catch(() => showTrailerNotice(modal, `Trailer link: ${url}`));
+  }
+
+  function isMobileTrailerContext() {
+    const userAgent = navigator.userAgent || '';
+    const coarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    const narrowViewport = window.matchMedia && window.matchMedia('(max-width: 48em)').matches;
+    return coarsePointer || narrowViewport || /Android|iPhone|iPad|iPod|Mobile|Jellyfin/i.test(userAgent);
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      return navigator.clipboard.writeText(text);
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    try {
+      return document.execCommand('copy') ? Promise.resolve() : Promise.reject(new Error('Clipboard copy failed'));
+    } catch (error) {
+      return Promise.reject(error);
+    } finally {
+      textarea.remove();
+    }
+  }
+
+  function showTrailerNotice(modal, message) {
+    const notice = modal.querySelector('[data-seerr-trailer-notice]');
+    if (!notice) return;
+    notice.textContent = message;
+    notice.setAttribute('data-visible', 'true');
   }
 
   function setTrailerMenuOpen(menu, open) {
