@@ -1,6 +1,6 @@
 # Release Process
 
-1. Update `Directory.Build.props`, `build.yaml`, and the release changelog text in `scripts/package-plugin.sh` and `scripts/generate-manifest.sh`.
+1. Update `Directory.Build.props`, `build.yaml`, and `CHANGELOG.md`.
 2. Run local checks:
 
    ```bash
@@ -49,8 +49,9 @@
 
 ## Release Posture
 
-- `0.2.x` releases remain the active release line while the third-party install docs, companion plugin docs, and client visual QA settle.
-- Do not start a `0.3.0.0` release until visual QA is accepted and the version strategy is explicitly approved.
+- `0.3.x` is the stable third-party release line distributed through the self-hosted Jellyfin plugin repository.
+- Stable releases use plain four-part tags such as `v0.3.0.0`.
+- Prereleases use tag markers such as `-rc`, `-beta`, or `-alpha`; only those tags are marked prerelease on GitHub.
 - Keep release assets compatible with Jellyfin repository installs: plugin zip, SHA-256 checksum, and `manifest.json`.
 
 ## GitHub Markdown Hygiene

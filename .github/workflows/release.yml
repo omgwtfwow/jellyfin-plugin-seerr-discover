@@ -53,7 +53,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           draft: false
-          prerelease: true
+          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
           files: |
             dist/seerr-discover_*.zip
             dist/seerr-discover_*.zip.sha256

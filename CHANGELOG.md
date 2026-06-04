@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0.0
+
+- Promote Seerr Discover as the stable third-party Jellyfin plugin release line.
+- Redesign the detail modal with a stable cinematic hero, fixed poster slot,
+  clearer action hierarchy, visible close control, cast/crew avatars, and
+  responsive desktop/mobile details layout.
+- Keep Jellyfin's native no-results message visible and place requestable Seerr
+  search results underneath it.
+- Refresh README screenshots around the core Discover rails, native search,
+  detail modal, and mobile layout flows.
+- Remove redundant request-state screenshots from the release docs.
+
 ## 0.2.11.0
 
 - Fix Discover tab layout jumps after scrolling down and back up by replacing
