@@ -30,7 +30,7 @@ zip_name="seerr-discover_${version}.zip"
 zip_path="$DIST_DIR/$zip_name"
 checksum_path="${zip_path}.sha256"
 manifest_path="$DIST_DIR/manifest.json"
-release_changelog="Add optional Jellyfin native search integration with requestable Seerr results and server-side API key handling."
+release_changelog="Make the Discover tab rails-only, remove the Discover heading, and document native Jellyfin search integration."
 
 if [ ! -f "$zip_path" ] || [ ! -f "$checksum_path" ]; then
   echo "Missing $zip_name or checksum. Run scripts/package-plugin.sh first." >&2
@@ -52,10 +52,10 @@ cat >"$manifest_path" <<MANIFEST
 [
   {
     "category": "General",
-    "description": "Native Jellyfin Discover page backed by Seerr API proxy endpoints.",
+    "description": "Native Seerr Discover rails and Jellyfin search backed by Seerr API proxy endpoints.",
     "guid": "$guid",
     "name": "Seerr Discover",
-    "overview": "Native Seerr Discover page",
+    "overview": "Native Seerr Discover rails and Jellyfin search",
     "owner": "omgwtfwow",
     "versions": [
       {

@@ -7,8 +7,6 @@
     mountedRoot: null,
     me: null,
     details: null,
-    searchQuery: '',
-    searchResults: null,
     loading: new Set(),
     error: '',
     toasts: [],
@@ -283,33 +281,6 @@
         --seerr-border: rgb(var(--seerr-text-channel) / 0.16);
         --seerr-border-soft: rgb(var(--seerr-text-channel) / 0.1);
         --seerr-hover: rgb(var(--seerr-text-channel) / 0.08);
-      }
-      .seerr-discover__top {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(18rem, 30rem);
-        gap: 1rem;
-        align-items: end;
-      }
-      .seerr-discover__title {
-        margin: 0;
-        font-size: 1.65rem;
-        font-weight: 650;
-        letter-spacing: 0;
-      }
-      .seerr-discover__search {
-        display: flex;
-        gap: 0.45rem;
-        align-items: center;
-      }
-      .seerr-discover__search input {
-        width: 100%;
-        min-height: 2.55rem;
-        border: 1px solid var(--seerr-border);
-        border-radius: 0.45rem;
-        padding: 0 0.8rem;
-        background: var(--seerr-input-bg);
-        color: inherit;
-        font: inherit;
       }
       .seerr-discover__button {
         display: inline-flex;
@@ -814,7 +785,6 @@
             max(0.5rem, env(safe-area-inset-left));
         }
         .seerr-discover { padding-inline: clamp(0.85rem, 3vw, 1.15rem); }
-        .seerr-discover__top { grid-template-columns: 1fr; }
         .seerr-discover__scroller { grid-auto-columns: minmax(9.8rem, 42vw); }
         .seerr-toast-region {
           left: max(1rem, env(safe-area-inset-left));
@@ -1059,25 +1029,11 @@
       ? '<div class="seerr-discover__notice">This Jellyfin user is not linked in Seerr, so requests are disabled. Open Seerr once or import Jellyfin users in Seerr.</div>'
       : '';
     const error = state.error ? `<div class="seerr-discover__notice">${escapeHtml(state.error)}</div>` : '';
-    const searchResults = state.searchResults ? supportedResults(state.searchResults.results) : [];
-    const searchSection = state.searchResults
-      ? railTemplate({ id: 'search', title: `Search: ${state.searchQuery}` }, searchResults)
-      : '';
 
     root.innerHTML = `
       <div class="seerr-discover">
-        <div class="seerr-discover__top">
-          <div>
-            <h2 class="seerr-discover__title">Discover</h2>
-          </div>
-          <form class="seerr-discover__search" data-seerr-search>
-            <input type="search" name="query" value="${escapeHtml(state.searchQuery)}" placeholder="Search movies and shows">
-            <button class="seerr-discover__button emby-button" type="submit">Search</button>
-          </form>
-        </div>
         ${meNotice}
         ${error}
-        ${searchSection}
         <div data-seerr-rails>
           ${rails.map((rail) => railTemplate(rail, root.__seerrRailData?.[rail.id] || [])).join('')}
         </div>
@@ -1088,12 +1044,6 @@
   }
 
   function bindRoot(root) {
-    root.querySelector('[data-seerr-search]')?.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const query = new FormData(event.currentTarget).get('query');
-      runSearch(String(query || '').trim());
-    });
-
     root.querySelectorAll('[data-seerr-id]').forEach((button) => {
       button.addEventListener('click', () => openDetails(button.getAttribute('data-seerr-type'), button.getAttribute('data-seerr-id')));
     });
@@ -2026,26 +1976,6 @@
     })).then(render);
   }
 
-  function runSearch(query) {
-    if (!query) {
-      state.searchQuery = '';
-      state.searchResults = null;
-      render();
-      return;
-    }
-
-    state.searchQuery = query;
-    state.error = '';
-    render();
-    apiFetch(`/SeerrDiscover/search?query=${encodeURIComponent(query)}&page=1`)
-      .then((data) => filterAndEnrichItems(data.results).then((results) => ({ ...data, results })))
-      .then((data) => {
-        state.searchResults = data;
-        render();
-      })
-      .catch((error) => setError(`Search failed: ${error.message || error}`));
-  }
-
   function openDetails(type, id) {
     if (!type || !id) return;
     apiFetch(`/SeerrDiscover/media/${encodeURIComponent(type)}/${encodeURIComponent(id)}`)
@@ -2070,7 +2000,6 @@
     apiFetch('/SeerrDiscover/request', { method: 'POST', body: JSON.stringify(body) })
       .then((result) => {
         renderModal(markRequested(detail, result));
-        state.searchResults = null;
         updateToast(requestToastId, 'Request created. Seerr is processing it now.', 'success');
         refreshNativeSearch();
         return Promise.all([loadMe(), loadRails()])
@@ -2136,7 +2065,6 @@
   }
   window.addEventListener('hashchange', () => {
     closeModal();
-    state.searchResults = null;
     removeNativeSearchSection();
     scheduleMount();
   });

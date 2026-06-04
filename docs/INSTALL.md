@@ -20,7 +20,7 @@ Then install Seerr Discover from:
 Dashboard > Plugins > Catalog
 ```
 
-Restart Jellyfin after installation. Open Dashboard > Plugins > Seerr Discover and configure your internal Seerr URL, public Seerr URL, and Seerr API key.
+Restart Jellyfin after installation. Open Dashboard > Plugins > Seerr Discover and configure your internal Seerr URL, public Seerr URL, and Seerr API key. Keep `Show Seerr results in Jellyfin search` enabled unless you intentionally want the Discover tab only.
 
 ## Release-Asset Fallback
 
@@ -49,7 +49,7 @@ Use this only when repository installation is unavailable.
 
 ## Companion Plugins
 
-The Discover tab uses companion Jellyfin Web plugins. See [COMPANION-PLUGINS.md](COMPANION-PLUGINS.md) for dependency setup and known-compatible configuration.
+The rails-only Discover tab uses companion Jellyfin Web plugins. The same loader also attaches Seerr results to Jellyfin's native search page. See [COMPANION-PLUGINS.md](COMPANION-PLUGINS.md) for dependency setup and known-compatible configuration.
 
 ## Discover Tab Setup
 
@@ -75,6 +75,8 @@ JavaScript Injector: add an authenticated script. Replace `<installed-version>` 
 ```
 
 Hard-refresh Jellyfin Web after changing the tab or loader script. In Jellyfin Desktop or mobile app webviews, fully close and reopen the client if the old script remains cached.
+
+After setup, the Discover tab shows browse rails only. Search from Jellyfin's normal search page; matching Seerr items appear in a separate `Requestable from Seerr` row when native search integration is enabled.
 
 ## Docker Development Install
 
@@ -103,3 +105,4 @@ Restart Jellyfin.
 - Existing plugin settings should survive a version upgrade.
 - The API key field is write-only in the config page. Leave it blank to preserve the current key.
 - Update the JavaScript Injector loader query string to the installed plugin version after upgrading.
+- The Discover tab no longer has a separate search bar; use Jellyfin's native search page for Seerr search.
