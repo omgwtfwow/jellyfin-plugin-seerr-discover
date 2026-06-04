@@ -49,7 +49,8 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          draft: true
+          draft: false
+          prerelease: true
           files: |
             dist/seerr-discover_*.zip
             dist/seerr-discover_*.zip.sha256
