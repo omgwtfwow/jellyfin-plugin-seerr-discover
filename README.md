@@ -4,7 +4,7 @@ Seerr Discover is a Jellyfin server plugin that adds a native-looking Discover t
 
 ## Status
 
-This repository is preparing for a public `0.2.0.0` release candidate. The long-term target is official Jellyfin plugin catalog submission, but the first supported install paths are manual zip installation and a self-hosted Jellyfin plugin repository.
+This repository has a public `0.2.0.0` release candidate. The long-term target is official Jellyfin plugin catalog submission, but the first supported install paths are manual zip installation and a self-hosted Jellyfin plugin repository.
 
 ## Requirements
 
@@ -32,6 +32,12 @@ Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI s
 ## Installation
 
 See [docs/INSTALL.md](docs/INSTALL.md).
+
+Self-hosted Jellyfin repository URL:
+
+```text
+https://omgwtfwow.github.io/jellyfin-plugin-seerr-discover/manifest.json
+```
 
 ## Configuration
 
