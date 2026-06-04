@@ -17,6 +17,16 @@
   };
   let nextToastId = 1;
   let spacingFrame = 0;
+  const nativeSearch = {
+    input: null,
+    debounceId: 0,
+    requestId: 0,
+    enabled: null,
+    enabledPromise: null,
+    lastQuery: '',
+    repositionObserver: null,
+    repositionTimeout: 0,
+  };
 
   const rails = [
     { id: 'trending', title: 'Trending', feed: 'trending' },
@@ -212,6 +222,30 @@
         margin-top: var(--seerr-content-overlap-offset, 0px);
         padding: 0 clamp(0.85rem, 2.6vw, 2.25rem) clamp(2rem, 4vh, 3rem);
         color: var(--seerr-text);
+      }
+      .seerr-native-search,
+      .seerr-modal {
+        --seerr-bg: var(--jf-palette-background-default, #101010);
+        --seerr-bg-channel: var(--jf-palette-background-defaultChannel, 16 16 16);
+        --seerr-surface: var(--jf-palette-background-paper, #202020);
+        --seerr-surface-channel: var(--jf-palette-background-paperChannel, 32 32 32);
+        --seerr-text: var(--jf-palette-text-primary, #fff);
+        --seerr-text-channel: var(--jf-palette-text-primaryChannel, 255 255 255);
+        --seerr-muted: var(--jf-palette-text-secondary, rgba(255,255,255,0.7));
+        --seerr-disabled: var(--jf-palette-text-disabled, rgba(255,255,255,0.5));
+        --seerr-primary: var(--jf-palette-primary-main, #00a4dc);
+        --seerr-primary-channel: var(--jf-palette-primary-mainChannel, 0 164 220);
+        --seerr-primary-contrast: var(--jf-palette-primary-contrastText, rgba(0,0,0,0.87));
+        --seerr-input-bg: var(--jf-palette-FilledInput-bg, rgb(var(--seerr-text-channel) / 0.09));
+        --seerr-disabled-bg: var(--jf-palette-action-disabledBackground, rgb(var(--seerr-text-channel) / 0.12));
+        --seerr-border: rgb(var(--seerr-text-channel) / 0.16);
+        --seerr-border-soft: rgb(var(--seerr-text-channel) / 0.1);
+        --seerr-hover: rgb(var(--seerr-text-channel) / 0.08);
+        --seerr-card-placeholder: linear-gradient(145deg, rgb(var(--seerr-primary-channel) / 0.24), rgb(var(--seerr-surface-channel) / 0.88));
+        color: var(--seerr-text);
+      }
+      .seerr-native-search .seerr-discover__scroller {
+        padding-top: 0.15rem;
       }
       .seerr-discover-tab-content {
         --seerr-tab-top-offset-fallback: calc(clamp(5.2rem, 8.5vh, 7rem) + env(safe-area-inset-top));
@@ -1555,6 +1589,23 @@
       .map((entry) => entry.item));
   }
 
+  function filterNativeSearchItems(items) {
+    const results = supportedResults(items);
+    return Promise.all(results.map((item) => {
+      if (jellyfinItemUrl(item)) {
+        return Promise.resolve({ item, available: true });
+      }
+
+      return lookupJellyfinItem(item)
+        .then((jellyfinItem) => ({
+          item,
+          available: Boolean(jellyfinItem?.Id),
+        }));
+    })).then((entries) => entries
+      .filter((entry) => !entry.available)
+      .map((entry) => entry.item));
+  }
+
   function isJellyfinAvailable(item) {
     return Boolean(item?.__jellyfinItem?.Id || jellyfinItemUrl(item));
   }
@@ -1611,6 +1662,226 @@
       });
   }
 
+  function nativeSearchPage() {
+    return document.querySelector('#searchPage:not(.hide)') || document.querySelector('#searchPage');
+  }
+
+  function nativeSearchInput() {
+    return nativeSearchPage()?.querySelector('#searchTextInput') || null;
+  }
+
+  function ensureNativeSearchEnabled() {
+    if (nativeSearch.enabled !== null) {
+      return Promise.resolve(nativeSearch.enabled);
+    }
+
+    if (!nativeSearch.enabledPromise) {
+      nativeSearch.enabledPromise = apiFetch('/SeerrDiscover/client-config')
+        .then((config) => {
+          nativeSearch.enabled = config?.enableNativeSearchIntegration !== false;
+          if (!nativeSearch.enabled) {
+            return false;
+          }
+
+          return loadMe().then(() => true);
+        })
+        .catch((error) => {
+          console.warn('Seerr Discover native search config failed', error);
+          nativeSearch.enabled = true;
+          return loadMe().then(() => true);
+        });
+    }
+
+    return nativeSearch.enabledPromise;
+  }
+
+  function scheduleNativeSearchAttach() {
+    window.setTimeout(tryAttachNativeSearch, 80);
+    window.setTimeout(tryAttachNativeSearch, 350);
+    window.setTimeout(tryAttachNativeSearch, 1000);
+  }
+
+  function tryAttachNativeSearch() {
+    const input = nativeSearchInput();
+    if (!input) {
+      removeNativeSearchSection();
+      nativeSearch.input = null;
+      return;
+    }
+
+    ensureNativeSearchEnabled().then((enabled) => {
+      if (!enabled) {
+        removeNativeSearchSection();
+        return;
+      }
+
+      if (nativeSearch.input !== input && !input.dataset.seerrNativeSearchAttached) {
+        input.addEventListener('input', handleNativeSearchInput);
+        input.addEventListener('change', handleNativeSearchInput);
+        input.dataset.seerrNativeSearchAttached = 'true';
+      }
+
+      nativeSearch.input = input;
+      handleNativeSearchInput();
+    });
+  }
+
+  function handleNativeSearchInput() {
+    const input = nativeSearchInput();
+    const query = String(input?.value || '').trim();
+    window.clearTimeout(nativeSearch.debounceId);
+
+    if (!query) {
+      nativeSearch.lastQuery = '';
+      nativeSearch.requestId += 1;
+      removeNativeSearchSection();
+      return;
+    }
+
+    nativeSearch.debounceId = window.setTimeout(() => runNativeSearch(query), 500);
+  }
+
+  function runNativeSearch(query) {
+    if (!query) {
+      removeNativeSearchSection();
+      return;
+    }
+
+    const requestId = nativeSearch.requestId + 1;
+    nativeSearch.requestId = requestId;
+    nativeSearch.lastQuery = query;
+    removeNativeSearchSection();
+
+    apiFetch(`/SeerrDiscover/search?query=${encodeURIComponent(query)}&page=1`)
+      .then((data) => filterNativeSearchItems(data.results))
+      .then((items) => {
+        if (requestId !== nativeSearch.requestId || query !== nativeSearch.lastQuery) return;
+        if (!items.length) {
+          removeNativeSearchSection();
+          return;
+        }
+        renderNativeSearchSection(items);
+      })
+      .catch((error) => {
+        if (requestId !== nativeSearch.requestId) return;
+        console.warn('Seerr Discover native search failed', error);
+        removeNativeSearchSection();
+      });
+  }
+
+  function refreshNativeSearch() {
+    const query = String(nativeSearchInput()?.value || '').trim();
+    if (query) {
+      runNativeSearch(query);
+    }
+  }
+
+  function removeNativeSearchSection() {
+    if (nativeSearch.repositionObserver) {
+      nativeSearch.repositionObserver.disconnect();
+      nativeSearch.repositionObserver = null;
+    }
+    if (nativeSearch.repositionTimeout) {
+      window.clearTimeout(nativeSearch.repositionTimeout);
+      nativeSearch.repositionTimeout = 0;
+    }
+
+    document.querySelectorAll('[data-seerr-native-search]').forEach((section) => section.remove());
+    document.querySelectorAll('[data-seerr-hidden-no-results]').forEach((message) => {
+      message.classList.remove('hide');
+      message.removeAttribute('data-seerr-hidden-no-results');
+    });
+  }
+
+  function renderNativeSearchSection(items) {
+    ensureStyle();
+    const page = nativeSearchPage();
+    if (!page) return;
+
+    removeNativeSearchSection();
+    const section = document.createElement('section');
+    section.className = 'verticalSection seerr-native-search';
+    section.setAttribute('data-seerr-native-search', 'true');
+    section.innerHTML = `
+      <h2 class="sectionTitle sectionTitle-cards focuscontainer-x padded-left padded-right">Requestable from Seerr</h2>
+      <div class="seerr-discover__scroller padded-left padded-right">
+        ${items.map(card).join('')}
+      </div>
+    `;
+
+    placeNativeSearchSection(page, section);
+    bindNativeSearchSection(section);
+    watchNativeSearchPlacement(page, section);
+  }
+
+  function bindNativeSearchSection(section) {
+    section.querySelectorAll('[data-seerr-id]').forEach((button) => {
+      button.addEventListener('click', () => openDetails(button.getAttribute('data-seerr-type'), button.getAttribute('data-seerr-id')));
+    });
+  }
+
+  function placeNativeSearchSection(page, section) {
+    const primary = lastNativePrimarySection(page);
+    if (primary) {
+      primary.after(section);
+      return true;
+    }
+
+    const resultsContainer = page.querySelector('.searchResults, [class*="searchResults"], .padded-top.padded-bottom-page');
+    if (resultsContainer) {
+      resultsContainer.appendChild(section);
+      return false;
+    }
+
+    const noResultsMessage = page.querySelector('.noItemsMessage');
+    if (noResultsMessage?.parentElement) {
+      noResultsMessage.classList.add('hide');
+      noResultsMessage.setAttribute('data-seerr-hidden-no-results', 'true');
+      noResultsMessage.parentElement.insertBefore(section, noResultsMessage.nextSibling);
+      return false;
+    }
+
+    page.appendChild(section);
+    return false;
+  }
+
+  function lastNativePrimarySection(page) {
+    const primarySectionKeywords = ['movies', 'shows', 'film', 'films', 'series', 'serier', 'filme', 'serien', 'peliculas', 'serie tv'];
+    const sections = Array.from(page.querySelectorAll('.verticalSection:not([data-seerr-native-search])'));
+    for (let index = sections.length - 1; index >= 0; index -= 1) {
+      const title = sections[index].querySelector('.sectionTitle')?.textContent.trim().toLowerCase();
+      if (title && primarySectionKeywords.some((keyword) => title.includes(keyword))) {
+        return sections[index];
+      }
+    }
+    return null;
+  }
+
+  function watchNativeSearchPlacement(page, section) {
+    if (nativeSearch.repositionObserver) {
+      nativeSearch.repositionObserver.disconnect();
+    }
+
+    nativeSearch.repositionObserver = new MutationObserver(() => {
+      if (!document.documentElement.contains(section)) {
+        nativeSearch.repositionObserver?.disconnect();
+        nativeSearch.repositionObserver = null;
+        return;
+      }
+
+      const primary = lastNativePrimarySection(page);
+      if (primary && primary.nextSibling !== section) {
+        primary.after(section);
+      }
+    });
+    nativeSearch.repositionObserver.observe(page, { childList: true, subtree: true });
+    nativeSearch.repositionTimeout = window.setTimeout(() => {
+      nativeSearch.repositionObserver?.disconnect();
+      nativeSearch.repositionObserver = null;
+      nativeSearch.repositionTimeout = 0;
+    }, 5000);
+  }
+
   function getHashParams() {
     const hash = window.location.hash || '';
     const queryIndex = hash.indexOf('?');
@@ -1659,6 +1930,15 @@
   function setError(message) {
     state.error = message || '';
     render();
+  }
+
+  function showError(message) {
+    if (document.querySelector(rootSelector)) {
+      setError(message);
+      return;
+    }
+
+    showToast(message, 'error', { timeout: 7000 });
   }
 
   function showToast(message, variant = 'info', options = {}) {
@@ -1771,7 +2051,7 @@
     apiFetch(`/SeerrDiscover/media/${encodeURIComponent(type)}/${encodeURIComponent(id)}`)
       .then(enrichWithJellyfinItem)
       .then(renderModal)
-      .catch((error) => setError(`Details failed: ${error.message || error}`));
+      .catch((error) => showError(`Details failed: ${error.message || error}`));
   }
 
   function requestMedia(type, detail, requestButton) {
@@ -1792,6 +2072,7 @@
         renderModal(markRequested(detail, result));
         state.searchResults = null;
         updateToast(requestToastId, 'Request created. Seerr is processing it now.', 'success');
+        refreshNativeSearch();
         return Promise.all([loadMe(), loadRails()])
           .catch((error) => {
             console.warn('Seerr Discover refresh failed after request', error);
@@ -1840,6 +2121,7 @@
     window.setTimeout(mount, 50);
     window.setTimeout(mount, 350);
     window.setTimeout(mount, 1000);
+    scheduleNativeSearchAttach();
     window.setTimeout(scheduleDiscoverSpacing, 80);
     window.setTimeout(scheduleDiscoverSpacing, 400);
     window.setTimeout(scheduleDiscoverSpacing, 1100);
@@ -1855,9 +2137,11 @@
   window.addEventListener('hashchange', () => {
     closeModal();
     state.searchResults = null;
+    removeNativeSearchSection();
     scheduleMount();
   });
   window.addEventListener('popstate', () => {
+    removeNativeSearchSection();
     scheduleMount();
   });
   window.addEventListener('resize', scheduleDiscoverSpacing);

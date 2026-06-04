@@ -104,6 +104,11 @@ public sealed class SeerrDiscoverConfigurationDto
     public bool RequireMappedUser { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether Seerr results are injected into Jellyfin native search.
+    /// </summary>
+    public bool EnableNativeSearchIntegration { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether requests default to 4K.
     /// </summary>
     public bool DefaultRequest4K { get; set; }
@@ -183,6 +188,11 @@ public sealed class SeerrDiscoverConfigurationUpdate
     /// Gets or sets a value indicating whether requests require mapped Seerr users.
     /// </summary>
     public bool RequireMappedUser { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether Seerr results are injected into Jellyfin native search.
+    /// </summary>
+    public bool EnableNativeSearchIntegration { get; set; } = true;
 
     /// <summary>
     /// Gets or sets a value indicating whether requests default to 4K.

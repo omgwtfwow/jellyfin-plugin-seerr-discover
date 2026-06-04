@@ -52,6 +52,7 @@ public sealed class SeerrDiscoverControllerTests
             SearchCacheSeconds = 60,
             UserCacheSeconds = 60,
             RequireMappedUser = true,
+            EnableNativeSearchIntegration = true,
             EnableTrending = true,
             EnableMovies = true,
             EnableTv = true,
@@ -64,6 +65,30 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Equal("http://seerr:5055", config.SeerrBaseUrl);
         Assert.Equal("https://seerr.example", config.SeerrPublicUrl);
         Assert.Equal("es", config.Language);
+        Assert.True(config.EnableNativeSearchIntegration);
+    }
+
+    [Fact]
+    public void ApplyConfigurationUpdate_CanDisableNativeSearchIntegration()
+    {
+        var config = new PluginConfiguration
+        {
+            EnableNativeSearchIntegration = true
+        };
+        var update = new SeerrDiscoverConfigurationUpdate
+        {
+            SeerrBaseUrl = "http://seerr:5055",
+            Language = "en",
+            DiscoverCacheSeconds = 600,
+            DetailsCacheSeconds = 300,
+            SearchCacheSeconds = 60,
+            UserCacheSeconds = 60,
+            EnableNativeSearchIntegration = false
+        };
+
+        ApplyConfigurationUpdate(config, update);
+
+        Assert.False(config.EnableNativeSearchIntegration);
     }
 
     [Fact]

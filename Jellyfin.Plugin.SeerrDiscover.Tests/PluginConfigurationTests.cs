@@ -7,6 +7,14 @@ namespace Jellyfin.Plugin.SeerrDiscover.Tests;
 public sealed class PluginConfigurationTests
 {
     [Fact]
+    public void Defaults_EnableNativeSearchIntegration()
+    {
+        var configuration = new PluginConfiguration();
+
+        Assert.True(configuration.EnableNativeSearchIntegration);
+    }
+
+    [Fact]
     public void SeerrPublicUrl_RoundTripsThroughJson()
     {
         var configuration = new PluginConfiguration
