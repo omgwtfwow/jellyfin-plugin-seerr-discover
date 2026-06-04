@@ -25,25 +25,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 9.0.x
-
-      - name: Install packaging tools
-        run: sudo apt-get update && sudo apt-get install -y zip
-
-      - name: Package plugin
-        run: scripts/package-plugin.sh
-
-      - name: Generate manifest
+      - name: Download release manifest
         run: |
           version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Directory.Build.props | head -n1)"
-          scripts/generate-manifest.sh --base-url "https://github.com/${{ github.repository }}/releases/download/v${version}"
+          mkdir -p dist/pages
+          curl -fL \
+            "https://github.com/${{ github.repository }}/releases/download/v${version}/manifest.json" \
+            -o dist/pages/manifest.json
 
       - name: Prepare Pages artifact
         run: |
-          mkdir -p dist/pages
-          cp dist/manifest.json dist/pages/manifest.json
           touch dist/pages/.nojekyll
           cat >dist/pages/index.html <<'HTML'
           <!doctype html>
