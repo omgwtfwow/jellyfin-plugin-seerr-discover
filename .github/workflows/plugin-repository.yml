@@ -1,0 +1,69 @@
+name: Publish Plugin Repository
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - published
+      - edited
+
+permissions:
+  contents: read
+  id-token: write
+  pages: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Install packaging tools
+        run: sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Package plugin
+        run: scripts/package-plugin.sh
+
+      - name: Generate manifest
+        run: |
+          version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Directory.Build.props | head -n1)"
+          scripts/generate-manifest.sh --base-url "https://github.com/${{ github.repository }}/releases/download/v${version}"
+
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p dist/pages
+          cp dist/manifest.json dist/pages/manifest.json
+          touch dist/pages/.nojekyll
+          cat >dist/pages/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <title>Seerr Discover Jellyfin Plugin Repository</title>
+            </head>
+            <body>
+              <h1>Seerr Discover Jellyfin Plugin Repository</h1>
+              <p>Use <code>manifest.json</code> as the Jellyfin plugin repository URL.</p>
+            </body>
+          </html>
+          HTML
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/pages
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

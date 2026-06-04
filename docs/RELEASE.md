@@ -26,5 +26,38 @@
    - `manifest.json`
 
 5. Install from the release zip on a clean Jellyfin instance.
-6. Install from the generated manifest URL on a clean Jellyfin instance.
-7. Complete live visual QA before marking the release as stable.
+6. Publish or refresh the self-hosted Jellyfin repository:
+
+   ```bash
+   gh workflow run plugin-repository.yml
+   ```
+
+7. Install from the generated manifest URL on a clean Jellyfin instance:
+
+   ```text
+   https://omgwtfwow.github.io/jellyfin-plugin-seerr-discover/manifest.json
+   ```
+
+8. Verify the release-asset fallback still works:
+
+   ```text
+   https://github.com/omgwtfwow/jellyfin-plugin-seerr-discover/releases/download/v0.2.0.0/manifest.json
+   ```
+
+9. Complete live visual QA before marking the release as stable.
+
+## GitHub Markdown Hygiene
+
+When scripting issue bodies, comments, PR descriptions, or release notes, always write the body through a heredoc/body file or `jq --arg` JSON generation:
+
+```bash
+cat > /tmp/body.md <<'MARKDOWN'
+## Delivered
+
+- Real Markdown newlines.
+MARKDOWN
+
+gh issue comment 1 --body-file /tmp/body.md
+```
+
+Do not pass Markdown with literal `\n` escape sequences to `gh --body`; GitHub renders those as text and the issue becomes unreadable.

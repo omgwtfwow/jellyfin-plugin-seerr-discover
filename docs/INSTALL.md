@@ -17,13 +17,25 @@
 
 ## Jellyfin Repository Install
 
-After a release publishes `manifest.json`, add its raw URL in:
+Add the self-hosted repository URL in:
+
+```text
+https://omgwtfwow.github.io/jellyfin-plugin-seerr-discover/manifest.json
+```
+
+Jellyfin path:
 
 ```text
 Dashboard > Plugins > Repositories
 ```
 
 Then install Seerr Discover from the plugin catalog page and restart Jellyfin.
+
+If GitHub Pages is temporarily unavailable, use the release-asset fallback:
+
+```text
+https://github.com/omgwtfwow/jellyfin-plugin-seerr-discover/releases/download/v0.2.0.0/manifest.json
+```
 
 ## Discover Tab Setup
 
