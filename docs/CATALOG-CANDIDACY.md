@@ -16,6 +16,8 @@ The long-term goal is official Jellyfin plugin catalog submission. This document
 - Whether `RequiresElevation` admin config endpoints are sufficient for secret configuration.
 - Whether install instructions should require a self-hosted repository first before official listing.
 
+See [CATALOG-FEASIBILITY-DISCUSSION.md](CATALOG-FEASIBILITY-DISCUSSION.md) for the maintainer/community discussion draft.
+
 ## Before Submission
 
 - Publish at least one public release candidate.
