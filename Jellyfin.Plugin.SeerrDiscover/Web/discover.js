@@ -12,7 +12,7 @@
     loading: new Set(),
     error: '',
     toasts: [],
-    watchedCache: new Map(),
+    jellyfinItemCache: new Map(),
     autoplayKey: '',
   };
   let nextToastId = 1;
@@ -160,6 +160,7 @@
   }
 
   function statusLabel(item) {
+    if (isJellyfinAvailable(item)) return 'Available';
     const status = item.mediaInfo && item.mediaInfo.status;
     if (status === 5) return 'Available';
     if (status === 4) return 'Partial';
@@ -422,12 +423,19 @@
         object-fit: cover;
         display: block;
       }
-      .seerr-card__badge {
+      .seerr-card__badges {
         position: absolute;
         top: 0.45rem;
         left: 0.45rem;
-        max-width: calc(100% - 0.9rem);
-        border: 1px solid transparent;
+        right: 0.45rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        align-items: flex-start;
+        pointer-events: none;
+      }
+      .seerr-card__badge {
+        max-width: 100%;
         border-radius: 999px;
         padding: 0.22rem 0.45rem;
         background: rgb(var(--seerr-bg-channel) / 0.78);
@@ -439,12 +447,10 @@
         white-space: nowrap;
       }
       .seerr-card__badge--available {
-        border-color: var(--jf-palette-success-main, #4caf50);
         background: var(--jf-palette-Alert-successStandardBg, rgb(76 175 80 / 0.18));
         color: var(--jf-palette-Alert-successColor, var(--seerr-text));
       }
       .seerr-card__badge--requested {
-        border-color: var(--jf-palette-info-main, var(--seerr-primary));
         background: var(--jf-palette-Alert-infoStandardBg, rgb(var(--seerr-primary-channel) / 0.18));
         color: var(--jf-palette-Alert-infoColor, var(--seerr-text));
       }
@@ -861,14 +867,18 @@
 
   function card(item) {
     const poster = tmdbImage(item.posterPath || item.backdropPath, 'w342');
-    const status = statusLabel(item);
+    const typeLabel = mediaType(item) === 'tv' ? 'Series' : 'Movie';
+    const status = cardStatusLabel(item);
     const year = (mediaDate(item) || '').slice(0, 4);
     const badgeClass = cardBadgeClass(status);
     return `
       <button class="seerr-card" data-seerr-type="${escapeHtml(mediaType(item))}" data-seerr-id="${escapeHtml(item.id)}">
         <span class="seerr-card__image">
           ${poster ? `<img loading="lazy" src="${escapeHtml(poster)}" alt="">` : ''}
-          <span class="seerr-card__badge ${escapeHtml(badgeClass)}">${escapeHtml(status)}</span>
+          <span class="seerr-card__badges">
+            <span class="seerr-card__badge">${escapeHtml(typeLabel)}</span>
+            ${status ? `<span class="seerr-card__badge ${escapeHtml(badgeClass)}">${escapeHtml(status)}</span>` : ''}
+          </span>
         </span>
         <span class="seerr-card__meta">
           <span class="seerr-card__title">
@@ -877,6 +887,11 @@
         </span>
       </button>
     `;
+  }
+
+  function cardStatusLabel(item) {
+    const status = statusLabel(item);
+    return status === 'Available' || status === 'Requested' ? status : '';
   }
 
   function cardBadgeClass(status) {
@@ -958,7 +973,7 @@
     const type = mediaType(detail);
     const backdrop = tmdbImage(detail.backdropPath || detail.posterPath, 'w1280');
     const poster = tmdbImage(detail.posterPath || detail.backdropPath, 'w342');
-    const available = detail.mediaInfo && detail.mediaInfo.status === 5;
+    const available = isJellyfinAvailable(detail);
     const requested = !available && statusLabel(detail) === 'Requested';
     const jellyfinDetailUrl = jellyfinItemUrl(detail);
     const jellyfinWatchUrl = jellyfinPlaybackUrl(detail);
@@ -1422,45 +1437,51 @@
   }
 
   function enrichWithJellyfinItem(detail) {
-    if (!detail?.mediaInfo || detail.mediaInfo.status !== 5 || jellyfinItemUrl(detail)) {
+    if (jellyfinItemUrl(detail)) {
       return Promise.resolve(detail);
     }
 
-    return findJellyfinItem(detail)
-      .then((item) => {
-        if (!item?.Id) return detail;
-        return { ...detail, __jellyfinItem: item };
-      })
-      .catch((error) => {
-        console.warn('Seerr Discover Jellyfin lookup failed', error);
-        return detail;
-      });
+    return lookupJellyfinItem(detail)
+      .then((item) => attachJellyfinItem(detail, item));
   }
 
-  function filterUnwatchedItems(items) {
+  function filterAndEnrichItems(items) {
     const results = supportedResults(items);
     return Promise.all(results.map((item) => {
-      return isWatchedInJellyfin(item).then((watched) => ({ item, watched }));
+      return lookupJellyfinItem(item)
+        .then((jellyfinItem) => ({
+          item: attachJellyfinItem(item, jellyfinItem),
+          watched: Boolean(jellyfinItem?.UserData?.Played),
+        }));
     })).then((entries) => entries
       .filter((entry) => !entry.watched)
       .map((entry) => entry.item));
   }
 
-  function isWatchedInJellyfin(item) {
+  function isJellyfinAvailable(item) {
+    return Boolean(item?.__jellyfinItem?.Id || jellyfinItemUrl(item));
+  }
+
+  function attachJellyfinItem(item, jellyfinItem) {
+    if (!jellyfinItem?.Id || item?.__jellyfinItem?.Id) return item;
+    return { ...item, __jellyfinItem: jellyfinItem };
+  }
+
+  function lookupJellyfinItem(item) {
     const key = jellyfinLookupKey(item);
-    if (!key) return Promise.resolve(false);
-    if (state.watchedCache.has(key)) return Promise.resolve(state.watchedCache.get(key));
+    if (!key) return Promise.resolve(null);
+    if (state.jellyfinItemCache.has(key)) return Promise.resolve(state.jellyfinItemCache.get(key));
 
     return findJellyfinItem(item)
       .then((jellyfinItem) => {
-        const watched = Boolean(jellyfinItem?.UserData?.Played);
-        state.watchedCache.set(key, watched);
-        return watched;
+        const result = jellyfinItem || null;
+        state.jellyfinItemCache.set(key, result);
+        return result;
       })
       .catch((error) => {
-        console.warn('Seerr Discover watched lookup failed', error);
-        state.watchedCache.set(key, false);
-        return false;
+        console.warn('Seerr Discover Jellyfin lookup failed', error);
+        state.jellyfinItemCache.set(key, null);
+        return null;
       });
   }
 
@@ -1481,7 +1502,7 @@
       Recursive: 'true',
       IncludeItemTypes: mediaType(detail) === 'tv' ? 'Series' : 'Movie',
       SearchTerm: mediaTitle(detail),
-      Fields: 'ProviderIds',
+      Fields: 'ProviderIds,UserData',
       EnableUserData: 'true',
       Limit: '12',
     });
@@ -1619,7 +1640,7 @@
     root.__seerrRailData = root.__seerrRailData || {};
     return Promise.all(rails.map((rail) => {
       return apiFetch(`/SeerrDiscover/discover?feed=${encodeURIComponent(rail.feed)}&page=1`)
-        .then((data) => filterUnwatchedItems(data.results))
+        .then((data) => filterAndEnrichItems(data.results))
         .then((items) => { root.__seerrRailData[rail.id] = items; })
         .catch((error) => {
           root.__seerrRailData[rail.id] = [];
@@ -1640,7 +1661,7 @@
     state.error = '';
     render();
     apiFetch(`/SeerrDiscover/search?query=${encodeURIComponent(query)}&page=1`)
-      .then((data) => filterUnwatchedItems(data.results).then((results) => ({ ...data, results })))
+      .then((data) => filterAndEnrichItems(data.results).then((results) => ({ ...data, results })))
       .then((data) => {
         state.searchResults = data;
         render();

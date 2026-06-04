@@ -11,7 +11,7 @@ version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' "$ROOT_DIR/Directory.Bu
 guid="$(sed -n 's/^guid: "\(.*\)"/\1/p' "$ROOT_DIR/build.yaml" | head -n1)"
 target_abi="$(sed -n 's/^targetAbi: "\(.*\)"/\1/p' "$ROOT_DIR/build.yaml" | head -n1)"
 zip_path="$DIST_DIR/seerr-discover_${version}.zip"
-release_changelog="Add auto-dismissing request toasts, hide watched Jellyfin items from Discover lists, and polish card metadata/badges."
+release_changelog="Treat TMDB-matched Jellyfin library items as available even when Seerr still reports them as requested or processing, and split card type/status into subtler borderless badges."
 
 if [ -z "$version" ] || [ -z "$guid" ] || [ -z "$target_abi" ]; then
   echo "Unable to read version, guid, or targetAbi." >&2
