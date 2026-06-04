@@ -114,17 +114,27 @@ public sealed class SeerrDiscoverConfigurationDto
     public bool DefaultRequest4K { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the trending feed is enabled.
+    /// Gets or sets a value indicating whether the legacy mixed trending feed is enabled.
     /// </summary>
     public bool EnableTrending { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the movie feed is enabled.
+    /// Gets or sets a value indicating whether the trending movies feed is enabled.
+    /// </summary>
+    public bool EnableTrendingMovies { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the trending TV feed is enabled.
+    /// </summary>
+    public bool EnableTrendingTv { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the popular movie feed is enabled.
     /// </summary>
     public bool EnableMovies { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the TV feed is enabled.
+    /// Gets or sets a value indicating whether the popular TV feed is enabled.
     /// </summary>
     public bool EnableTv { get; set; }
 
@@ -200,17 +210,27 @@ public sealed class SeerrDiscoverConfigurationUpdate
     public bool DefaultRequest4K { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the trending feed is enabled.
+    /// Gets or sets a value indicating whether the legacy mixed trending feed is enabled.
     /// </summary>
     public bool EnableTrending { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the movie feed is enabled.
+    /// Gets or sets a value indicating whether the trending movies feed is enabled.
+    /// </summary>
+    public bool? EnableTrendingMovies { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the trending TV feed is enabled.
+    /// </summary>
+    public bool? EnableTrendingTv { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the popular movie feed is enabled.
     /// </summary>
     public bool EnableMovies { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the TV feed is enabled.
+    /// Gets or sets a value indicating whether the popular TV feed is enabled.
     /// </summary>
     public bool EnableTv { get; set; }
 

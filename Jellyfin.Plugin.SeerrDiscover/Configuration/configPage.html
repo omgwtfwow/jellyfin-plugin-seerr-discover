@@ -73,26 +73,32 @@
                 </div>
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label class="emby-checkbox-label">
-                        <input id="EnableTrending" name="EnableTrending" type="checkbox" is="emby-checkbox" />
-                        <span>Enable Trending rail</span>
+                        <input id="EnableTrendingMovies" name="EnableTrendingMovies" type="checkbox" is="emby-checkbox" />
+                        <span>Enable Trending Movies rail</span>
+                    </label>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="EnableTrendingTv" name="EnableTrendingTv" type="checkbox" is="emby-checkbox" />
+                        <span>Enable Trending TV rail</span>
                     </label>
                 </div>
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label class="emby-checkbox-label">
                         <input id="EnableMovies" name="EnableMovies" type="checkbox" is="emby-checkbox" />
-                        <span>Enable Movies rail</span>
+                        <span>Enable Popular Movies rail</span>
                     </label>
                 </div>
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label class="emby-checkbox-label">
                         <input id="EnableTv" name="EnableTv" type="checkbox" is="emby-checkbox" />
-                        <span>Enable TV rail</span>
+                        <span>Enable Popular TV rail</span>
                     </label>
                 </div>
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label class="emby-checkbox-label">
                         <input id="EnableUpcoming" name="EnableUpcoming" type="checkbox" is="emby-checkbox" />
-                        <span>Enable Upcoming rail</span>
+                        <span>Enable Upcoming Movies rail</span>
                     </label>
                 </div>
                 <button is="emby-button" type="submit" class="raised button-submit block emby-button">
@@ -116,7 +122,8 @@
                 'RequireMappedUser',
                 'EnableNativeSearchIntegration',
                 'DefaultRequest4K',
-                'EnableTrending',
+                'EnableTrendingMovies',
+                'EnableTrendingTv',
                 'EnableMovies',
                 'EnableTv',
                 'EnableUpcoming'

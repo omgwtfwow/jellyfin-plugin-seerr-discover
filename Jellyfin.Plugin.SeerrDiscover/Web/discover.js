@@ -3,8 +3,17 @@
 
   const rootSelector = '#seerrDiscoverRoot';
   const styleId = 'seerr-discover-style';
+  const defaultRails = [
+    { id: 'trending-movies', title: 'Trending Movies', feed: 'trending-movies' },
+    { id: 'trending-tv', title: 'Trending TV', feed: 'trending-tv' },
+    { id: 'movies', title: 'Popular Movies', feed: 'movies' },
+    { id: 'tv', title: 'Popular TV', feed: 'tv' },
+    { id: 'upcoming', title: 'Upcoming Movies', feed: 'upcoming' },
+  ];
   const state = {
     mountedRoot: null,
+    clientConfig: null,
+    clientConfigPromise: null,
     me: null,
     details: null,
     loading: new Set(),
@@ -29,12 +38,7 @@
     repositionTimeout: 0,
   };
 
-  const rails = [
-    { id: 'trending', title: 'Trending', feed: 'trending' },
-    { id: 'movies', title: 'Popular Movies', feed: 'movies' },
-    { id: 'tv', title: 'Popular TV', feed: 'tv' },
-    { id: 'upcoming', title: 'Upcoming', feed: 'upcoming' },
-  ];
+  let rails = defaultRails;
 
   function apiUrl(path) {
     if (window.ApiClient && typeof window.ApiClient.getUrl === 'function') {
@@ -174,6 +178,28 @@
 
   function supportedResults(items) {
     return (items || []).filter(isSupportedMedia);
+  }
+
+  function discoverDedupeKey(item) {
+    const tmdbId = tmdbIdFor(item);
+    if (tmdbId) return `${mediaType(item)}:${tmdbId}`;
+    const title = mediaTitle(item).trim().toLowerCase();
+    const year = (mediaDate(item) || '').slice(0, 4);
+    return title ? `${mediaType(item)}:${title}:${year}` : '';
+  }
+
+  function dedupeRailData(activeRails, railData) {
+    const seen = new Set();
+    return activeRails.reduce((deduped, rail) => {
+      deduped[rail.id] = supportedResults(railData?.[rail.id] || []).filter((item) => {
+        const key = discoverDedupeKey(item);
+        if (!key) return true;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      return deduped;
+    }, {});
   }
 
   function statusLabel(item) {
@@ -860,7 +886,7 @@
       .seerr-modal__person-avatar {
         width: 2.45rem;
         aspect-ratio: 1;
-        border-radius: 50%;
+        border-radius: 0.38rem;
         object-fit: cover;
         background: var(--seerr-hover);
         box-shadow: inset 0 0 0 1px var(--seerr-border-soft);
@@ -1170,13 +1196,14 @@
       ? '<div class="seerr-discover__notice">This Jellyfin user is not linked in Seerr, so requests are disabled. Open Seerr once or import Jellyfin users in Seerr.</div>'
       : '';
     const error = state.error ? `<div class="seerr-discover__notice">${escapeHtml(state.error)}</div>` : '';
+    const railData = dedupeRailData(rails, root.__seerrRailData);
 
     root.innerHTML = `
       <div class="seerr-discover">
         ${meNotice}
         ${error}
         <div data-seerr-rails>
-          ${rails.map((rail) => railTemplate(rail, root.__seerrRailData?.[rail.id] || [])).join('')}
+          ${rails.length ? rails.map((rail) => railTemplate(rail, railData[rail.id] || [])).join('') : '<div class="seerr-discover__notice">No Discover rails are enabled.</div>'}
         </div>
       </div>
     `;
@@ -1805,13 +1832,51 @@
     return document.querySelector('[data-seerr-native-search]');
   }
 
+  function loadClientConfig() {
+    if (state.clientConfig) {
+      return Promise.resolve(state.clientConfig);
+    }
+
+    if (!state.clientConfigPromise) {
+      state.clientConfigPromise = apiFetch('/SeerrDiscover/client-config')
+        .then((config) => {
+          state.clientConfig = config || {};
+          rails = normalizeClientRails(state.clientConfig.discoverRails);
+          return state.clientConfig;
+        })
+        .catch((error) => {
+          console.warn('Seerr Discover client config failed', error);
+          state.clientConfig = {};
+          rails = defaultRails;
+          return state.clientConfig;
+        });
+    }
+
+    return state.clientConfigPromise;
+  }
+
+  function normalizeClientRails(discoverRails) {
+    if (!Array.isArray(discoverRails)) {
+      return defaultRails;
+    }
+
+    const allowedFeeds = new Set(defaultRails.map((rail) => rail.feed));
+    return discoverRails
+      .filter((rail) => rail && allowedFeeds.has(rail.feed) && rail.id && rail.title)
+      .map((rail) => ({
+        id: String(rail.id),
+        title: String(rail.title),
+        feed: String(rail.feed),
+      }));
+  }
+
   function ensureNativeSearchEnabled() {
     if (nativeSearch.enabled !== null) {
       return Promise.resolve(nativeSearch.enabled);
     }
 
     if (!nativeSearch.enabledPromise) {
-      nativeSearch.enabledPromise = apiFetch('/SeerrDiscover/client-config')
+      nativeSearch.enabledPromise = loadClientConfig()
         .then((config) => {
           nativeSearch.enabled = config?.enableNativeSearchIntegration !== false;
           if (!nativeSearch.enabled) {
@@ -2191,15 +2256,17 @@
     const root = document.querySelector(rootSelector);
     if (!root) return;
     root.__seerrRailData = root.__seerrRailData || {};
-    return Promise.all(rails.map((rail) => {
-      return apiFetch(`/SeerrDiscover/discover?feed=${encodeURIComponent(rail.feed)}&page=1`)
-        .then((data) => filterAndEnrichItems(data.results))
-        .then((items) => { root.__seerrRailData[rail.id] = items; })
-        .catch((error) => {
-          root.__seerrRailData[rail.id] = [];
-          console.warn('Seerr Discover rail failed', rail.id, error);
-        });
-    })).then(render);
+    return loadClientConfig()
+      .then(() => Promise.all(rails.map((rail) => {
+        return apiFetch(`/SeerrDiscover/discover?feed=${encodeURIComponent(rail.feed)}&page=1`)
+          .then((data) => filterAndEnrichItems(data.results))
+          .then((items) => { root.__seerrRailData[rail.id] = items; })
+          .catch((error) => {
+            root.__seerrRailData[rail.id] = [];
+            console.warn('Seerr Discover rail failed', rail.id, error);
+          });
+      })))
+      .then(render);
   }
 
   function openDetails(type, id) {

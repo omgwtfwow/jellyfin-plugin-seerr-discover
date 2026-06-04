@@ -47,7 +47,7 @@ Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI s
 
 ## Features
 
-- Rails-only Discover tab for trending, popular movies, popular TV, and upcoming movies
+- Rails-only Discover tab for configurable Trending Movies, Trending TV, Popular Movies, Popular TV, and Upcoming Movies rows
 - Requestable Seerr movie and series results inside Jellyfin's native search page
 - Detail modal with poster/backdrop, metadata, cast/crew, trailers, and Seerr links
 - Request creation as the mapped Seerr user
