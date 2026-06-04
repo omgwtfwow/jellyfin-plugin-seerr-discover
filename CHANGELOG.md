@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.9.0
+
+- Make the Discover tab rails-only by removing the tab-local search form,
+  search result state, and page title.
+- Update setup and troubleshooting docs to direct Seerr search through
+  Jellyfin's native search page.
+
 ## 0.2.8.0
 
 - Add optional Jellyfin native search integration that shows requestable Seerr

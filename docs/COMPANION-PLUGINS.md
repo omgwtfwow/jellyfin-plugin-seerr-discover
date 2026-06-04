@@ -1,11 +1,11 @@
 # Companion Plugins
 
-Seerr Discover uses a server plugin for API proxying and a small Jellyfin Web asset for the Discover page. Jellyfin server plugins do not provide a stable end-user navigation page surface by themselves, so the v1 UI intentionally uses companion Jellyfin Web plugins.
+Seerr Discover uses a server plugin for API proxying and a small Jellyfin Web asset for the rails-only Discover page plus native Jellyfin search integration. Jellyfin server plugins do not provide a stable end-user navigation page surface by themselves, so the v1 Discover tab intentionally uses companion Jellyfin Web plugins.
 
 ## Required Plugins
 
-- Custom Tabs: creates the `Discover` tab and mount point.
-- JavaScript Injector: loads the Seerr Discover web asset in Jellyfin Web.
+- Custom Tabs: creates the `Discover` tab and mount point for browse rails.
+- JavaScript Injector: loads the Seerr Discover web asset in Jellyfin Web and lets it attach to native Jellyfin search.
 - File Transformation: required by some JavaScript Injector installations and commonly installed alongside it.
 
 Use versions compatible with your Jellyfin server version. If a companion plugin does not appear in Jellyfin's catalog after adding its repository, check that its `targetAbi` matches your Jellyfin version.
@@ -47,7 +47,7 @@ Create an authenticated JavaScript entry:
 }());
 ```
 
-Replace `<installed-version>` with the version shown on the Jellyfin plugin details page, for example `0.2.6.0`.
+Replace `<installed-version>` with the version shown on the Jellyfin plugin details page, for example `0.2.9.0`.
 
 ## After Changes
 

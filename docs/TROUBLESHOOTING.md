@@ -36,6 +36,15 @@
 - Open the asset URL in the browser or network panel. It should return `200` and `text/javascript`.
 - Hard-refresh Jellyfin Web. In Jellyfin Desktop or mobile app webviews, fully close and reopen the client.
 - Confirm the Jellyfin user is authenticated. The plugin endpoints require Jellyfin auth.
+- The Discover tab is rails-only. Use Jellyfin's native search page for search results.
+
+## Seerr Results Do Not Appear in Jellyfin Search
+
+- Confirm `Show Seerr results in Jellyfin search` is enabled in Dashboard > Plugins > Seerr Discover.
+- Confirm the JavaScript Injector loader is authenticated, enabled, and points to the installed plugin version.
+- Search from Jellyfin's native search page, not from the Discover tab.
+- Check the browser network panel for successful `/SeerrDiscover/client-config` and `/SeerrDiscover/search` responses.
+- If Jellyfin already has the matching movie or series by TMDB id, Seerr Discover hides that duplicate from the Seerr row.
 
 ## Requests Are Disabled or Show Not Linked
 
@@ -70,7 +79,7 @@ Trailer links open YouTube URLs from inside the Jellyfin Web client. Some mobile
 
 ## Browser Traffic Shows the Seerr API Key
 
-This should not happen. Browser JavaScript should call only `/SeerrDiscover/*` endpoints with Jellyfin auth.
+This should not happen. Browser JavaScript should call `/SeerrDiscover/*` endpoints for Seerr traffic with Jellyfin auth. Local Jellyfin API requests, such as `/Items`, can appear for library availability matching, but they should not contain the Seerr API key.
 
 - Remove screenshots/logs that include secrets before filing an issue.
 - Disable the plugin until the exposure is understood.

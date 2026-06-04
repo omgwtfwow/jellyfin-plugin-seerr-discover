@@ -1,6 +1,6 @@
 # Jellyfin Seerr Discover
 
-Seerr Discover is a Jellyfin server plugin that adds a native-looking Discover tab backed by Seerr. Browser code calls Jellyfin-authenticated plugin endpoints only; the Seerr API key stays on the Jellyfin server.
+Seerr Discover is a Jellyfin server plugin that adds Seerr-backed Discover rails and requestable Seerr results inside Jellyfin's native search page. Browser code calls Jellyfin-authenticated plugin endpoints for Seerr traffic; the Seerr API key stays on the Jellyfin server.
 
 ## Status
 
@@ -19,6 +19,7 @@ https://omgwtfwow.github.io/jellyfin-plugin-seerr-discover/manifest.json
 3. Configure Seerr Discover with your internal Seerr URL, public Seerr URL, and Seerr API key.
 4. Install and configure the companion plugins listed below.
 5. Hard-refresh Jellyfin Web or restart the client app.
+6. Use Jellyfin's normal search page for Seerr search results; use the Discover tab for browse rails.
 
 ## Requirements
 
@@ -34,8 +35,8 @@ Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI s
 
 ## Features
 
-- Discover rails for trending, popular movies, popular TV, and upcoming movies
-- Search across movies and TV
+- Rails-only Discover tab for trending, popular movies, popular TV, and upcoming movies
+- Requestable Seerr movie and series results inside Jellyfin's native search page
 - Detail modal with poster/backdrop, metadata, cast/crew, trailers, and Seerr links
 - Request creation as the mapped Seerr user
 - Available/requested/requestable state badges
@@ -67,11 +68,12 @@ Open Jellyfin Dashboard > Plugins > Seerr Discover.
 - `Seerr API key`: write-only in the config page; blank preserves the existing key
 - cache TTLs: bounded between 5 and 3600 seconds
 - `Require mapped Seerr users`: recommended and enabled by default
+- `Show Seerr results in Jellyfin search`: recommended and enabled by default
 
 ## Security
 
 - The Seerr API key is sent only from Jellyfin server code to Seerr.
-- The browser asset calls `/SeerrDiscover/*` with Jellyfin authentication.
+- The browser asset calls `/SeerrDiscover/*` with Jellyfin authentication for Seerr traffic.
 - The admin config page uses redacted plugin-owned endpoints so the stored API key is not written into the page.
 - Request creation requires a mapped Jellyfin/Seerr user by default.
 

@@ -11,7 +11,7 @@ version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' "$ROOT_DIR/Directory.Bu
 guid="$(sed -n 's/^guid: "\(.*\)"/\1/p' "$ROOT_DIR/build.yaml" | head -n1)"
 target_abi="$(sed -n 's/^targetAbi: "\(.*\)"/\1/p' "$ROOT_DIR/build.yaml" | head -n1)"
 zip_path="$DIST_DIR/seerr-discover_${version}.zip"
-release_changelog="Add optional Jellyfin native search integration with requestable Seerr results and server-side API key handling."
+release_changelog="Make the Discover tab rails-only, remove the Discover heading, and document native Jellyfin search integration."
 
 if [ -z "$version" ] || [ -z "$guid" ] || [ -z "$target_abi" ]; then
   echo "Unable to read version, guid, or targetAbi." >&2
@@ -43,10 +43,10 @@ cat >"$STAGING_DIR/meta.json" <<META
 {
   "category": "General",
   "changelog": "$release_changelog",
-  "description": "Native Jellyfin Discover page backed by Seerr API proxy endpoints.",
+  "description": "Native Seerr Discover rails and Jellyfin search backed by Seerr API proxy endpoints.",
   "guid": "$guid",
   "name": "Seerr Discover",
-  "overview": "Native Seerr Discover page",
+  "overview": "Native Seerr Discover rails and Jellyfin search",
   "owner": "omgwtfwow",
   "targetAbi": "$target_abi",
   "timestamp": "$timestamp",
