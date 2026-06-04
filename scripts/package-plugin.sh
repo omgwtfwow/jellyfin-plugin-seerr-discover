@@ -11,7 +11,7 @@ version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' "$ROOT_DIR/Directory.Bu
 guid="$(sed -n 's/^guid: "\(.*\)"/\1/p' "$ROOT_DIR/build.yaml" | head -n1)"
 target_abi="$(sed -n 's/^targetAbi: "\(.*\)"/\1/p' "$ROOT_DIR/build.yaml" | head -n1)"
 zip_path="$DIST_DIR/seerr-discover_${version}.zip"
-release_changelog="Make the Discover tab rails-only, remove the Discover heading, and document native Jellyfin search integration."
+release_changelog="Keep the Seerr native search row stable while Jellyfin search page DOM mutations continue after rendering."
 
 if [ -z "$version" ] || [ -z "$guid" ] || [ -z "$target_abi" ]; then
   echo "Unable to read version, guid, or targetAbi." >&2
