@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.11.0
+
+- Fix Discover tab layout jumps after scrolling down and back up by replacing
+  scroll-sensitive overlap measurement with stable responsive spacing.
+
 ## 0.2.10.0
 
 - Fix native Jellyfin search row flashing by ignoring unchanged active queries

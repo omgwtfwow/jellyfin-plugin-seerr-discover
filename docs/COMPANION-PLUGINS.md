@@ -47,7 +47,7 @@ Create an authenticated JavaScript entry:
 }());
 ```
 
-Replace `<installed-version>` with the version shown on the Jellyfin plugin details page, for example `0.2.10.0`.
+Replace `<installed-version>` with the version shown on the Jellyfin plugin details page, for example `0.2.11.0`.
 
 ## After Changes
 
