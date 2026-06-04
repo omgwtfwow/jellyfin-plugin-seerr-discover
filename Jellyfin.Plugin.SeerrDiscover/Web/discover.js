@@ -316,6 +316,16 @@
         background: var(--seerr-disabled-bg);
         color: var(--seerr-disabled);
       }
+      .seerr-discover__button--success,
+      .seerr-discover__button--success:disabled {
+        border: 1px solid var(--jf-palette-success-main, var(--seerr-primary));
+        background: var(--jf-palette-Alert-successStandardBg, rgb(76 175 80 / 0.18));
+        color: var(--jf-palette-Alert-successColor, var(--seerr-text));
+        opacity: 1;
+      }
+      .seerr-discover__button--success:disabled {
+        cursor: default;
+      }
       .seerr-discover__button--secondary {
         border: 1px solid var(--seerr-border);
         background: var(--seerr-hover);
@@ -327,9 +337,9 @@
         color: var(--seerr-muted);
       }
       .seerr-discover__button--seerr {
-        border: 1px solid rgb(var(--seerr-primary-channel) / 0.5);
-        background: rgb(var(--seerr-primary-channel) / 0.18);
-        color: var(--seerr-text);
+        border: 1px solid var(--seerr-border-soft);
+        background: transparent;
+        color: var(--seerr-muted);
       }
       .seerr-discover__notice {
         border: 1px solid var(--seerr-border);
@@ -537,8 +547,9 @@
         background: rgb(var(--seerr-bg-channel) / 0.66);
       }
       .seerr-modal__panel {
-        width: min(68rem, 96vw);
-        max-height: 88vh;
+        position: relative;
+        width: min(74rem, 96vw);
+        max-height: 90vh;
         overflow: auto;
         border-radius: 0.65rem;
         background: var(--seerr-surface);
@@ -546,28 +557,34 @@
         box-shadow: 0 1.6rem 5rem rgb(var(--seerr-bg-channel) / 0.46);
       }
       .seerr-modal__hero {
-        min-height: 16rem;
+        position: relative;
+        min-height: clamp(23rem, 45vh, 31rem);
+        display: flex;
+        align-items: flex-end;
         background-position: center;
         background-size: cover;
-        position: relative;
       }
-      .seerr-modal__hero::after {
+      .seerr-modal__hero::before {
         content: "";
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg, rgb(var(--seerr-surface-channel) / 0.08), var(--seerr-surface) 92%);
+        background:
+          linear-gradient(90deg, rgb(var(--seerr-bg-channel) / 0.82) 0%, rgb(var(--seerr-bg-channel) / 0.58) 42%, rgb(var(--seerr-bg-channel) / 0.26) 100%),
+          linear-gradient(0deg, var(--seerr-surface) 0%, rgb(var(--seerr-surface-channel) / 0.72) 31%, rgb(var(--seerr-surface-channel) / 0.12) 100%);
       }
-      .seerr-modal__body {
-        display: grid;
-        grid-template-columns: 11.5rem minmax(0, 1fr);
-        gap: 1.15rem;
-        padding: 0 1.35rem 1.35rem;
-        margin-top: -5.8rem;
+      .seerr-modal__hero-content {
         position: relative;
         z-index: 1;
+        display: grid;
+        grid-template-columns: clamp(11rem, 18vw, 13.25rem) minmax(0, 1fr);
+        gap: clamp(1.1rem, 2vw, 1.55rem);
+        align-items: end;
+        width: 100%;
+        padding: clamp(4rem, 9vh, 5.5rem) clamp(1.1rem, 2.6vw, 1.8rem) clamp(1.25rem, 2.6vh, 1.8rem);
       }
       .seerr-modal__poster {
         position: relative;
+        width: 100%;
         aspect-ratio: 2 / 3;
         border-radius: 0.5rem;
         overflow: hidden;
@@ -604,34 +621,50 @@
         filter: drop-shadow(0 0.6rem 1.4rem rgb(var(--seerr-bg-channel) / 0.4));
         object-fit: contain;
       }
-      .seerr-modal__content {
+      .seerr-modal__header {
         min-width: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 0.72rem;
+        display: grid;
+        gap: 0.68rem;
+        max-width: 48rem;
+        padding-bottom: 0.15rem;
       }
-      .seerr-modal__content h2 {
+      .seerr-modal__eyebrow {
         margin: 0;
-        font-size: 1.65rem;
+        color: rgb(255 255 255 / 0.78);
+        font-size: 0.83rem;
+        font-weight: 650;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+      .seerr-modal__header h2 {
+        margin: 0;
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        max-width: 46rem;
+        font-size: clamp(1.75rem, 3vw, 2.65rem);
+        line-height: 1.05;
         letter-spacing: 0;
       }
       .seerr-modal__tagline {
         margin: 0;
-        color: var(--seerr-muted);
+        color: rgb(255 255 255 / 0.82);
         font-style: italic;
         line-height: 1.35;
       }
       .seerr-modal__overview {
         margin: 0;
         color: var(--seerr-muted);
-        line-height: 1.45;
+        font-size: 0.98rem;
+        line-height: 1.5;
       }
       .seerr-modal__actions {
         display: flex;
-        gap: 0.55rem;
         flex-wrap: wrap;
         align-items: stretch;
-        margin: 0.1rem 0 0.25rem;
+        gap: 0.55rem;
+        margin-top: 0.08rem;
       }
       .seerr-modal__actions .seerr-discover__button {
         min-height: 2.85rem;
@@ -729,6 +762,10 @@
       .seerr-modal__inline-notice[data-visible="true"] {
         display: block;
       }
+      .seerr-modal__headline-meta {
+        display: grid;
+        gap: 0.55rem;
+      }
       .seerr-modal__meta {
         display: flex;
         flex-wrap: wrap;
@@ -751,22 +788,36 @@
         flex-wrap: wrap;
         gap: 0.5rem;
         align-items: center;
-        color: var(--seerr-text);
+        color: rgb(255 255 255 / 0.92);
       }
       .seerr-modal__rating strong {
         font-size: 1.05rem;
       }
       .seerr-modal__rating span {
-        color: var(--seerr-muted);
+        color: rgb(255 255 255 / 0.68);
         font-size: 0.78rem;
+      }
+      .seerr-modal__details {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.38fr);
+        gap: clamp(1.2rem, 2vw, 1.8rem);
+        padding: clamp(1.1rem, 2.6vw, 1.7rem) clamp(1.1rem, 2.6vw, 1.8rem) clamp(1.25rem, 2.8vw, 1.9rem);
+      }
+      .seerr-modal__main,
+      .seerr-modal__aside {
+        min-width: 0;
+        display: grid;
+        align-content: start;
+        gap: 1rem;
+      }
+      .seerr-modal__aside {
+        border-left: 1px solid var(--seerr-border-soft);
+        padding-left: clamp(1rem, 2vw, 1.4rem);
       }
       .seerr-modal__facts {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.55rem 1rem;
-        border-top: 1px solid var(--seerr-border-soft);
-        border-bottom: 1px solid var(--seerr-border-soft);
-        padding: 0.78rem 0;
+        grid-template-columns: 1fr;
+        gap: 0.72rem;
       }
       .seerr-modal__fact-label {
         color: var(--seerr-disabled);
@@ -782,10 +833,12 @@
       .seerr-modal__people {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.75rem 1rem;
+        gap: 1rem 1.25rem;
       }
       .seerr-modal__section {
-        margin-top: 0.85rem;
+        min-width: 0;
+        border-top: 1px solid var(--seerr-border-soft);
+        padding-top: 0.95rem;
       }
       .seerr-modal__section h3 {
         margin: 0 0 0.45rem;
@@ -795,10 +848,30 @@
       }
       .seerr-modal__person-list {
         display: grid;
-        gap: 0.42rem;
+        gap: 0.58rem;
       }
       .seerr-modal__person {
         min-width: 0;
+        display: grid;
+        grid-template-columns: 2.45rem minmax(0, 1fr);
+        gap: 0.62rem;
+        align-items: center;
+      }
+      .seerr-modal__person-avatar {
+        width: 2.45rem;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        object-fit: cover;
+        background: var(--seerr-hover);
+        box-shadow: inset 0 0 0 1px var(--seerr-border-soft);
+      }
+      .seerr-modal__person-avatar--placeholder {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--seerr-muted);
+        font-size: 0.86rem;
+        font-weight: 720;
       }
       .seerr-modal__person strong {
         display: block;
@@ -824,15 +897,22 @@
         position: absolute;
         top: 0.7rem;
         right: 0.7rem;
-        z-index: 2;
+        z-index: 3;
         width: 2.25rem;
         height: 2.25rem;
-        border: 0;
+        border: 1px solid rgb(var(--seerr-text-channel) / 0.2);
         border-radius: 50%;
-        background: rgb(var(--seerr-bg-channel) / 0.5);
+        background: rgb(var(--seerr-bg-channel) / 0.72);
         color: var(--seerr-text);
         font-size: 1.35rem;
+        box-shadow: 0 0.45rem 1.2rem rgb(var(--seerr-bg-channel) / 0.4);
         cursor: pointer;
+      }
+      .seerr-modal__close:hover,
+      .seerr-modal__close:focus-visible {
+        background: rgb(var(--seerr-text-channel) / 0.14);
+        outline: 2px solid rgb(var(--seerr-text-channel) / 0.34);
+        outline-offset: 2px;
       }
       @media (max-width: 720px) {
         .seerr-discover-tab-content {
@@ -853,18 +933,39 @@
         }
         .seerr-modal { padding: 0.7rem; }
         .seerr-modal__panel { max-height: 94vh; }
-        .seerr-modal__hero { min-height: 12rem; }
-        .seerr-modal__body { grid-template-columns: 1fr; margin-top: -4rem; }
-        .seerr-modal__poster { width: 9rem; }
+        .seerr-modal__hero { min-height: auto; }
+        .seerr-modal__hero-content {
+          grid-template-columns: 1fr;
+          align-items: start;
+          padding: 3.8rem 1rem 1rem;
+        }
+        .seerr-modal__poster {
+          width: min(42vw, 10rem);
+        }
+        .seerr-modal__header {
+          max-width: none;
+        }
+        .seerr-modal__header h2 {
+          -webkit-line-clamp: unset;
+          font-size: 1.55rem;
+          line-height: 1.14;
+        }
+        .seerr-modal__details {
+          grid-template-columns: 1fr;
+          padding: 1rem;
+        }
+        .seerr-modal__aside {
+          border-left: 0;
+          border-top: 1px solid var(--seerr-border-soft);
+          padding: 1rem 0 0;
+        }
         .seerr-modal__actions > .seerr-discover__button,
         .seerr-modal__trailer-menu { flex: 1 1 auto; }
         .seerr-modal__trailer-menu,
         .seerr-modal__trailer-split { width: 100%; }
         .seerr-modal__trailer-main { flex: 1 1 auto; }
         .seerr-modal__trailer-list { left: 0; right: 0; min-width: 100%; }
-        .seerr-modal__facts,
         .seerr-modal__people { grid-template-columns: 1fr; }
-        .seerr-modal__keywords { display: none; }
       }
       .seerr-discover-tab-content[data-seerr-active="true"] {
         display: block !important;
@@ -1108,27 +1209,33 @@
     const facts = modalFacts(detail, type);
     const people = modalPeople(detail);
     const keywords = modalKeywords(detail);
-    const actions = available
-      ? availableActions(jellyfinDetailUrl, jellyfinWatchUrl, seerrUrl)
+    const primaryActions = available
+      ? availableActions(jellyfinDetailUrl, jellyfinWatchUrl)
       : requested
-        ? requestedActions(seerrUrl)
-      : requestActions(requestDisabled, mapped, seerrUrl);
+        ? requestedActions()
+      : requestActions(requestDisabled, mapped);
     const tagline = detail.tagline ? `<p class="seerr-modal__tagline">${escapeHtml(detail.tagline)}</p>` : '';
     const rating = ratingTemplate(detail);
+    const title = mediaTitle(detail);
+    const year = (mediaDate(detail) || '').slice(0, 4);
+    const eyebrow = [type.toUpperCase(), year, statusLabel(detail)].filter(Boolean).join(' · ');
     const metaSection = meta.length
       ? `<div class="seerr-modal__meta">${meta.map((value) => `<span class="seerr-modal__chip">${escapeHtml(value)}</span>`).join('')}</div>`
       : '';
     const factsSection = facts.length
-      ? `<div class="seerr-modal__facts">
-          ${facts.map((fact) => `<div><div class="seerr-modal__fact-label">${escapeHtml(fact.label)}</div><div class="seerr-modal__fact-value">${escapeHtml(fact.value)}</div></div>`).join('')}
-        </div>`
+      ? `<section class="seerr-modal__section">
+          <h3>Details</h3>
+          <div class="seerr-modal__facts">
+            ${facts.map((fact) => `<div><div class="seerr-modal__fact-label">${escapeHtml(fact.label)}</div><div class="seerr-modal__fact-value">${escapeHtml(fact.value)}</div></div>`).join('')}
+          </div>
+        </section>`
       : '';
     const peopleSection = people.length
       ? `<div class="seerr-modal__people">
           ${people.map((group) => `<section class="seerr-modal__section">
             <h3>${escapeHtml(group.title)}</h3>
             <div class="seerr-modal__person-list">
-              ${group.items.map((person) => `<div class="seerr-modal__person"><strong>${escapeHtml(person.name)}</strong><span>${escapeHtml(person.detail)}</span></div>`).join('')}
+              ${group.items.map((person) => `<div class="seerr-modal__person">${personAvatar(person)}<div><strong>${escapeHtml(person.name)}</strong><span>${escapeHtml(person.detail)}</span></div></div>`).join('')}
             </div>
           </section>`).join('')}
         </div>`
@@ -1146,28 +1253,41 @@
     modal.className = 'seerr-modal';
     const posterClass = posterIsBackdropFallback ? ' seerr-modal__poster--backdrop' : '';
     const posterStyle = poster ? ` style="--seerr-artwork:url('${escapeHtml(poster)}')"` : '';
-    const posterSrcSetAttribute = posterSrcSet ? ` srcset="${escapeHtml(posterSrcSet)}" sizes="(max-width: 720px) 9rem, 11.5rem"` : '';
+    const posterSrcSetAttribute = posterSrcSet ? ` srcset="${escapeHtml(posterSrcSet)}" sizes="(max-width: 720px) 10rem, 13.25rem"` : '';
     modal.innerHTML = `
-      <div class="seerr-modal__panel" role="dialog" aria-modal="true">
+      <div class="seerr-modal__panel" role="dialog" aria-modal="true" aria-labelledby="seerr-modal-title" aria-describedby="seerr-modal-overview">
         <button class="seerr-modal__close" type="button" aria-label="Close">&times;</button>
-        <div class="seerr-modal__hero" style="${backdrop ? `background-image:url('${escapeHtml(backdrop)}')` : ''}"></div>
-        <div class="seerr-modal__body">
+        <section class="seerr-modal__hero" style="${backdrop ? `background-image:url('${escapeHtml(backdrop)}')` : ''}">
+          <div class="seerr-modal__hero-content">
           <div class="seerr-modal__poster${posterClass}"${posterStyle}>${poster ? `<img src="${escapeHtml(poster)}"${posterSrcSetAttribute} alt="">` : ''}</div>
-          <div class="seerr-modal__content">
-            <h2>${escapeHtml(mediaTitle(detail))}</h2>
-            <p class="seerr-card__date">${escapeHtml(type.toUpperCase())} ${escapeHtml((mediaDate(detail) || '').slice(0, 4))} · ${escapeHtml(statusLabel(detail))}</p>
-            ${tagline}
-            ${rating}
-            ${metaSection}
-            <div class="seerr-modal__actions">
-              ${actions}
-              ${trailerAction}
+            <div class="seerr-modal__header">
+              <p class="seerr-modal__eyebrow">${escapeHtml(eyebrow)}</p>
+              <h2 id="seerr-modal-title">${escapeHtml(title)}</h2>
+              <div class="seerr-modal__headline-meta">
+                ${rating}
+                ${metaSection}
+              </div>
+              ${tagline}
+              <div class="seerr-modal__actions">
+                ${primaryActions}
+                ${trailerAction}
+                ${seerrAction(seerrUrl)}
+              </div>
             </div>
-            <p class="seerr-modal__overview">${escapeHtml(detail.overview || 'No overview available.')}</p>
-            ${factsSection}
-            ${peopleSection}
-            ${keywordSection}
           </div>
+        </section>
+        <div class="seerr-modal__details">
+          <div class="seerr-modal__main">
+            <section class="seerr-modal__section">
+              <h3>Overview</h3>
+              <p id="seerr-modal-overview" class="seerr-modal__overview">${escapeHtml(detail.overview || 'No overview available.')}</p>
+            </section>
+            ${peopleSection}
+          </div>
+          <aside class="seerr-modal__aside">
+            ${factsSection}
+            ${keywordSection}
+          </aside>
         </div>
       </div>
     `;
@@ -1201,15 +1321,12 @@
     modal.querySelector('.seerr-modal__close')?.focus();
   }
 
-  function requestActions(requestDisabled, mapped, seerrUrl) {
-    return [
-      `<button class="seerr-discover__button emby-button" type="button" data-seerr-request ${requestDisabled ? 'disabled' : ''}>${escapeHtml(mapped ? 'Request' : 'Not linked')}</button>`,
-      seerrAction(seerrUrl),
-    ].join('');
+  function requestActions(requestDisabled, mapped) {
+    return `<button class="seerr-discover__button emby-button" type="button" data-seerr-request ${requestDisabled ? 'disabled' : ''}>${escapeHtml(mapped ? 'Request' : 'Not linked')}</button>`;
   }
 
-  function availableActions(detailUrl, watchUrl, seerrUrl) {
-    if (!detailUrl && !watchUrl && !seerrUrl) {
+  function availableActions(detailUrl, watchUrl) {
+    if (!detailUrl && !watchUrl) {
       return '<button class="seerr-discover__button emby-button" type="button" disabled>Available</button>';
     }
 
@@ -1217,15 +1334,11 @@
       !detailUrl && !watchUrl ? '<button class="seerr-discover__button emby-button" type="button" disabled>Available</button>' : '',
       watchUrl ? `<a class="seerr-discover__button emby-button" href="${escapeHtml(watchUrl)}">Watch Now</a>` : '',
       detailUrl ? `<a class="seerr-discover__button emby-button seerr-discover__button--secondary" href="${escapeHtml(detailUrl)}">Open Details</a>` : '',
-      seerrAction(seerrUrl),
     ].join('');
   }
 
-  function requestedActions(seerrUrl) {
-    return [
-      '<button class="seerr-discover__button emby-button" type="button" disabled>Requested</button>',
-      seerrAction(seerrUrl),
-    ].join('');
+  function requestedActions() {
+    return '<button class="seerr-discover__button emby-button seerr-discover__button--success" type="button" disabled>Requested</button>';
   }
 
   function seerrAction(seerrUrl) {
@@ -1366,12 +1479,32 @@
     const cast = ((detail.credits && detail.credits.cast) || [])
       .filter((person) => person?.name)
       .slice(0, 4)
-      .map((person) => ({ name: person.name, detail: person.character || 'Cast' }));
+      .map((person) => ({
+        name: person.name,
+        detail: person.character || 'Cast',
+        image: personProfileImage(person),
+      }));
     const crew = prioritizedCrew(detail).slice(0, 3);
 
     if (cast.length) groups.push({ title: 'Cast', items: cast });
     if (crew.length) groups.push({ title: 'Crew', items: crew });
     return groups;
+  }
+
+  function personProfileImage(person) {
+    return tmdbImage(person?.profilePath || person?.profile_path, 'w185');
+  }
+
+  function personAvatar(person) {
+    if (person.image) {
+      return `<img class="seerr-modal__person-avatar" src="${escapeHtml(person.image)}" alt="" loading="lazy">`;
+    }
+
+    return `<span class="seerr-modal__person-avatar seerr-modal__person-avatar--placeholder" aria-hidden="true">${escapeHtml(personInitial(person.name))}</span>`;
+  }
+
+  function personInitial(name) {
+    return String(name || '?').trim().charAt(0).toUpperCase() || '?';
   }
 
   function modalKeywords(detail) {
@@ -1385,27 +1518,27 @@
     const people = [];
     const seen = new Set();
 
-    ((detail.createdBy || [])).forEach((person) => addCrew(people, seen, person?.name, 'Creator'));
+    ((detail.createdBy || [])).forEach((person) => addCrew(people, seen, person?.name, 'Creator', personProfileImage(person)));
     const crew = ((detail.credits && detail.credits.crew) || []).filter((person) => person?.name);
     const priorities = ['Director', 'Creator', 'Writer', 'Screenplay'];
     priorities.forEach((job) => {
       crew.filter((person) => String(person.job || '').toLowerCase() === job.toLowerCase())
-        .forEach((person) => addCrew(people, seen, person.name, person.job));
+        .forEach((person) => addCrew(people, seen, person.name, person.job, personProfileImage(person)));
     });
 
     crew
       .filter((person) => ['Directing', 'Writing'].includes(person.department))
-      .forEach((person) => addCrew(people, seen, person.name, person.job || person.department));
+      .forEach((person) => addCrew(people, seen, person.name, person.job || person.department, personProfileImage(person)));
 
     return people;
   }
 
-  function addCrew(items, seen, name, detail) {
+  function addCrew(items, seen, name, detail, image) {
     if (!name) return;
     const key = `${name}:${detail || ''}`;
     if (seen.has(key)) return;
     seen.add(key);
-    items.push({ name, detail: detail || 'Crew' });
+    items.push({ name, detail: detail || 'Crew', image });
   }
 
   function contentRating(detail, type) {
@@ -1861,17 +1994,15 @@
       return true;
     }
 
-    const resultsContainer = page.querySelector('.searchResults, [class*="searchResults"], .padded-top.padded-bottom-page');
-    if (resultsContainer) {
-      resultsContainer.appendChild(section);
+    const noResultsMessage = visibleNativeNoResultsMessage(page);
+    if (noResultsMessage?.parentElement) {
+      noResultsMessage.after(section);
       return false;
     }
 
-    const noResultsMessage = page.querySelector('.noItemsMessage');
-    if (noResultsMessage?.parentElement) {
-      noResultsMessage.classList.add('hide');
-      noResultsMessage.setAttribute('data-seerr-hidden-no-results', 'true');
-      noResultsMessage.parentElement.insertBefore(section, noResultsMessage.nextSibling);
+    const resultsContainer = page.querySelector('.searchResults, [class*="searchResults"], .padded-top.padded-bottom-page');
+    if (resultsContainer) {
+      resultsContainer.appendChild(section);
       return false;
     }
 
@@ -1891,6 +2022,11 @@
     return null;
   }
 
+  function visibleNativeNoResultsMessage(page) {
+    return Array.from(page.querySelectorAll('.noItemsMessage'))
+      .find((message) => !message.classList.contains('hide') && message.textContent.trim());
+  }
+
   function watchNativeSearchPlacement(page, section) {
     if (nativeSearch.repositionObserver) {
       nativeSearch.repositionObserver.disconnect();
@@ -1906,6 +2042,12 @@
       const primary = lastNativePrimarySection(page);
       if (primary && primary.nextSibling !== section) {
         primary.after(section);
+        return;
+      }
+
+      const noResultsMessage = !primary ? visibleNativeNoResultsMessage(page) : null;
+      if (noResultsMessage && noResultsMessage.nextSibling !== section) {
+        noResultsMessage.after(section);
       }
     });
     nativeSearch.repositionObserver.observe(page, { childList: true, subtree: true });
