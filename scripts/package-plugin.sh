@@ -62,9 +62,15 @@ META
 )
 
 if command -v sha256sum >/dev/null 2>&1; then
-  sha256sum "$zip_path" >"${zip_path}.sha256"
+  (
+    cd "$DIST_DIR"
+    sha256sum "$(basename "$zip_path")" >"$(basename "$zip_path").sha256"
+  )
 else
-  shasum -a 256 "$zip_path" >"${zip_path}.sha256"
+  (
+    cd "$DIST_DIR"
+    shasum -a 256 "$(basename "$zip_path")" >"$(basename "$zip_path").sha256"
+  )
 fi
 
 echo "Created $zip_path"
