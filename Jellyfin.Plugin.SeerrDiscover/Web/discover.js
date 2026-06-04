@@ -150,6 +150,11 @@
     return `https://image.tmdb.org/t/p/${size || 'w780'}${path}`;
   }
 
+  function tmdbSrcSet(path, sizes) {
+    if (!path || /^https?:\/\//i.test(path)) return '';
+    return sizes.map((size) => `${tmdbImage(path, size)} ${size.replace(/^w/, '')}w`).join(', ');
+  }
+
   function mediaTitle(item) {
     return item.title || item.name || item.originalTitle || item.originalName || 'Untitled';
   }
@@ -440,16 +445,11 @@
         aspect-ratio: 2 / 3;
         overflow: hidden;
         border-radius: 0.48rem;
-        background: var(--seerr-card-placeholder);
+        isolation: isolate;
+        background: linear-gradient(145deg, var(--seerr-hover), var(--seerr-card-placeholder));
         box-shadow: inset 0 0 0 1px var(--seerr-border-soft);
       }
-      .seerr-card__image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-      }
-      .seerr-card__image--backdrop::before {
+      .seerr-card__image::before {
         content: "";
         position: absolute;
         inset: 0;
@@ -457,14 +457,25 @@
         background-position: center;
         background-size: cover;
         filter: blur(18px);
-        opacity: 0.5;
-        transform: scale(1.12);
+        opacity: 0.32;
+        transform: scale(1.14);
+        z-index: 0;
       }
-      .seerr-card__image--backdrop img {
+      .seerr-card__image img {
         position: relative;
         z-index: 1;
-        box-sizing: border-box;
-        padding: 0.45rem;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        background: transparent;
+      }
+      .seerr-card__image--backdrop::before {
+        opacity: 0.58;
+      }
+      .seerr-card__image--backdrop img {
+        background: transparent;
+        filter: drop-shadow(0 0.5rem 1.2rem rgb(var(--seerr-bg-channel) / 0.36));
         object-fit: contain;
       }
       .seerr-card__badges {
@@ -560,18 +571,11 @@
         aspect-ratio: 2 / 3;
         border-radius: 0.5rem;
         overflow: hidden;
-        background: var(--seerr-hover);
+        isolation: isolate;
+        background: linear-gradient(145deg, var(--seerr-hover), var(--seerr-card-placeholder));
         box-shadow: 0 0.8rem 1.8rem rgb(var(--seerr-bg-channel) / 0.32);
       }
-      .seerr-modal__poster img {
-        position: relative;
-        z-index: 1;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-      }
-      .seerr-modal__poster--backdrop::before {
+      .seerr-modal__poster::before {
         content: "";
         position: absolute;
         inset: 0;
@@ -579,12 +583,25 @@
         background-position: center;
         background-size: cover;
         filter: blur(20px);
-        opacity: 0.55;
+        opacity: 0.36;
         transform: scale(1.12);
+        z-index: 0;
+      }
+      .seerr-modal__poster img {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        background: transparent;
+      }
+      .seerr-modal__poster--backdrop::before {
+        opacity: 0.62;
       }
       .seerr-modal__poster--backdrop img {
-        box-sizing: border-box;
-        padding: 0.55rem;
+        background: transparent;
+        filter: drop-shadow(0 0.6rem 1.4rem rgb(var(--seerr-bg-channel) / 0.4));
         object-fit: contain;
       }
       .seerr-modal__content {
@@ -985,18 +1002,20 @@
   }
 
   function card(item) {
-    const image = item.posterPath ? tmdbImage(item.posterPath, 'w342') : tmdbImage(item.backdropPath, 'w780');
+    const image = item.posterPath ? tmdbImage(item.posterPath, 'w500') : tmdbImage(item.backdropPath, 'w780');
+    const srcSet = item.posterPath ? tmdbSrcSet(item.posterPath, ['w342', 'w500', 'w780']) : tmdbSrcSet(item.backdropPath, ['w780', 'w1280']);
     const isBackdropFallback = !item.posterPath && Boolean(item.backdropPath);
     const typeLabel = mediaType(item) === 'tv' ? 'Series' : 'Movie';
     const status = cardStatusLabel(item);
     const year = (mediaDate(item) || '').slice(0, 4);
     const badgeClass = cardBadgeClass(status);
     const imageClass = isBackdropFallback ? ' seerr-card__image--backdrop' : '';
-    const imageStyle = isBackdropFallback ? ` style="--seerr-artwork:url('${escapeHtml(image)}')"` : '';
+    const imageStyle = image ? ` style="--seerr-artwork:url('${escapeHtml(image)}')"` : '';
+    const srcSetAttribute = srcSet ? ` srcset="${escapeHtml(srcSet)}" sizes="(max-width: 720px) 42vw, 13.5rem"` : '';
     return `
       <button class="seerr-card" data-seerr-type="${escapeHtml(mediaType(item))}" data-seerr-id="${escapeHtml(item.id)}">
         <span class="seerr-card__image${imageClass}"${imageStyle}>
-          ${image ? `<img loading="lazy" src="${escapeHtml(image)}" alt="">` : ''}
+          ${image ? `<img loading="lazy" src="${escapeHtml(image)}"${srcSetAttribute} alt="">` : ''}
           <span class="seerr-card__badges">
             <span class="seerr-card__badge">${escapeHtml(typeLabel)}</span>
             ${status ? `<span class="seerr-card__badge ${escapeHtml(badgeClass)}">${escapeHtml(status)}</span>` : ''}
@@ -1074,7 +1093,8 @@
     closeModal();
     const type = mediaType(detail);
     const backdrop = tmdbImage(detail.backdropPath || detail.posterPath, 'w1280');
-    const poster = detail.posterPath ? tmdbImage(detail.posterPath, 'w342') : tmdbImage(detail.backdropPath, 'w780');
+    const poster = detail.posterPath ? tmdbImage(detail.posterPath, 'w780') : tmdbImage(detail.backdropPath, 'w1280');
+    const posterSrcSet = detail.posterPath ? tmdbSrcSet(detail.posterPath, ['w342', 'w500', 'w780']) : tmdbSrcSet(detail.backdropPath, ['w780', 'w1280']);
     const posterIsBackdropFallback = !detail.posterPath && Boolean(detail.backdropPath);
     const available = isJellyfinAvailable(detail);
     const requested = !available && statusLabel(detail) === 'Requested';
@@ -1125,13 +1145,14 @@
     const modal = document.createElement('div');
     modal.className = 'seerr-modal';
     const posterClass = posterIsBackdropFallback ? ' seerr-modal__poster--backdrop' : '';
-    const posterStyle = posterIsBackdropFallback ? ` style="--seerr-artwork:url('${escapeHtml(poster)}')"` : '';
+    const posterStyle = poster ? ` style="--seerr-artwork:url('${escapeHtml(poster)}')"` : '';
+    const posterSrcSetAttribute = posterSrcSet ? ` srcset="${escapeHtml(posterSrcSet)}" sizes="(max-width: 720px) 9rem, 11.5rem"` : '';
     modal.innerHTML = `
       <div class="seerr-modal__panel" role="dialog" aria-modal="true">
         <button class="seerr-modal__close" type="button" aria-label="Close">&times;</button>
         <div class="seerr-modal__hero" style="${backdrop ? `background-image:url('${escapeHtml(backdrop)}')` : ''}"></div>
         <div class="seerr-modal__body">
-          <div class="seerr-modal__poster${posterClass}"${posterStyle}>${poster ? `<img src="${escapeHtml(poster)}" alt="">` : ''}</div>
+          <div class="seerr-modal__poster${posterClass}"${posterStyle}>${poster ? `<img src="${escapeHtml(poster)}"${posterSrcSetAttribute} alt="">` : ''}</div>
           <div class="seerr-modal__content">
             <h2>${escapeHtml(mediaTitle(detail))}</h2>
             <p class="seerr-card__date">${escapeHtml(type.toUpperCase())} ${escapeHtml((mediaDate(detail) || '').slice(0, 4))} · ${escapeHtml(statusLabel(detail))}</p>
