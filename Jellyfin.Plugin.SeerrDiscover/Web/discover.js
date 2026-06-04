@@ -220,7 +220,7 @@
         gap: 1.4rem;
         box-sizing: border-box;
         min-width: 0;
-        margin-top: var(--seerr-content-overlap-offset, 0px);
+        margin-top: var(--seerr-content-overlap-offset, clamp(1.5rem, 2.8vh, 2.25rem));
         padding: 0 clamp(0.85rem, 2.6vw, 2.25rem) clamp(2rem, 4vh, 3rem);
         color: var(--seerr-text);
       }
@@ -872,47 +872,23 @@
     return document.getElementById(`customTab_${suffix}`) || document.querySelector('.seerr-discover-tab-content');
   }
 
-  function visibleBottom(element) {
-    if (!element || typeof element.getBoundingClientRect !== 'function') return null;
-    const rect = element.getBoundingClientRect();
-    if (!rect.width || !rect.height || rect.bottom <= 0 || rect.top >= window.innerHeight) return null;
-    return rect.bottom;
-  }
-
   function updateDiscoverSpacing() {
     const button = discoverTabButton();
     const pane = markDiscoverPane() || discoverTabPane(button);
     if (!pane) return;
 
-    const candidates = [
-      button,
-      button?.closest('.emby-tabs-slider'),
-      button?.closest('.emby-tabs'),
-      button?.closest('[class*="tabs"]'),
-    ].map(visibleBottom).filter((bottom) => bottom !== null);
-
     const content = pane.querySelector('.seerr-discover');
     if (!content) return;
 
-    if (!candidates.length) {
-      content.style.setProperty('--seerr-content-overlap-offset', '0px');
-      return;
-    }
-
-    const currentOffset = Number.parseFloat(content.style.getPropertyValue('--seerr-content-overlap-offset')) || 0;
-    const contentTop = (content.getBoundingClientRect().top || 0) - currentOffset;
-    const spacing = window.innerWidth <= 720 ? 18 : 20;
-    const measured = Math.max(0, Math.ceil(Math.max(...candidates) - contentTop + spacing));
-    content.style.setProperty('--seerr-content-overlap-offset', `${measured}px`);
+    const offset = pane.dataset.seerrPaneSource === 'fallback'
+      ? '0px'
+      : 'clamp(1.5rem, 2.8vh, 2.25rem)';
+    content.style.setProperty('--seerr-content-overlap-offset', offset);
   }
 
   function scheduleDiscoverSpacing() {
     window.cancelAnimationFrame(spacingFrame);
-    spacingFrame = window.requestAnimationFrame(() => {
-      updateDiscoverSpacing();
-      window.setTimeout(updateDiscoverSpacing, 120);
-      window.setTimeout(updateDiscoverSpacing, 450);
-    });
+    spacingFrame = window.requestAnimationFrame(updateDiscoverSpacing);
   }
 
   function syncCustomTabVisibility() {
