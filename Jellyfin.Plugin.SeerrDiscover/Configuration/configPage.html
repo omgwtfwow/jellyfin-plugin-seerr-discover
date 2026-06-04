@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Seerr Discover</title>
+</head>
+<body>
+<div id="SeerrDiscoverConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-checkbox">
+    <div data-role="content">
+        <div class="content-primary">
+            <form id="SeerrDiscoverConfigForm">
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="SeerrBaseUrl">Seerr base URL</label>
+                    <input id="SeerrBaseUrl" name="SeerrBaseUrl" type="text" is="emby-input" />
+                    <div class="fieldDescription">Internal URL used by Jellyfin, usually http://seerr:5055.</div>
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="SeerrPublicUrl">Seerr public URL</label>
+                    <input id="SeerrPublicUrl" name="SeerrPublicUrl" type="text" is="emby-input" />
+                    <div class="fieldDescription">External URL used for browser Open in Seerr links, for example https://seerr.example.com.</div>
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="SeerrApiKey">Seerr API key</label>
+                    <input id="SeerrApiKey" name="SeerrApiKey" type="password" is="emby-input" autocomplete="off" />
+                    <div id="SeerrApiKeyStatus" class="fieldDescription">Leave blank to keep the stored key.</div>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="ClearSeerrApiKey" name="ClearSeerrApiKey" type="checkbox" is="emby-checkbox" />
+                        <span>Clear stored Seerr API key</span>
+                    </label>
+                    <div class="fieldDescription">Only enable this when intentionally disconnecting Seerr Discover from Seerr.</div>
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="Language">Language</label>
+                    <input id="Language" name="Language" type="text" is="emby-input" />
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="DiscoverCacheSeconds">Discover cache seconds</label>
+                    <input id="DiscoverCacheSeconds" name="DiscoverCacheSeconds" type="number" min="5" max="3600" is="emby-input" />
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="DetailsCacheSeconds">Details cache seconds</label>
+                    <input id="DetailsCacheSeconds" name="DetailsCacheSeconds" type="number" min="5" max="3600" is="emby-input" />
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="SearchCacheSeconds">Search cache seconds</label>
+                    <input id="SearchCacheSeconds" name="SearchCacheSeconds" type="number" min="5" max="3600" is="emby-input" />
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="UserCacheSeconds">User cache seconds</label>
+                    <input id="UserCacheSeconds" name="UserCacheSeconds" type="number" min="5" max="3600" is="emby-input" />
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="RequireMappedUser" name="RequireMappedUser" type="checkbox" is="emby-checkbox" />
+                        <span>Require mapped Seerr users for requests</span>
+                    </label>
+                    <div class="fieldDescription">Recommended. Prevents requests from silently falling back to an admin/service account.</div>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="DefaultRequest4K" name="DefaultRequest4K" type="checkbox" is="emby-checkbox" />
+                        <span>Default to 4K requests</span>
+                    </label>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="EnableTrending" name="EnableTrending" type="checkbox" is="emby-checkbox" />
+                        <span>Enable Trending rail</span>
+                    </label>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="EnableMovies" name="EnableMovies" type="checkbox" is="emby-checkbox" />
+                        <span>Enable Movies rail</span>
+                    </label>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="EnableTv" name="EnableTv" type="checkbox" is="emby-checkbox" />
+                        <span>Enable TV rail</span>
+                    </label>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="EnableUpcoming" name="EnableUpcoming" type="checkbox" is="emby-checkbox" />
+                        <span>Enable Upcoming rail</span>
+                    </label>
+                </div>
+                <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+                    <span>Save</span>
+                </button>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        (function () {
+            const page = document.querySelector('#SeerrDiscoverConfigPage');
+            const form = document.querySelector('#SeerrDiscoverConfigForm');
+            const fields = [
+                'SeerrBaseUrl',
+                'SeerrPublicUrl',
+                'Language',
+                'DiscoverCacheSeconds',
+                'DetailsCacheSeconds',
+                'SearchCacheSeconds',
+                'UserCacheSeconds',
+                'RequireMappedUser',
+                'DefaultRequest4K',
+                'EnableTrending',
+                'EnableMovies',
+                'EnableTv',
+                'EnableUpcoming'
+            ];
+
+            function apiUrl(path) {
+                if (window.ApiClient && typeof window.ApiClient.getUrl === 'function') {
+                    return window.ApiClient.getUrl(path.replace(/^\//, ''));
+                }
+
+                return `/${path.replace(/^\//, '')}`;
+            }
+
+            function apiFetch(path, options) {
+                return ApiClient.fetch({
+                    url: apiUrl(path),
+                    type: options?.method || 'GET',
+                    data: options?.body,
+                    contentType: options?.body ? 'application/json' : undefined,
+                    dataType: 'json',
+                    headers: { accept: 'application/json' }
+                });
+            }
+
+            function setForm(config) {
+                fields.forEach((field) => {
+                    const input = document.querySelector(`#${field}`);
+                    if (!input) return;
+                    if (input.type === 'checkbox') {
+                        input.checked = !!config[field];
+                    } else {
+                        input.value = config[field] ?? '';
+                    }
+                });
+
+                const apiKeyInput = document.querySelector('#SeerrApiKey');
+                const clearApiKeyInput = document.querySelector('#ClearSeerrApiKey');
+                const apiKeyStatus = document.querySelector('#SeerrApiKeyStatus');
+                if (apiKeyInput) {
+                    apiKeyInput.value = '';
+                    apiKeyInput.placeholder = config.SeerrApiKeyConfigured ? 'Stored key configured' : 'Paste Seerr API key';
+                }
+
+                if (clearApiKeyInput) {
+                    clearApiKeyInput.checked = false;
+                }
+
+                if (apiKeyStatus) {
+                    apiKeyStatus.textContent = config.SeerrApiKeyConfigured
+                        ? 'A Seerr API key is configured. Leave blank to keep it, or paste a new key to replace it.'
+                        : 'No Seerr API key is configured. Paste a key before using Discover.';
+                }
+            }
+
+            function applyForm(config) {
+                fields.forEach((field) => {
+                    const input = document.querySelector(`#${field}`);
+                    if (!input) return;
+                    if (input.type === 'checkbox') {
+                        config[field] = input.checked;
+                    } else if (input.type === 'number') {
+                        config[field] = Number.parseInt(input.value || '0', 10);
+                    } else {
+                        config[field] = input.value;
+                    }
+                });
+
+                const apiKeyInput = document.querySelector('#SeerrApiKey');
+                const clearApiKeyInput = document.querySelector('#ClearSeerrApiKey');
+                config.SeerrApiKey = apiKeyInput?.value || '';
+                config.ClearSeerrApiKey = !!clearApiKeyInput?.checked;
+                return config;
+            }
+
+            page.addEventListener('pageshow', function () {
+                Dashboard.showLoadingMsg();
+                apiFetch('SeerrDiscover/config').then((config) => {
+                    setForm(config);
+                    Dashboard.hideLoadingMsg();
+                }).catch((error) => {
+                    Dashboard.hideLoadingMsg();
+                    Dashboard.alert({
+                        message: error?.message || 'Failed to load Seerr Discover configuration.'
+                    });
+                });
+            });
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                Dashboard.showLoadingMsg();
+                apiFetch('SeerrDiscover/config').then((config) => {
+                    return apiFetch('SeerrDiscover/config', {
+                        method: 'POST',
+                        body: JSON.stringify(applyForm(config))
+                    });
+                }).then((config) => {
+                    setForm(config);
+                    Dashboard.processPluginConfigurationUpdateResult();
+                }).catch((error) => {
+                    Dashboard.hideLoadingMsg();
+                    Dashboard.alert({
+                        message: error?.message || 'Failed to save Seerr Discover configuration.'
+                    });
+                });
+                return false;
+            });
+        })();
+    </script>
+</div>
+</body>
+</html>

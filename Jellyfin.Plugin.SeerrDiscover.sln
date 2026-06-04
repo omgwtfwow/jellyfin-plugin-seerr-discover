@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Plugin.SeerrDiscover", "Jellyfin.Plugin.SeerrDiscover\Jellyfin.Plugin.SeerrDiscover.csproj", "{3EA06C24-4563-4F03-A161-73E3DB1F908C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Plugin.SeerrDiscover.Tests", "Jellyfin.Plugin.SeerrDiscover.Tests\Jellyfin.Plugin.SeerrDiscover.Tests.csproj", "{806B7F49-71AC-4944-A08B-0B4C344A8D71}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3EA06C24-4563-4F03-A161-73E3DB1F908C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EA06C24-4563-4F03-A161-73E3DB1F908C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EA06C24-4563-4F03-A161-73E3DB1F908C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EA06C24-4563-4F03-A161-73E3DB1F908C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{806B7F49-71AC-4944-A08B-0B4C344A8D71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{806B7F49-71AC-4944-A08B-0B4C344A8D71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{806B7F49-71AC-4944-A08B-0B4C344A8D71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{806B7F49-71AC-4944-A08B-0B4C344A8D71}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Restore
+        run: dotnet restore Jellyfin.Plugin.SeerrDiscover.sln
+
+      - name: Test
+        run: dotnet test Jellyfin.Plugin.SeerrDiscover.sln --no-restore
+
+      - name: JavaScript syntax
+        run: node --check Jellyfin.Plugin.SeerrDiscover/Web/discover.js
+
+      - name: Shell syntax
+        run: bash -n scripts/package-plugin.sh scripts/generate-manifest.sh
+
+      - name: Shellcheck
+        run: shellcheck scripts/*.sh
+
+      - name: Package
+        run: scripts/package-plugin.sh
+
+      - name: Generate manifest
+        run: scripts/generate-manifest.sh --base-url "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            dist/seerr-discover_*.zip
+            dist/seerr-discover_*.zip.sha256
+            dist/manifest.json

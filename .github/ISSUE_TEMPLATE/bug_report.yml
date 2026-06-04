@@ -1,0 +1,32 @@
+name: Bug report
+description: Report a problem with Seerr Discover
+title: "Bug: "
+labels:
+  - bug
+body:
+  - type: input
+    id: jellyfin-version
+    attributes:
+      label: Jellyfin version
+      placeholder: "10.11.10"
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Seerr Discover version
+      placeholder: "0.2.0.0"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Remove API keys, tokens, hostnames, and private URLs before posting.
+      render: text

@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+dist/
+.env
+.env.*
+!.env.example
+*.user
+*.suo
+.DS_Store
