@@ -119,6 +119,21 @@ public sealed class SeerrDiscoverController : ControllerBase
     }
 
     /// <summary>
+    /// Gets non-secret client behavior flags for the browser asset.
+    /// </summary>
+    [HttpGet("client-config")]
+    [Produces("application/json")]
+    public ActionResult GetClientConfiguration()
+    {
+        var config = Plugin.Instance?.Configuration ?? new PluginConfiguration();
+        return new JsonResult(new
+        {
+            enableNativeSearchIntegration = config.EnableNativeSearchIntegration,
+            seerrPublicUrl = NormalizedSeerrPublicUrl()
+        });
+    }
+
+    /// <summary>
     /// Gets a Seerr discover feed.
     /// </summary>
     [HttpGet("discover")]
@@ -286,11 +301,18 @@ public sealed class SeerrDiscoverController : ControllerBase
 
     private async Task<string> BuildMeJsonAsync(Guid jellyfinUserId, CancellationToken cancellationToken)
     {
+        var enableNativeSearchIntegration = Plugin.Instance?.Configuration.EnableNativeSearchIntegration != false;
         var mapped = await _seerrClient.GetMappedUserAsync(jellyfinUserId, cancellationToken).ConfigureAwait(false);
         var seerrPublicUrl = NormalizedSeerrPublicUrl();
         if (!mapped.Found)
         {
-            return JsonSerializer.Serialize(new { mapped = false, jellyfinUserId = jellyfinUserId.ToString("N", CultureInfo.InvariantCulture), seerrPublicUrl });
+            return JsonSerializer.Serialize(new
+            {
+                mapped = false,
+                jellyfinUserId = jellyfinUserId.ToString("N", CultureInfo.InvariantCulture),
+                seerrPublicUrl,
+                enableNativeSearchIntegration
+            });
         }
 
         using var userDoc = JsonDocument.Parse(mapped.Json);
@@ -308,6 +330,7 @@ public sealed class SeerrDiscoverController : ControllerBase
             mapped = true,
             jellyfinUserId = jellyfinUserId.ToString("N", CultureInfo.InvariantCulture),
             seerrPublicUrl,
+            enableNativeSearchIntegration,
             user,
             quota
         });
@@ -345,6 +368,7 @@ public sealed class SeerrDiscoverController : ControllerBase
             SearchCacheSeconds = config.SearchCacheSeconds,
             UserCacheSeconds = config.UserCacheSeconds,
             RequireMappedUser = config.RequireMappedUser,
+            EnableNativeSearchIntegration = config.EnableNativeSearchIntegration,
             DefaultRequest4K = config.DefaultRequest4K,
             EnableTrending = config.EnableTrending,
             EnableMovies = config.EnableMovies,
@@ -362,6 +386,7 @@ public sealed class SeerrDiscoverController : ControllerBase
         config.SearchCacheSeconds = ClampSeconds(update.SearchCacheSeconds, 60);
         config.UserCacheSeconds = ClampSeconds(update.UserCacheSeconds, 60);
         config.RequireMappedUser = update.RequireMappedUser;
+        config.EnableNativeSearchIntegration = update.EnableNativeSearchIntegration;
         config.DefaultRequest4K = update.DefaultRequest4K;
         config.EnableTrending = update.EnableTrending;
         config.EnableMovies = update.EnableMovies;

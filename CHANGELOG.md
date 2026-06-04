@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.8.0
+
+- Add optional Jellyfin native search integration that shows requestable Seerr
+  movie and show results from the native Jellyfin search page.
+- Add a non-secret client configuration endpoint and admin toggle for the
+  native search integration.
+
 ## 0.2.7.0
 
 - Remove the Discover page subtitle.

@@ -53,6 +53,11 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool RequireMappedUser { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets a value indicating whether Seerr results are injected into Jellyfin native search.
+    /// </summary>
+    public bool EnableNativeSearchIntegration { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets a value indicating whether 4K requests are created by default.
     /// </summary>
     public bool DefaultRequest4K { get; set; }

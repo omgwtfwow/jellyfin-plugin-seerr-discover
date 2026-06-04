@@ -1,17 +1,17 @@
 ---
 name: "Seerr Discover"
 guid: "2f0b9bb0-8d9d-4c6f-8ad7-6f23a3bb71b0"
-version: "0.2.7.0"
+version: "0.2.8.0"
 targetAbi: "10.11.10.0"
 framework: "net9.0"
 overview: "Native Jellyfin Discover page backed by Seerr"
 description: >
   Provides authenticated Jellyfin proxy endpoints and a small web client asset
-  for a native Seerr-powered Discover/search/request page.
+  for a native Seerr-powered Discover page and Jellyfin search integration.
 category: "General"
 owner: "omgwtfwow"
 artifacts:
 - "Jellyfin.Plugin.SeerrDiscover.dll"
 changelog: >
-  Remove the Discover subtitle and use overlap-based Custom Tabs spacing for
-  desktop and mobile Jellyfin clients.
+  Add optional Jellyfin native search integration with requestable Seerr results
+  and server-side API key handling.
