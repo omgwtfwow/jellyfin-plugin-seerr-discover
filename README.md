@@ -21,6 +21,18 @@ https://omgwtfwow.github.io/jellyfin-plugin-seerr-discover/manifest.json
 5. Hard-refresh Jellyfin Web or restart the client app.
 6. Use Jellyfin's normal search page for Seerr search results; use the Discover tab for browse rails.
 
+## Screenshots
+
+These sanitized screenshots use generated media titles and do not include private server data.
+
+| Discover rails | Native search integration |
+| --- | --- |
+| ![Sanitized screenshot of Seerr Discover browse rails in Jellyfin Web](docs/assets/screenshots/discover-rails.svg) | ![Sanitized screenshot of requestable Seerr results in Jellyfin native search](docs/assets/screenshots/native-search.svg) |
+
+| Detail modal | Mobile layout |
+| --- | --- |
+| ![Sanitized screenshot of the Seerr Discover detail modal](docs/assets/screenshots/detail-modal.svg) | ![Sanitized screenshot of Seerr Discover on a narrow mobile layout](docs/assets/screenshots/mobile-layout.svg) |
+
 ## Requirements
 
 - Jellyfin Server `10.11.x`; current releases target `targetAbi: 10.11.10.0`
