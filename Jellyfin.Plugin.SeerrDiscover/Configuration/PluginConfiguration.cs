@@ -63,17 +63,32 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool DefaultRequest4K { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the trending rail is enabled.
+    /// Gets or sets a value indicating whether the legacy mixed trending rail is enabled.
     /// </summary>
     public bool EnableTrending { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether the movies rail is enabled.
+    /// Gets or sets a value indicating whether split trending rail settings have been saved.
+    /// </summary>
+    public bool UseSplitTrendingRailSettings { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the trending movies rail is enabled.
+    /// </summary>
+    public bool EnableTrendingMovies { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the trending TV rail is enabled.
+    /// </summary>
+    public bool EnableTrendingTv { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the popular movies rail is enabled.
     /// </summary>
     public bool EnableMovies { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether the TV rail is enabled.
+    /// Gets or sets a value indicating whether the popular TV rail is enabled.
     /// </summary>
     public bool EnableTv { get; set; } = true;
 

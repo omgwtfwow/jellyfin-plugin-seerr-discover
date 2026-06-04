@@ -54,6 +54,8 @@ public sealed class SeerrDiscoverControllerTests
             RequireMappedUser = true,
             EnableNativeSearchIntegration = true,
             EnableTrending = true,
+            EnableTrendingMovies = true,
+            EnableTrendingTv = true,
             EnableMovies = true,
             EnableTv = true,
             EnableUpcoming = true
@@ -66,6 +68,74 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Equal("https://seerr.example", config.SeerrPublicUrl);
         Assert.Equal("es", config.Language);
         Assert.True(config.EnableNativeSearchIntegration);
+    }
+
+    [Fact]
+    public void LegacyDisabledTrending_DisablesSplitTrendingUntilSettingsAreSaved()
+    {
+        var config = new PluginConfiguration
+        {
+            EnableTrending = false,
+            EnableTrendingMovies = true,
+            EnableTrendingTv = true,
+            UseSplitTrendingRailSettings = false
+        };
+
+        Assert.False(IsFeedEnabled(config, "trending-movies"));
+        Assert.False(IsFeedEnabled(config, "trending-tv"));
+    }
+
+    [Fact]
+    public void ApplyConfigurationUpdate_SplitTrendingSettingsDoNotDependOnLegacyTrending()
+    {
+        var config = new PluginConfiguration
+        {
+            EnableTrending = false,
+            EnableTrendingMovies = true,
+            EnableTrendingTv = true,
+            UseSplitTrendingRailSettings = false
+        };
+        var update = new SeerrDiscoverConfigurationUpdate
+        {
+            SeerrBaseUrl = "http://seerr:5055",
+            Language = "en",
+            EnableTrending = false,
+            EnableTrendingMovies = true,
+            EnableTrendingTv = false,
+            EnableMovies = true,
+            EnableTv = true,
+            EnableUpcoming = true
+        };
+
+        ApplyConfigurationUpdate(config, update);
+
+        Assert.True(config.UseSplitTrendingRailSettings);
+        Assert.True(config.EnableTrending);
+        Assert.True(IsFeedEnabled(config, "trending-movies"));
+        Assert.False(IsFeedEnabled(config, "trending-tv"));
+    }
+
+    [Fact]
+    public void ApplyConfigurationUpdate_LegacyTrendingUpdateStillControlsSplitTrendingWhenNewFieldsAreMissing()
+    {
+        var config = new PluginConfiguration();
+        var update = new SeerrDiscoverConfigurationUpdate
+        {
+            SeerrBaseUrl = "http://seerr:5055",
+            Language = "en",
+            EnableTrending = false,
+            EnableMovies = true,
+            EnableTv = true,
+            EnableUpcoming = true
+        };
+
+        ApplyConfigurationUpdate(config, update);
+
+        Assert.False(config.EnableTrending);
+        Assert.False(config.EnableTrendingMovies);
+        Assert.False(config.EnableTrendingTv);
+        Assert.False(IsFeedEnabled(config, "trending-movies"));
+        Assert.False(IsFeedEnabled(config, "trending-tv"));
     }
 
     [Fact]
@@ -113,5 +183,13 @@ public sealed class SeerrDiscoverControllerTests
 
         Assert.NotNull(method);
         method!.Invoke(null, [config, update]);
+    }
+
+    private static bool IsFeedEnabled(PluginConfiguration config, string feed, string? mediaType = null)
+    {
+        var method = typeof(SeerrDiscoverController).GetMethod("IsFeedEnabled", BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.NotNull(method);
+        return Assert.IsType<bool>(method!.Invoke(null, [config, feed, mediaType]));
     }
 }

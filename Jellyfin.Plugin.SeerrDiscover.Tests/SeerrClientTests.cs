@@ -8,6 +8,18 @@ namespace Jellyfin.Plugin.SeerrDiscover.Tests;
 
 public sealed class SeerrClientTests
 {
+    [Theory]
+    [InlineData("trending-movies", "mediaType=movie")]
+    [InlineData("trending-tv", "mediaType=tv")]
+    public void BuildDiscoverPath_SplitsTrendingFeedsByMediaType(string feed, string expectedMediaType)
+    {
+        var path = BuildDiscoverPath(feed);
+
+        Assert.StartsWith("/api/v1/discover/trending?", path);
+        Assert.Contains(expectedMediaType, path);
+        Assert.Contains("timeWindow=day", path);
+    }
+
     [Fact]
     public void BuildRequestPayload_OmitsNullOptionalMovieFields()
     {
@@ -48,5 +60,12 @@ public sealed class SeerrClientTests
         var method = typeof(SeerrClient).GetMethod("BuildRequestPayload", BindingFlags.NonPublic | BindingFlags.Static);
         Assert.NotNull(method);
         return Assert.IsType<Dictionary<string, object>>(method!.Invoke(null, [request, seerrUserId, false]));
+    }
+
+    private static string BuildDiscoverPath(string feed)
+    {
+        var method = typeof(SeerrClient).GetMethod("BuildDiscoverPath", BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.NotNull(method);
+        return Assert.IsType<string>(method!.Invoke(null, [feed, 1, null, "en"]));
     }
 }

@@ -42,11 +42,16 @@ public sealed class SeerrClient : ISeerrClient
 
     /// <inheritdoc />
     public Task<string> GetDiscoverAsync(string feed, int page, string? mediaType, CancellationToken cancellationToken)
+        => SendAsync(HttpMethod.Get, BuildDiscoverPath(feed, page, mediaType, Config.Language), null, true, cancellationToken);
+
+    private static string BuildDiscoverPath(string feed, int page, string? mediaType, string language)
     {
         var normalizedFeed = feed.Trim().ToLowerInvariant();
         var path = normalizedFeed switch
         {
             "trending" => "/api/v1/discover/trending",
+            "trending-movies" => "/api/v1/discover/trending",
+            "trending-tv" => "/api/v1/discover/trending",
             "movies" => "/api/v1/discover/movies",
             "tv" => "/api/v1/discover/tv",
             "upcoming" => "/api/v1/discover/movies/upcoming",
@@ -56,12 +61,17 @@ public sealed class SeerrClient : ISeerrClient
         var query = new Dictionary<string, string?>
         {
             ["page"] = Math.Max(page, 1).ToString(CultureInfo.InvariantCulture),
-            ["language"] = Config.Language
+            ["language"] = language
         };
 
-        if (normalizedFeed == "trending")
+        if (normalizedFeed is "trending" or "trending-movies" or "trending-tv")
         {
-            query["mediaType"] = string.IsNullOrWhiteSpace(mediaType) ? "all" : mediaType;
+            query["mediaType"] = normalizedFeed switch
+            {
+                "trending-movies" => "movie",
+                "trending-tv" => "tv",
+                _ => string.IsNullOrWhiteSpace(mediaType) ? "all" : mediaType
+            };
             query["timeWindow"] = "day";
         }
         else if (normalizedFeed is "movies" or "tv")
@@ -69,7 +79,7 @@ public sealed class SeerrClient : ISeerrClient
             query["sortBy"] = "popularity.desc";
         }
 
-        return SendAsync(HttpMethod.Get, QueryHelpers.AddQueryString(path, query), null, true, cancellationToken);
+        return QueryHelpers.AddQueryString(path, query);
     }
 
     /// <inheritdoc />

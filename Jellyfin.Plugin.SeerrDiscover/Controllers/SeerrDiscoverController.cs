@@ -25,6 +25,15 @@ namespace Jellyfin.Plugin.SeerrDiscover.Controllers;
 public sealed class SeerrDiscoverController : ControllerBase
 {
     private const string JellyfinUserIdClaim = "Jellyfin-UserId";
+    private static readonly (string Id, string Title, string Feed)[] DiscoverRailDefinitions =
+    {
+        ("trending-movies", "Trending Movies", "trending-movies"),
+        ("trending-tv", "Trending TV", "trending-tv"),
+        ("movies", "Popular Movies", "movies"),
+        ("tv", "Popular TV", "tv"),
+        ("upcoming", "Upcoming Movies", "upcoming")
+    };
+
     private readonly ISeerrClient _seerrClient;
     private readonly ISeerrDiscoverCache _cache;
 
@@ -129,6 +138,9 @@ public sealed class SeerrDiscoverController : ControllerBase
         return new JsonResult(new
         {
             enableNativeSearchIntegration = config.EnableNativeSearchIntegration,
+            discoverRails = DiscoverRailDefinitions
+                .Where(rail => IsFeedEnabled(config, rail.Feed, null))
+                .Select(rail => new { id = rail.Id, title = rail.Title, feed = rail.Feed }),
             seerrPublicUrl = NormalizedSeerrPublicUrl()
         });
     }
@@ -144,7 +156,7 @@ public sealed class SeerrDiscoverController : ControllerBase
         [FromQuery] string? mediaType = null,
         CancellationToken cancellationToken = default)
     {
-        if (!IsFeedEnabled(feed))
+        if (!IsFeedEnabled(Plugin.Instance?.Configuration, feed, mediaType))
         {
             return BadRequest(new { error = "feed_disabled", message = "This feed is disabled in plugin configuration." });
         }
@@ -280,18 +292,38 @@ public sealed class SeerrDiscoverController : ControllerBase
     private static TimeSpan Seconds(int seconds)
         => TimeSpan.FromSeconds(Math.Clamp(seconds, 5, 3600));
 
-    private static bool IsFeedEnabled(string feed)
+    private static bool IsFeedEnabled(PluginConfiguration? config, string feed, string? mediaType)
     {
-        var config = Plugin.Instance?.Configuration;
+        config ??= new PluginConfiguration();
         return feed.Trim().ToLowerInvariant() switch
         {
-            "trending" => config?.EnableTrending != false,
-            "movies" => config?.EnableMovies != false,
-            "tv" => config?.EnableTv != false,
-            "upcoming" => config?.EnableUpcoming != false,
+            "trending" => IsLegacyTrendingEnabled(config, mediaType),
+            "trending-movies" => IsTrendingMoviesEnabled(config),
+            "trending-tv" => IsTrendingTvEnabled(config),
+            "movies" => config.EnableMovies,
+            "tv" => config.EnableTv,
+            "upcoming" => config.EnableUpcoming,
             _ => false
         };
     }
+
+    private static bool IsLegacyTrendingEnabled(PluginConfiguration config, string? mediaType)
+    {
+        var normalizedMediaType = (mediaType ?? string.Empty).Trim().ToLowerInvariant();
+        return normalizedMediaType switch
+        {
+            "movie" => IsTrendingMoviesEnabled(config),
+            "tv" => IsTrendingTvEnabled(config),
+            "" or "all" => IsTrendingMoviesEnabled(config) && IsTrendingTvEnabled(config),
+            _ => false
+        };
+    }
+
+    private static bool IsTrendingMoviesEnabled(PluginConfiguration config)
+        => config.UseSplitTrendingRailSettings ? config.EnableTrendingMovies : config.EnableTrending && config.EnableTrendingMovies;
+
+    private static bool IsTrendingTvEnabled(PluginConfiguration config)
+        => config.UseSplitTrendingRailSettings ? config.EnableTrendingTv : config.EnableTrending && config.EnableTrendingTv;
 
     private Guid GetJellyfinUserId()
     {
@@ -370,7 +402,9 @@ public sealed class SeerrDiscoverController : ControllerBase
             RequireMappedUser = config.RequireMappedUser,
             EnableNativeSearchIntegration = config.EnableNativeSearchIntegration,
             DefaultRequest4K = config.DefaultRequest4K,
-            EnableTrending = config.EnableTrending,
+            EnableTrending = IsTrendingMoviesEnabled(config) || IsTrendingTvEnabled(config),
+            EnableTrendingMovies = IsTrendingMoviesEnabled(config),
+            EnableTrendingTv = IsTrendingTvEnabled(config),
             EnableMovies = config.EnableMovies,
             EnableTv = config.EnableTv,
             EnableUpcoming = config.EnableUpcoming
@@ -388,7 +422,10 @@ public sealed class SeerrDiscoverController : ControllerBase
         config.RequireMappedUser = update.RequireMappedUser;
         config.EnableNativeSearchIntegration = update.EnableNativeSearchIntegration;
         config.DefaultRequest4K = update.DefaultRequest4K;
-        config.EnableTrending = update.EnableTrending;
+        config.UseSplitTrendingRailSettings = true;
+        config.EnableTrendingMovies = update.EnableTrendingMovies ?? update.EnableTrending;
+        config.EnableTrendingTv = update.EnableTrendingTv ?? update.EnableTrending;
+        config.EnableTrending = config.EnableTrendingMovies || config.EnableTrendingTv;
         config.EnableMovies = update.EnableMovies;
         config.EnableTv = update.EnableTv;
         config.EnableUpcoming = update.EnableUpcoming;
