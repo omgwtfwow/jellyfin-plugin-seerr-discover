@@ -11,9 +11,10 @@
     searchResults: null,
     loading: new Set(),
     error: '',
-    notice: '',
+    toasts: [],
     autoplayKey: '',
   };
+  let nextToastId = 1;
 
   const rails = [
     { id: 'trending', title: 'Trending', feed: 'trending' },
@@ -308,6 +309,72 @@
         border-color: var(--jf-palette-success-main, var(--seerr-primary));
         background: var(--jf-palette-Alert-successStandardBg, rgb(var(--seerr-primary-channel) / 0.14));
         color: var(--jf-palette-Alert-successColor, var(--seerr-text));
+      }
+      .seerr-toast-region {
+        --seerr-bg: var(--jf-palette-background-default, #101010);
+        --seerr-bg-channel: var(--jf-palette-background-defaultChannel, 16 16 16);
+        --seerr-surface: var(--jf-palette-background-paper, #202020);
+        --seerr-surface-channel: var(--jf-palette-background-paperChannel, 32 32 32);
+        --seerr-text: var(--jf-palette-text-primary, #fff);
+        --seerr-text-channel: var(--jf-palette-text-primaryChannel, 255 255 255);
+        --seerr-muted: var(--jf-palette-text-secondary, rgba(255,255,255,0.7));
+        --seerr-primary: var(--jf-palette-primary-main, #00a4dc);
+        --seerr-primary-channel: var(--jf-palette-primary-mainChannel, 0 164 220);
+        --seerr-border: rgb(var(--seerr-text-channel) / 0.16);
+        position: fixed;
+        right: max(1rem, env(safe-area-inset-right));
+        bottom: max(1rem, env(safe-area-inset-bottom));
+        z-index: 130000;
+        display: grid;
+        width: min(26rem, calc(100vw - 2rem));
+        gap: 0.6rem;
+        pointer-events: none;
+      }
+      .seerr-toast {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.75rem;
+        align-items: start;
+        border: 1px solid var(--seerr-border);
+        border-radius: 0.55rem;
+        padding: 0.8rem 0.85rem;
+        background: rgb(var(--seerr-surface-channel) / 0.96);
+        color: var(--seerr-text);
+        box-shadow: 0 0.9rem 2.4rem rgb(var(--seerr-bg-channel) / 0.38);
+        pointer-events: auto;
+      }
+      .seerr-toast--success {
+        border-color: var(--jf-palette-success-main, var(--seerr-primary));
+        background: var(--jf-palette-Alert-successStandardBg, rgb(var(--seerr-surface-channel) / 0.96));
+        color: var(--jf-palette-Alert-successColor, var(--seerr-text));
+      }
+      .seerr-toast--error {
+        border-color: var(--jf-palette-error-main, #f44336);
+        background: var(--jf-palette-Alert-errorStandardBg, rgb(var(--seerr-surface-channel) / 0.96));
+        color: var(--jf-palette-Alert-errorColor, var(--seerr-text));
+      }
+      .seerr-toast__message {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        line-height: 1.35;
+      }
+      .seerr-toast__close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.65rem;
+        height: 1.65rem;
+        border: 0;
+        border-radius: 999px;
+        margin: -0.25rem -0.25rem 0 0;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        font: inherit;
+        line-height: 1;
+      }
+      .seerr-toast__close:hover {
+        background: rgb(var(--seerr-text-channel) / 0.08);
       }
       .seerr-discover__rail {
         display: flex;
@@ -672,6 +739,12 @@
         .seerr-discover { padding-inline: 1rem; }
         .seerr-discover__top { grid-template-columns: 1fr; }
         .seerr-discover__scroller { grid-auto-columns: minmax(9.8rem, 42vw); }
+        .seerr-toast-region {
+          left: max(1rem, env(safe-area-inset-left));
+          right: max(1rem, env(safe-area-inset-right));
+          bottom: max(1rem, env(safe-area-inset-bottom));
+          width: auto;
+        }
         .seerr-modal { padding: 0.7rem; }
         .seerr-modal__panel { max-height: 94vh; }
         .seerr-modal__hero { min-height: 12rem; }
@@ -818,7 +891,6 @@
       ? '<div class="seerr-discover__notice">This Jellyfin user is not linked in Seerr, so requests are disabled. Open Seerr once or import Jellyfin users in Seerr.</div>'
       : '';
     const error = state.error ? `<div class="seerr-discover__notice">${escapeHtml(state.error)}</div>` : '';
-    const notice = state.notice ? `<div class="seerr-discover__notice seerr-discover__notice--success">${escapeHtml(state.notice)}</div>` : '';
     const searchResults = state.searchResults ? supportedResults(state.searchResults.results) : [];
     const searchSection = state.searchResults
       ? railTemplate({ id: 'search', title: `Search: ${state.searchQuery}` }, searchResults)
@@ -838,7 +910,6 @@
         </div>
         ${meNotice}
         ${error}
-        ${notice}
         ${searchSection}
         <div data-seerr-rails>
           ${rails.map((rail) => railTemplate(rail, root.__seerrRailData?.[rail.id] || [])).join('')}
@@ -961,7 +1032,9 @@
         handleTrailerClick(modal, button.getAttribute('data-seerr-trailer-url'));
       });
     });
-    modal.querySelector('[data-seerr-request]')?.addEventListener('click', () => requestMedia(type, detail));
+    modal.querySelector('[data-seerr-request]')?.addEventListener('click', (event) => {
+      requestMedia(type, detail, event.currentTarget);
+    });
     modal.querySelector('.seerr-modal__close')?.focus();
   }
 
@@ -1407,14 +1480,71 @@
 
   function setError(message) {
     state.error = message || '';
-    if (state.error) state.notice = '';
     render();
   }
 
-  function setNotice(message) {
-    state.notice = message || '';
-    if (state.notice) state.error = '';
-    render();
+  function showToast(message, variant = 'info', options = {}) {
+    const id = nextToastId++;
+    const timeout = Number.isFinite(options.timeout) ? options.timeout : 4500;
+    state.toasts = [...state.toasts, { id, message, variant, timeoutId: null }].slice(-4);
+    renderToasts();
+    scheduleToastDismiss(id, timeout);
+    return id;
+  }
+
+  function updateToast(id, message, variant = 'info', options = {}) {
+    const timeout = Number.isFinite(options.timeout) ? options.timeout : 4500;
+    state.toasts = state.toasts.map((toast) => {
+      if (toast.id !== id) return toast;
+      if (toast.timeoutId) window.clearTimeout(toast.timeoutId);
+      return { ...toast, message, variant, timeoutId: null };
+    });
+    renderToasts();
+    scheduleToastDismiss(id, timeout);
+  }
+
+  function scheduleToastDismiss(id, timeout) {
+    if (timeout <= 0) return;
+    const toast = state.toasts.find((item) => item.id === id);
+    if (!toast) return;
+    toast.timeoutId = window.setTimeout(() => dismissToast(id), timeout);
+  }
+
+  function dismissToast(id) {
+    const toast = state.toasts.find((item) => item.id === id);
+    if (toast?.timeoutId) window.clearTimeout(toast.timeoutId);
+    state.toasts = state.toasts.filter((item) => item.id !== id);
+    renderToasts();
+  }
+
+  function ensureToastRegion() {
+    ensureStyle();
+    let region = document.querySelector('[data-seerr-toast-region]');
+    if (region) return region;
+
+    region = document.createElement('div');
+    region.className = 'seerr-toast-region';
+    region.setAttribute('data-seerr-toast-region', '');
+    region.setAttribute('aria-live', 'polite');
+    region.setAttribute('aria-relevant', 'additions text');
+    document.body.appendChild(region);
+    return region;
+  }
+
+  function renderToasts() {
+    const region = ensureToastRegion();
+    region.innerHTML = state.toasts.map((toast) => `
+      <div class="seerr-toast seerr-toast--${escapeHtml(toast.variant)}" role="${toast.variant === 'error' ? 'alert' : 'status'}">
+        <div class="seerr-toast__message">${escapeHtml(toast.message)}</div>
+        <button class="seerr-toast__close" type="button" data-seerr-toast-close="${toast.id}" aria-label="Dismiss notification">&times;</button>
+      </div>
+    `).join('');
+
+    region.querySelectorAll('[data-seerr-toast-close]').forEach((button) => {
+      button.addEventListener('click', () => {
+        dismissToast(Number.parseInt(button.getAttribute('data-seerr-toast-close') || '', 10));
+      });
+    });
   }
 
   function loadMe() {
@@ -1447,7 +1577,6 @@
 
     state.searchQuery = query;
     state.error = '';
-    state.notice = '';
     render();
     apiFetch(`/SeerrDiscover/search?query=${encodeURIComponent(query)}&page=1`)
       .then((data) => {
@@ -1465,7 +1594,13 @@
       .catch((error) => setError(`Details failed: ${error.message || error}`));
   }
 
-  function requestMedia(type, detail) {
+  function requestMedia(type, detail, requestButton) {
+    if (requestButton) {
+      requestButton.disabled = true;
+      requestButton.textContent = 'Requesting...';
+    }
+
+    const requestToastId = showToast('Submitting request to Seerr...', 'info', { timeout: 0 });
     const body = {
       mediaType: type,
       mediaId: Number.parseInt(detail.id, 10),
@@ -1476,10 +1611,20 @@
       .then((result) => {
         renderModal(markRequested(detail, result));
         state.searchResults = null;
-        setNotice('Request created. Seerr is processing it now.');
-        return Promise.all([loadMe(), loadRails()]);
+        updateToast(requestToastId, 'Request created. Seerr is processing it now.', 'success');
+        return Promise.all([loadMe(), loadRails()])
+          .catch((error) => {
+            console.warn('Seerr Discover refresh failed after request', error);
+            showToast('Request created, but Discover refresh failed. Refresh if the status looks stale.', 'error', { timeout: 7000 });
+          });
       })
-      .catch((error) => setError(`Request failed: ${error.message || error}`));
+      .catch((error) => {
+        if (requestButton) {
+          requestButton.disabled = false;
+          requestButton.textContent = 'Request';
+        }
+        updateToast(requestToastId, `Request failed: ${error.message || error}`, 'error', { timeout: 7000 });
+      });
   }
 
   function markRequested(detail, result) {
@@ -1527,7 +1672,6 @@
   window.addEventListener('hashchange', () => {
     closeModal();
     state.searchResults = null;
-    state.notice = '';
     scheduleMount();
   });
   window.addEventListener('popstate', () => {

@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.2.2.0 - Unreleased
+## 0.2.3.0 - Unreleased
+
+- Replace persistent request banners with auto-dismissing toasts for async request start, success, and failure feedback.
+
+## 0.2.2.0
 
 - Fix Jellyfin repository install/update checksums by publishing an MD5 checksum in `manifest.json` while keeping the SHA-256 sidecar file for release verification.
 
