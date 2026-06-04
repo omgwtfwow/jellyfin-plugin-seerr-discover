@@ -30,14 +30,21 @@ zip_name="seerr-discover_${version}.zip"
 zip_path="$DIST_DIR/$zip_name"
 checksum_path="${zip_path}.sha256"
 manifest_path="$DIST_DIR/manifest.json"
-release_changelog="Prevent mobile clients from being trapped after opening YouTube trailer links from the Discover detail modal."
+release_changelog="Fix Jellyfin repository manifest checksums and prevent mobile clients from being trapped after opening YouTube trailer links."
 
 if [ ! -f "$zip_path" ] || [ ! -f "$checksum_path" ]; then
   echo "Missing $zip_name or checksum. Run scripts/package-plugin.sh first." >&2
   exit 1
 fi
 
-checksum="$(awk '{print $1}' "$checksum_path")"
+if command -v md5sum >/dev/null 2>&1; then
+  checksum="$(md5sum "$zip_path" | awk '{print toupper($1)}')"
+elif command -v md5 >/dev/null 2>&1; then
+  checksum="$(md5 -q "$zip_path" | tr '[:lower:]' '[:upper:]')"
+else
+  echo "md5sum or md5 is required to generate a Jellyfin repository manifest." >&2
+  exit 1
+fi
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%S.0000000Z)"
 source_url="${base_url%/}/$zip_name"
 

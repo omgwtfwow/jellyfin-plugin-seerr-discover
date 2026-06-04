@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.2.1.0 - Unreleased
+## 0.2.2.0 - Unreleased
+
+- Fix Jellyfin repository install/update checksums by publishing an MD5 checksum in `manifest.json` while keeping the SHA-256 sidecar file for release verification.
+
+## 0.2.1.0
 
 - Prevent mobile clients from being trapped after opening YouTube trailer links by copying trailer URLs on mobile/touch/narrow contexts instead of navigating away from Jellyfin.
 
