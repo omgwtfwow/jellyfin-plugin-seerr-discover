@@ -2654,12 +2654,12 @@
     }
 
     list.innerHTML = extraRails.map((rail) => `
-      <div class="checkboxContainer checkboxContainer-withDescription" data-extra-rail="${escapeHtml(rail.Id)}">
+      <div class="seerr-config-extra-rail" data-extra-rail="${escapeHtml(rail.Id)}">
         <label class="emby-checkbox-label">
           <input type="checkbox" is="emby-checkbox" data-extra-rail-enabled="${escapeHtml(rail.Id)}" ${rail.Enabled ? 'checked' : ''} />
-          <span>${escapeHtml(rail.Title)}</span>
+          <span class="seerr-config-extra-rail-title">${escapeHtml(rail.Title)}</span>
         </label>
-        <button is="emby-button" type="button" class="emby-button" data-extra-rail-remove="${escapeHtml(rail.Id)}">
+        <button is="emby-button" type="button" class="emby-button seerr-config-remove-button" data-extra-rail-remove="${escapeHtml(rail.Id)}">
           <span>Remove</span>
         </button>
       </div>
