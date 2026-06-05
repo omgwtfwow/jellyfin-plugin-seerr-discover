@@ -15,6 +15,8 @@
 - Promote Discover rail titles to H2 headings for clearer page hierarchy.
 - Keep raw Discover controls on the inherited Jellyfin font instead of browser
   button defaults.
+- Expose Jellyfin-native section, card, and modal class hooks so Custom CSS
+  themes can style Discover more like native Jellyfin surfaces.
 - Refresh README screenshots around the core Discover rails, native search,
   detail modal, and mobile layout flows.
 - Remove redundant request-state screenshots from the release docs.

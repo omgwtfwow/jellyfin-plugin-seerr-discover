@@ -87,7 +87,7 @@ Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI s
 - Request creation as the mapped Seerr user
 - Available/requested/requestable state badges
 - Watch Now and Open Details handoff for available Jellyfin items
-- Theme-aware Jellyfin Web styling
+- Theme-aware Jellyfin Web styling with native Jellyfin class hooks for Custom CSS themes
 - Discover tab spacing follows Jellyfin Web/client layout classes and active theme CSS at runtime
 - Server-side cache for discover, details, search, and mapped user lookups
 
