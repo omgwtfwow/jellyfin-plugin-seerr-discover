@@ -960,8 +960,13 @@
         top: 0.7rem;
         right: 0.7rem;
         z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         width: 2.25rem;
         height: 2.25rem;
+        min-width: 0;
+        padding: 0;
         border: 1px solid rgb(var(--seerr-text-channel) / 0.2);
         border-radius: 50%;
         background: rgb(var(--seerr-bg-channel) / 0.72);
@@ -1464,7 +1469,7 @@
     const posterSrcSetAttribute = posterSrcSet ? ` srcset="${escapeHtml(posterSrcSet)}" sizes="(max-width: 720px) 10rem, 13.25rem"` : '';
     modal.innerHTML = `
       <div class="dialog seerr-modal__panel" role="dialog" aria-modal="true" aria-labelledby="seerr-modal-title" aria-describedby="seerr-modal-overview">
-        <button class="seerr-modal__close" type="button" aria-label="Close">&times;</button>
+        <button class="emby-button seerr-modal__close" type="button" aria-label="Close">&times;</button>
         <section class="seerr-modal__hero" style="${backdrop ? `background-image:url('${escapeHtml(backdrop)}')` : ''}">
           <div class="seerr-modal__hero-content">
           <div class="seerr-modal__poster${posterClass}"${posterStyle}>${poster ? `<img src="${escapeHtml(poster)}"${posterSrcSetAttribute} alt="">` : ''}</div>

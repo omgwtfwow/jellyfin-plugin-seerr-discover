@@ -217,6 +217,7 @@ public sealed class SeerrDiscoverControllerTests
 
         Assert.Contains("modal.className = 'seerr-modal';", source, StringComparison.Ordinal);
         Assert.Contains("dialog seerr-modal__panel", source, StringComparison.Ordinal);
+        Assert.Contains("emby-button seerr-modal__close", source, StringComparison.Ordinal);
         Assert.Contains("<h3 class=\"sectionTitle seerr-modal__section-title\">Overview</h3>", source, StringComparison.Ordinal);
         Assert.Contains("<h3 class=\"sectionTitle seerr-modal__section-title\">Details</h3>", source, StringComparison.Ordinal);
         Assert.Contains("<h3 class=\"sectionTitle seerr-modal__section-title\">Tags</h3>", source, StringComparison.Ordinal);
