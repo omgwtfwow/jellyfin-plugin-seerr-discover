@@ -449,8 +449,8 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("overflow: hidden;", relatedRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("max-width: 100%;", relatedScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("overflow-x: auto;", relatedScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
-        Assert.Contains("width: clamp(8rem, 12vw, 10.5rem);", relatedCardRule.Groups["body"].Value, StringComparison.Ordinal);
-        Assert.Contains("width: clamp(7.2rem, 26vw, 9.2rem);", source, StringComparison.Ordinal);
+        Assert.Contains("width: clamp(9.5rem, 15vw, 12.5rem);", relatedCardRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("width: clamp(8.5rem, 32vw, 10.75rem);", source, StringComparison.Ordinal);
         Assert.Contains(".seerr-modal__related .cardText", source, StringComparison.Ordinal);
         Assert.Contains(".seerr-modal__related .seerr-card__badge", source, StringComparison.Ordinal);
     }

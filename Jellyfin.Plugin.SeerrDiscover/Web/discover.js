@@ -1020,7 +1020,7 @@
         padding: 0 0 0.4rem;
       }
       .seerr-modal__related .seerr-card {
-        width: clamp(8rem, 12vw, 10.5rem);
+        width: clamp(9.5rem, 15vw, 12.5rem);
       }
       .seerr-modal__related .cardText {
         font-size: 0.86em;
@@ -1141,7 +1141,7 @@
         .seerr-modal__trailer-list { left: 0; right: 0; min-width: 100%; }
         .seerr-modal__people { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .seerr-modal__related .seerr-card {
-          width: clamp(7.2rem, 26vw, 9.2rem);
+          width: clamp(8.5rem, 32vw, 10.75rem);
         }
       }
       @media (min-width: 580px) and (max-width: 720px) {
