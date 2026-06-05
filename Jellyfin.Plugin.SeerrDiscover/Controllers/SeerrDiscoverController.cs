@@ -125,7 +125,7 @@ public sealed class SeerrDiscoverController : ControllerBase
     /// Gets redacted plugin configuration for the admin page.
     /// </summary>
     [HttpGet("config")]
-    [Authorize(Policy = "RequiresElevation")]
+    [Authorize(Roles = "Administrator")]
     [Produces("application/json")]
     public ActionResult GetConfiguration()
         => new JsonResult(ToConfigurationDto(Plugin.Instance?.Configuration ?? new PluginConfiguration()));
@@ -134,7 +134,7 @@ public sealed class SeerrDiscoverController : ControllerBase
     /// Updates plugin configuration from the admin page.
     /// </summary>
     [HttpPost("config")]
-    [Authorize(Policy = "RequiresElevation")]
+    [Authorize(Roles = "Administrator")]
     [Produces("application/json")]
     public ActionResult UpdateConfiguration([FromBody] SeerrDiscoverConfigurationUpdate update)
     {
@@ -181,7 +181,7 @@ public sealed class SeerrDiscoverController : ControllerBase
     /// Gets admin-only rail picker options.
     /// </summary>
     [HttpGet("rail-options")]
-    [Authorize(Policy = "RequiresElevation")]
+    [Authorize(Roles = "Administrator")]
     [Produces("application/json")]
     public async Task<ActionResult> GetRailOptions(
         [FromQuery] string kind,
