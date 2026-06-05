@@ -495,12 +495,18 @@
         background: rgb(var(--seerr-text-channel) / 0.08);
       }
       .seerr-discover__rail {
+        --seerr-card-artwork-inset: 0.6em;
         display: flex;
         flex-direction: column;
         gap: 0.6rem;
       }
       .seerr-discover__rail-title {
         margin: 0;
+        max-width: calc(100% - var(--seerr-card-artwork-inset));
+        transform: translateX(var(--seerr-card-artwork-inset));
+      }
+      [dir="rtl"] .seerr-discover__rail-title {
+        transform: translateX(calc(var(--seerr-card-artwork-inset) * -1));
       }
       .seerr-discover__scroller {
         display: flex;
@@ -1070,6 +1076,9 @@
         flex-wrap: nowrap;
         max-width: 100%;
         overflow-x: auto;
+      }
+      .seerr-native-detail-related .seerr-discover__rail[data-seerr-artwork-layout="horizontal"] .seerr-card {
+        width: clamp(22rem, 30vw, 32rem);
       }
       @media (min-width: 100em) {
         .seerr-discover-tab-content {

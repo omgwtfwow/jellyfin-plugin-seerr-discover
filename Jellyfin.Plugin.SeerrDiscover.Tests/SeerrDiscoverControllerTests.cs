@@ -241,9 +241,15 @@ public sealed class SeerrDiscoverControllerTests
     public void DiscoverAsset_AlignsRailHeadingsWithFirstThumbnail()
     {
         var source = ReadBrowserAsset("discover.js");
+        var railRule = Regex.Match(source, @"\.seerr-discover__rail\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
+        var titleRule = Regex.Match(source, @"\.seerr-discover__rail-title\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
         var firstCardRule = Regex.Match(source, @"\.seerr-discover__scroller\s*>\s*\.seerr-card:first-child\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
 
+        Assert.True(railRule.Success, "Discover rails should define the native card artwork inset used for title alignment.");
+        Assert.True(titleRule.Success, "Discover rail titles should keep an explicit alignment rule.");
         Assert.True(firstCardRule.Success, "Discover rail scrollers should reset the first card margin so rail headings align with the first thumbnail.");
+        Assert.Contains("--seerr-card-artwork-inset: 0.6em;", railRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("transform: translateX(var(--seerr-card-artwork-inset));", titleRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("margin-left: 0;", firstCardRule.Groups["body"].Value, StringComparison.Ordinal);
     }
 
@@ -269,6 +275,7 @@ public sealed class SeerrDiscoverControllerTests
         var nativeScrollerRule = Regex.Matches(source, @"\.seerr-native-detail-related\s+\.seerr-discover__scroller\s*\{(?<body>.*?)\}", RegexOptions.Singleline)
             .Cast<Match>()
             .SingleOrDefault(match => match.Groups["body"].Value.Contains("display:", StringComparison.Ordinal));
+        var nativeHorizontalCardRule = Regex.Match(source, @"\.seerr-native-detail-related\s+\.seerr-discover__rail\[data-seerr-artwork-layout=""horizontal""\]\s+\.seerr-card\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
 
         Assert.Contains("document.querySelector('.libraryPage:not(.hide)')", source, StringComparison.Ordinal);
         Assert.Contains("querySelector('.detailPageContent')", source, StringComparison.Ordinal);
@@ -286,6 +293,8 @@ public sealed class SeerrDiscoverControllerTests
         Assert.NotNull(nativeScrollerRule);
         Assert.Contains("display: flex;", nativeScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("flex-wrap: nowrap;", nativeScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.True(nativeHorizontalCardRule.Success, "Native detail horizontal rails should use larger detail-page card sizing than the modal.");
+        Assert.Contains("width: clamp(22rem, 30vw, 32rem);", nativeHorizontalCardRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("padding-left: 0 !important;", source, StringComparison.Ordinal);
         Assert.Contains("padding-right: 0 !important;", source, StringComparison.Ordinal);
         Assert.Contains("artworkLayout: normalizeArtworkLayout(rail.artworkLayout)", source, StringComparison.Ordinal);
