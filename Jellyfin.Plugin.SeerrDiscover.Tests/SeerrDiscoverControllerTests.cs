@@ -246,6 +246,20 @@ public sealed class SeerrDiscoverControllerTests
     }
 
     [Fact]
+    public void DiscoverAsset_PlacesModalMetadataBeforeRelatedRails()
+    {
+        var source = ReadBrowserAsset("discover.js");
+        var asideIndex = source.IndexOf("<aside class=\"seerr-modal__aside\">", StringComparison.Ordinal);
+        var relatedIndex = source.IndexOf("<div class=\"seerr-modal__related\" data-seerr-related></div>", StringComparison.Ordinal);
+
+        Assert.True(asideIndex > 0, "Discover modal should keep a metadata aside.");
+        Assert.True(relatedIndex > asideIndex, "Discover modal related rails should render after metadata for mobile stacking.");
+        Assert.Contains("</aside>\n          <div class=\"seerr-modal__related\" data-seerr-related></div>", source, StringComparison.Ordinal);
+        Assert.Contains("grid-column: 1 / -1;", source, StringComparison.Ordinal);
+        Assert.Contains(".seerr-modal__main,\n        .seerr-modal__aside,\n        .seerr-modal__related {\n          grid-column: 1;\n          grid-row: auto;", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DiscoverAsset_KeepsCompactModalPanelsPairedWhenTheyFit()
     {
         var source = ReadBrowserAsset("discover.js");
