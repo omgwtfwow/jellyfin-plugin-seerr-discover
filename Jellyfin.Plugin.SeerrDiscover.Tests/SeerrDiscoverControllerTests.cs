@@ -246,6 +246,54 @@ public sealed class SeerrDiscoverControllerTests
     }
 
     [Fact]
+    public void DiscoverAsset_KeepsCompactModalPanelsPairedWhenTheyFit()
+    {
+        var source = ReadBrowserAsset("discover.js");
+
+        Assert.Contains("@media (min-width: 580px) and (max-width: 720px)", source, StringComparison.Ordinal);
+        Assert.Contains("grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.72fr);", source, StringComparison.Ordinal);
+        Assert.Contains(".seerr-modal__people { grid-template-columns: repeat(2, minmax(0, 1fr)); }", source, StringComparison.Ordinal);
+        Assert.Contains("grid-template-columns: repeat(2, minmax(0, 1fr));", source, StringComparison.Ordinal);
+        Assert.Contains("@media (max-width: 520px)", source, StringComparison.Ordinal);
+        Assert.Contains(".seerr-modal__people,\n        .seerr-modal__aside {\n          grid-template-columns: 1fr;", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DiscoverAsset_ConstrainsModalOverviewAndRelatedCards()
+    {
+        var source = ReadBrowserAsset("discover.js");
+        var panelRule = Regex.Match(source, @"\.seerr-modal__panel\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
+        var detailsRule = Regex.Match(source, @"\.seerr-modal__details\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
+        var overviewRule = Regex.Match(source, @"\.seerr-modal__overview\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
+        var relatedRule = Regex.Match(source, @"\.seerr-modal__related\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
+        var relatedScrollerRule = Regex.Match(source, @"\.seerr-modal__related \.seerr-discover__scroller\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
+        var relatedCardRule = Regex.Match(source, @"\.seerr-modal__related \.seerr-card\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
+
+        Assert.True(panelRule.Success, "Discover modal panel should keep scoped overflow rules.");
+        Assert.True(detailsRule.Success, "Discover modal details should keep scoped containment rules.");
+        Assert.True(overviewRule.Success, "Discover modal overview should keep scoped wrapping rules.");
+        Assert.True(relatedRule.Success, "Discover modal related area should keep scoped containment rules.");
+        Assert.True(relatedScrollerRule.Success, "Discover modal related scroller should keep scoped overflow rules.");
+        Assert.True(relatedCardRule.Success, "Discover modal related cards should keep scoped compact sizing.");
+        Assert.Contains("max-width: calc(100vw - 1rem);", panelRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("overflow-x: hidden;", panelRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("overflow-y: auto;", panelRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("min-width: 0;", detailsRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("overflow: hidden;", detailsRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("min-width: 0;", overviewRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("max-width: 100%;", overviewRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("overflow-wrap: anywhere;", overviewRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("white-space: normal;", overviewRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("min-width: 0;", relatedRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("overflow: hidden;", relatedRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("max-width: 100%;", relatedScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("overflow-x: auto;", relatedScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("width: clamp(6.7rem, 10vw, 8.6rem);", relatedCardRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains(".seerr-modal__related .cardText", source, StringComparison.Ordinal);
+        Assert.Contains(".seerr-modal__related .seerr-card__badge", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DiscoverAsset_UsesNativeCardTextRowsForTitleAndYear()
     {
         var source = ReadBrowserAsset("discover.js");
@@ -263,7 +311,8 @@ public sealed class SeerrDiscoverControllerTests
     public void DiscoverAsset_RawButtonsInheritJellyfinTypography()
     {
         var source = ReadBrowserAsset("discover.js");
-        var cardRule = CssRuleBodies(@"\.seerr-card").Single();
+        var cardRule = CssRuleBodies(@"\.seerr-card")
+            .Single(body => body.Contains("font: inherit;", StringComparison.Ordinal));
 
         AssertRuleContains(@"\.seerr-discover__button", "font: inherit;");
         Assert.Contains("font: inherit;", cardRule, StringComparison.Ordinal);
