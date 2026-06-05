@@ -960,6 +960,11 @@
         outline: 2px solid rgb(var(--seerr-text-channel) / 0.34);
         outline-offset: 2px;
       }
+      @media (max-width: 1199px) {
+        .seerr-discover-tab-content {
+          --seerr-tab-top-offset: calc(clamp(9.25rem, 17vh, 10.75rem) + env(safe-area-inset-top));
+        }
+      }
       @media (max-width: 720px) {
         .seerr-discover-tab-content {
           --seerr-tab-top-offset: calc(clamp(9.25rem, 17vh, 10.75rem) + env(safe-area-inset-top));

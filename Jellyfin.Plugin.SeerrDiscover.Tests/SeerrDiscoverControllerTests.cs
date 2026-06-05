@@ -101,6 +101,18 @@ public sealed class SeerrDiscoverControllerTests
     }
 
     [Fact]
+    public void DiscoverAsset_UsesStaticTabletHeaderClearance()
+    {
+        var source = ReadBrowserAsset("discover.js");
+        var updateSpacing = Regex.Match(source, @"function\s+updateDiscoverSpacing\(\)\s*\{(?<body>.*?)\n  \}", RegexOptions.Singleline);
+
+        Assert.Contains("@media (max-width: 1199px)", source, StringComparison.Ordinal);
+        Assert.Contains("--seerr-tab-top-offset: calc(clamp(9.25rem, 17vh, 10.75rem) + env(safe-area-inset-top));", source, StringComparison.Ordinal);
+        Assert.True(updateSpacing.Success, "discover.js should keep the Discover spacing update function explicit.");
+        Assert.DoesNotContain("getBoundingClientRect", updateSpacing.Groups["body"].Value, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Controller_DefaultsToJellyfinAuthenticatedEndpoints()
     {
         Assert.Contains(
