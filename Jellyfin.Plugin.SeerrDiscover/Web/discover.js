@@ -873,8 +873,6 @@
       }
       .seerr-modal__section {
         min-width: 0;
-        border-top: 1px solid var(--seerr-border-soft);
-        padding-top: 0.95rem;
       }
       .seerr-modal__section h3 {
         margin: 0 0 0.45rem;
@@ -1004,8 +1002,7 @@
         }
         .seerr-modal__aside {
           border-left: 0;
-          border-top: 1px solid var(--seerr-border-soft);
-          padding: 1rem 0 0;
+          padding: 0;
         }
         .seerr-modal__actions > .seerr-discover__button,
         .seerr-modal__trailer-menu { flex: 1 1 auto; }
