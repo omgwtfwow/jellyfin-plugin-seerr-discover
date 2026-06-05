@@ -10,8 +10,9 @@ Please open a private vulnerability report on GitHub or contact the repository o
 
 ## Security Model
 
+- Browser JavaScript served from `/SeerrDiscover/assets/*` is public, auditable client code. It is not a secret and should never contain Seerr API keys, Jellyfin tokens, or stored credentials.
 - Seerr API keys are stored in Jellyfin plugin configuration and used only server-side.
-- Browser JavaScript calls Jellyfin-authenticated plugin proxy endpoints.
+- Browser JavaScript calls Jellyfin-authenticated plugin proxy endpoints for Seerr data. Anonymous access to a JavaScript asset is not anonymous access to Seerr data.
 - Request creation uses the mapped Jellyfin user by default.
 - The config page exposes only whether a Seerr API key is configured, not the stored value.
 
