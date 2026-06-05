@@ -81,7 +81,7 @@ Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI s
 ## Features
 
 - Rails-only Discover tab for configurable Trending Movies, Trending TV, Popular Movies, Popular TV, Upcoming Movies, and Upcoming TV rows
-- Per-rail vertical poster or horizontal backdrop artwork layouts, custom rail headings, and saved rail ordering for Discover and detail page rails
+- Per-rail vertical poster or horizontal cover artwork layouts, custom rail headings, and saved rail ordering for Discover and detail page rails
 - Optional admin-selected rails for genres, movie studios, TV networks, original languages, and keywords
 - Requestable Seerr movie and series results inside Jellyfin's native search page
 - Detail modal with poster/backdrop, metadata, cast/crew, trailers, and Seerr links
@@ -111,7 +111,7 @@ See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) if the plugin does not ap
 
 Open Jellyfin Dashboard > Plugins > Seerr Discover.
 
-Most installs only need the Seerr URLs, Seerr API key, companion plugin setup, and the default rail choices. Discover and detail page rail rows can be enabled, renamed, moved up or down, and set to vertical poster or horizontal backdrop artwork before saving. The optional rail catalog can add opt-in Discover rows by genre, movie studio, TV network, original language, or keyword. Genres, languages, and networks can be listed without a query; studios and keywords use search. Added optional rails can be enabled, renamed, disabled, reordered, or removed before saving.
+Most installs only need the Seerr URLs, Seerr API key, companion plugin setup, and the default rail choices. Discover and detail page rail rows can be enabled, renamed, moved up or down, and set to vertical poster or horizontal cover artwork before saving. The optional rail catalog can add opt-in Discover rows by genre, movie studio, TV network, original language, or keyword. Genres, languages, and networks can be listed without a query; studios and keywords use search. Added optional rails can be enabled, renamed, disabled, reordered, or removed before saving.
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
