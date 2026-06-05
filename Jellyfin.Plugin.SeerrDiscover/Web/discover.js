@@ -482,11 +482,8 @@
         flex-direction: column;
         gap: 0.6rem;
       }
-      .seerr-discover__rail h2 {
+      .seerr-discover__rail-title {
         margin: 0;
-        font-size: 1.15rem;
-        font-weight: 650;
-        letter-spacing: 0;
       }
       .seerr-discover__scroller {
         display: grid;
@@ -501,25 +498,34 @@
         min-height: clamp(14rem, 32vh, 24rem);
       }
       .seerr-card {
-        display: grid;
-        grid-template-rows: auto minmax(3.2rem, auto);
         border: 0;
-        border-radius: 0.48rem;
         padding: 0;
         background: transparent;
         color: inherit;
         font: inherit;
-        text-align: left;
         cursor: pointer;
       }
-      .seerr-card__image {
+      .seerr-card:focus-visible {
+        outline: 2px solid rgb(var(--seerr-text-channel) / 0.42);
+        outline-offset: 3px;
+      }
+      .seerr-card__box {
+        color: inherit;
+      }
+      .seerr-card__scalable {
         position: relative;
-        aspect-ratio: 2 / 3;
         overflow: hidden;
         border-radius: 0.48rem;
-        isolation: isolate;
         background: linear-gradient(145deg, var(--seerr-hover), var(--seerr-card-placeholder));
         box-shadow: inset 0 0 0 1px var(--seerr-border-soft);
+      }
+      .seerr-card__image {
+        position: absolute;
+        inset: 0;
+        display: block;
+        overflow: hidden;
+        isolation: isolate;
+        background: transparent;
       }
       .seerr-card__image::before {
         content: "";
@@ -584,7 +590,6 @@
       }
       .seerr-card__meta {
         min-width: 0;
-        padding: 0.55rem 0.1rem 0;
       }
       .seerr-card__title {
         display: -webkit-box;
@@ -592,7 +597,6 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
         min-height: 2.3em;
-        font-size: 0.95rem;
         line-height: 1.15;
       }
       .seerr-card__year {
@@ -900,11 +904,9 @@
       .seerr-modal__section {
         min-width: 0;
       }
-      .seerr-modal__section h3 {
+      .seerr-modal__section-title {
         margin: 0 0 0.45rem;
-        font-size: 0.95rem;
-        font-weight: 650;
-        letter-spacing: 0;
+        padding: 0;
       }
       .seerr-modal__person-list {
         display: grid;
@@ -1290,6 +1292,8 @@
     const image = item.posterPath ? tmdbImage(item.posterPath, 'w500') : tmdbImage(item.backdropPath, 'w780');
     const srcSet = item.posterPath ? tmdbSrcSet(item.posterPath, ['w342', 'w500', 'w780']) : tmdbSrcSet(item.backdropPath, ['w780', 'w1280']);
     const isBackdropFallback = !item.posterPath && Boolean(item.backdropPath);
+    const layoutClass = isBackdropFallback ? 'overflowBackdropCard' : 'overflowPortraitCard';
+    const padderClass = isBackdropFallback ? 'cardPadder-overflowBackdrop' : 'cardPadder-overflowPortrait';
     const typeLabel = mediaType(item) === 'tv' ? 'Series' : 'Movie';
     const status = cardStatusLabel(item);
     const year = (mediaDate(item) || '').slice(0, 4);
@@ -1297,21 +1301,27 @@
     const imageClass = isBackdropFallback ? ' seerr-card__image--backdrop' : '';
     const imageStyle = image ? ` style="--seerr-artwork:url('${escapeHtml(image)}')"` : '';
     const srcSetAttribute = srcSet ? ` srcset="${escapeHtml(srcSet)}" sizes="(max-width: 720px) 42vw, 13.5rem"` : '';
+    const title = mediaTitle(item);
     return `
-      <button class="seerr-card" data-seerr-type="${escapeHtml(mediaType(item))}" data-seerr-id="${escapeHtml(item.id)}">
-        <span class="seerr-card__image${imageClass}"${imageStyle}>
-          ${image ? `<img loading="lazy" src="${escapeHtml(image)}"${srcSetAttribute} alt="">` : ''}
-          <span class="seerr-card__badges">
-            <span class="seerr-card__badge">${escapeHtml(typeLabel)}</span>
-            ${status ? `<span class="seerr-card__badge ${escapeHtml(badgeClass)}">${escapeHtml(status)}</span>` : ''}
-          </span>
-        </span>
-        <span class="seerr-card__meta">
-          <span class="seerr-card__title">
-            ${escapeHtml(mediaTitle(item))}${year ? ` <span class="seerr-card__year">${escapeHtml(year)}</span>` : ''}
-          </span>
-        </span>
-      </button>
+      <div class="card ${layoutClass} card-hoverable card-withuserdata seerr-card" role="button" tabindex="0" aria-label="Open details for ${escapeHtml(title)}" data-seerr-type="${escapeHtml(mediaType(item))}" data-seerr-id="${escapeHtml(item.id)}">
+        <div class="cardBox cardBox-bottompadded seerr-card__box">
+          <div class="cardScalable seerr-card__scalable">
+            <div class="cardPadder ${padderClass} seerr-card__padder"></div>
+            <span class="cardImageContainer coveredImage cardContent seerr-card__image${imageClass}" role="img" aria-label="${escapeHtml(title)}"${imageStyle}>
+              ${image ? `<img loading="lazy" src="${escapeHtml(image)}"${srcSetAttribute} alt="">` : ''}
+              <span class="seerr-card__badges">
+                <span class="seerr-card__badge">${escapeHtml(typeLabel)}</span>
+                ${status ? `<span class="seerr-card__badge ${escapeHtml(badgeClass)}">${escapeHtml(status)}</span>` : ''}
+              </span>
+            </span>
+          </div>
+          <div class="cardText cardTextCentered cardText-first seerr-card__meta">
+            <bdi><span class="seerr-card__title">
+              ${escapeHtml(title)}${year ? ` <span class="seerr-card__year">${escapeHtml(year)}</span>` : ''}
+            </span></bdi>
+          </div>
+        </div>
+      </div>
     `;
   }
 
@@ -1330,9 +1340,9 @@
   function railTemplate(rail, items) {
     const results = supportedResults(items);
     return `
-      <section class="seerr-discover__rail" data-seerr-rail="${escapeHtml(rail.id)}">
-        <h2>${escapeHtml(rail.title)}</h2>
-        <div class="seerr-discover__scroller">
+      <section class="verticalSection emby-scroller-container seerr-discover__rail" data-seerr-rail="${escapeHtml(rail.id)}">
+        <h2 class="sectionTitle sectionTitle-cards padded-left seerr-discover__rail-title">${escapeHtml(rail.title)}</h2>
+        <div class="seerr-discover__scroller padded-left padded-right">
           ${results.length ? results.map(card).join('') : '<div class="seerr-discover__notice">No results</div>'}
         </div>
       </section>
@@ -1390,8 +1400,14 @@
   }
 
   function bindCards(container) {
-    container.querySelectorAll('[data-seerr-id]').forEach((button) => {
-      button.addEventListener('click', () => openDetails(button.getAttribute('data-seerr-type'), button.getAttribute('data-seerr-id')));
+    container.querySelectorAll('[data-seerr-id]').forEach((cardElement) => {
+      const activate = () => openDetails(cardElement.getAttribute('data-seerr-type'), cardElement.getAttribute('data-seerr-id'));
+      cardElement.addEventListener('click', activate);
+      cardElement.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        activate();
+      });
     });
   }
 
@@ -1429,7 +1445,7 @@
       : '';
     const factsSection = facts.length
       ? `<section class="seerr-modal__section">
-          <h3>Details</h3>
+          <h3 class="sectionTitle seerr-modal__section-title">Details</h3>
           <div class="seerr-modal__facts">
             ${facts.map((fact) => `<div><div class="seerr-modal__fact-label">${escapeHtml(fact.label)}</div><div class="seerr-modal__fact-value">${escapeHtml(fact.value)}</div></div>`).join('')}
           </div>
@@ -1438,7 +1454,7 @@
     const peopleSection = people.length
       ? `<div class="seerr-modal__people">
           ${people.map((group) => `<section class="seerr-modal__section">
-            <h3>${escapeHtml(group.title)}</h3>
+            <h3 class="sectionTitle seerr-modal__section-title">${escapeHtml(group.title)}</h3>
             <div class="seerr-modal__person-list">
               ${group.items.map((person) => `<div class="seerr-modal__person">${personAvatar(person)}<div><strong>${escapeHtml(person.name)}</strong><span>${escapeHtml(person.detail)}</span></div></div>`).join('')}
             </div>
@@ -1447,7 +1463,7 @@
       : '';
     const keywordSection = keywords.length
       ? `<section class="seerr-modal__section">
-          <h3>Tags</h3>
+          <h3 class="sectionTitle seerr-modal__section-title">Tags</h3>
           <div class="seerr-modal__keywords">
             ${keywords.map((keyword) => `<span class="seerr-modal__chip">${escapeHtml(keyword)}</span>`).join('')}
           </div>
@@ -1460,7 +1476,7 @@
     const posterStyle = poster ? ` style="--seerr-artwork:url('${escapeHtml(poster)}')"` : '';
     const posterSrcSetAttribute = posterSrcSet ? ` srcset="${escapeHtml(posterSrcSet)}" sizes="(max-width: 720px) 10rem, 13.25rem"` : '';
     modal.innerHTML = `
-      <div class="seerr-modal__panel" role="dialog" aria-modal="true" aria-labelledby="seerr-modal-title" aria-describedby="seerr-modal-overview">
+      <div class="dialog seerr-modal__panel" role="dialog" aria-modal="true" aria-labelledby="seerr-modal-title" aria-describedby="seerr-modal-overview">
         <button class="seerr-modal__close" type="button" aria-label="Close">&times;</button>
         <section class="seerr-modal__hero" style="${backdrop ? `background-image:url('${escapeHtml(backdrop)}')` : ''}">
           <div class="seerr-modal__hero-content">
@@ -1484,7 +1500,7 @@
         <div class="seerr-modal__details">
           <div class="seerr-modal__main">
             <section class="seerr-modal__section">
-              <h3>Overview</h3>
+              <h3 class="sectionTitle seerr-modal__section-title">Overview</h3>
               <p id="seerr-modal-overview" class="seerr-modal__overview">${escapeHtml(detail.overview || 'No overview available.')}</p>
             </section>
             ${peopleSection}
@@ -2258,9 +2274,7 @@
   }
 
   function bindNativeSearchSection(section) {
-    section.querySelectorAll('[data-seerr-id]').forEach((button) => {
-      button.addEventListener('click', () => openDetails(button.getAttribute('data-seerr-type'), button.getAttribute('data-seerr-id')));
-    });
+    bindCards(section);
   }
 
   function placeNativeSearchSection(page, section) {

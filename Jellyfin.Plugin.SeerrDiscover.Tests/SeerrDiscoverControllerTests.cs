@@ -183,10 +183,45 @@ public sealed class SeerrDiscoverControllerTests
     {
         var source = ReadBrowserAsset("discover.js");
 
-        Assert.Contains(".seerr-discover__rail h2", source, StringComparison.Ordinal);
-        Assert.Contains("<h2>${escapeHtml(rail.title)}</h2>", source, StringComparison.Ordinal);
+        Assert.Contains(".seerr-discover__rail-title", source, StringComparison.Ordinal);
+        Assert.Contains("<h2 class=\"sectionTitle sectionTitle-cards padded-left seerr-discover__rail-title\">${escapeHtml(rail.title)}</h2>", source, StringComparison.Ordinal);
         Assert.DoesNotContain(".seerr-discover__rail h3", source, StringComparison.Ordinal);
         Assert.DoesNotContain("<h3>${escapeHtml(rail.title)}</h3>", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DiscoverAsset_ExposesJellyfinNativeThemeHooks()
+    {
+        var source = ReadBrowserAsset("discover.js");
+
+        Assert.Contains("verticalSection emby-scroller-container seerr-discover__rail", source, StringComparison.Ordinal);
+        Assert.Contains("sectionTitle sectionTitle-cards padded-left seerr-discover__rail-title", source, StringComparison.Ordinal);
+        Assert.Contains("seerr-discover__scroller padded-left padded-right", source, StringComparison.Ordinal);
+        Assert.Contains("const layoutClass = isBackdropFallback ? 'overflowBackdropCard' : 'overflowPortraitCard';", source, StringComparison.Ordinal);
+        Assert.Contains("const padderClass = isBackdropFallback ? 'cardPadder-overflowBackdrop' : 'cardPadder-overflowPortrait';", source, StringComparison.Ordinal);
+        Assert.Contains("card-hoverable card-withuserdata seerr-card", source, StringComparison.Ordinal);
+        Assert.Contains("role=\"button\" tabindex=\"0\"", source, StringComparison.Ordinal);
+        Assert.Contains("cardBox cardBox-bottompadded seerr-card__box", source, StringComparison.Ordinal);
+        Assert.Contains("cardScalable seerr-card__scalable", source, StringComparison.Ordinal);
+        Assert.Contains("cardPadder ${padderClass} seerr-card__padder", source, StringComparison.Ordinal);
+        Assert.Contains("cardImageContainer coveredImage cardContent seerr-card__image", source, StringComparison.Ordinal);
+        Assert.Contains("cardText cardTextCentered cardText-first seerr-card__meta", source, StringComparison.Ordinal);
+        Assert.Contains("event.key !== 'Enter' && event.key !== ' '", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("abyss", source, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void DiscoverAsset_AddsSafeNativeHooksToModal()
+    {
+        var source = ReadBrowserAsset("discover.js");
+
+        Assert.Contains("modal.className = 'seerr-modal';", source, StringComparison.Ordinal);
+        Assert.Contains("dialog seerr-modal__panel", source, StringComparison.Ordinal);
+        Assert.Contains("<h3 class=\"sectionTitle seerr-modal__section-title\">Overview</h3>", source, StringComparison.Ordinal);
+        Assert.Contains("<h3 class=\"sectionTitle seerr-modal__section-title\">Details</h3>", source, StringComparison.Ordinal);
+        Assert.Contains("<h3 class=\"sectionTitle seerr-modal__section-title\">Tags</h3>", source, StringComparison.Ordinal);
+        Assert.Contains("<h3 class=\"sectionTitle seerr-modal__section-title\">${escapeHtml(group.title)}</h3>", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("#itemDetailPage", source, StringComparison.Ordinal);
     }
 
     [Fact]
