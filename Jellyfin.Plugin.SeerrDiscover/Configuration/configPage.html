@@ -225,7 +225,7 @@
 
             function canRequest() {
                 const client = currentApiClient();
-                return !!(client && typeof client.fetch === 'function') || typeof fetch === 'function';
+                return !!(client && (typeof client.fetch === 'function' || typeof client.ajax === 'function')) || typeof fetch === 'function';
             }
 
             function showLoading() {
@@ -298,6 +298,17 @@
                     });
                 }
 
+                if (client && typeof client.ajax === 'function') {
+                    return client.ajax({
+                        url: apiUrl(path),
+                        type: options?.method || 'GET',
+                        data: options?.body,
+                        contentType: options?.body ? 'application/json' : undefined,
+                        dataType: 'json',
+                        headers: { accept: 'application/json' }
+                    });
+                }
+
                 if (typeof fetch === 'function') {
                     return fetch(apiUrl(path), {
                         method: options?.method || 'GET',
@@ -318,6 +329,14 @@
                 }
 
                 return Promise.reject(new Error('Jellyfin API client is not available.'));
+            }
+
+            function errorMessage(error, fallback) {
+                if (error?.message) return error.message;
+                if (typeof error?.responseText === 'string' && error.responseText.trim()) return error.responseText;
+                if (error?.status) return `Request failed with HTTP ${error.status}`;
+                if (typeof error === 'string' && error.trim()) return error;
+                return fallback;
             }
 
             function normalizeToken(value) {
@@ -496,7 +515,7 @@
                 apiFetch(`SeerrDiscover/rail-options?${params.toString()}`)
                     .then((payload) => renderRailOptions(kind, mediaType, payload, query))
                     .catch((error) => {
-                        if (options) options.textContent = error?.message || 'Failed to load rail options.';
+                        if (options) options.textContent = errorMessage(error, 'Failed to load rail options.');
                     });
             }
 
@@ -582,7 +601,7 @@
                 }).catch((error) => {
                     configLoadStarted = false;
                     hideLoading();
-                    showAlert(error?.message || 'Failed to load Seerr Discover configuration.');
+                    showAlert(errorMessage(error, 'Failed to load Seerr Discover configuration.'));
                 });
             }
 
@@ -602,7 +621,7 @@
                     processUpdateResult(config);
                 }).catch((error) => {
                     hideLoading();
-                    showAlert(error?.message || 'Failed to save Seerr Discover configuration.');
+                    showAlert(errorMessage(error, 'Failed to save Seerr Discover configuration.'));
                 });
                 return false;
             });
