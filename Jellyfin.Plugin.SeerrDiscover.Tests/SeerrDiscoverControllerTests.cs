@@ -269,7 +269,25 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains(".seerr-modal__people { grid-template-columns: repeat(2, minmax(0, 1fr)); }", source, StringComparison.Ordinal);
         Assert.Contains("grid-template-columns: repeat(2, minmax(0, 1fr));", source, StringComparison.Ordinal);
         Assert.Contains("@media (max-width: 520px)", source, StringComparison.Ordinal);
-        Assert.Contains(".seerr-modal__people,\n        .seerr-modal__aside {\n          grid-template-columns: 1fr;", source, StringComparison.Ordinal);
+        Assert.DoesNotContain(".seerr-modal__people,\n        .seerr-modal__aside {\n          grid-template-columns: 1fr;", source, StringComparison.Ordinal);
+        Assert.Contains(".seerr-modal__people {\n          gap: 0.85rem 0.72rem;", source, StringComparison.Ordinal);
+        Assert.Contains(".seerr-modal__aside {\n          grid-template-columns: 1fr;", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DiscoverAsset_EllipsizesCompactModalPeopleRows()
+    {
+        var source = ReadBrowserAsset("discover.js");
+        var personTextRule = Regex.Match(source, @"\.seerr-modal__person-text\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
+        var personNameRule = Regex.Match(source, @"\.seerr-modal__person strong\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
+
+        Assert.True(personTextRule.Success, "Discover modal people rows should give the text cell a shrinkable wrapper.");
+        Assert.True(personNameRule.Success, "Discover modal people names should keep scoped text overflow rules.");
+        Assert.Contains("min-width: 0;", personTextRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("overflow: hidden;", personNameRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("text-overflow: ellipsis;", personNameRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("white-space: nowrap;", personNameRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("class=\"seerr-modal__person-text\"", source, StringComparison.Ordinal);
     }
 
     [Fact]

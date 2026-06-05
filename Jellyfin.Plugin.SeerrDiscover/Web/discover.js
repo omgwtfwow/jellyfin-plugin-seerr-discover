@@ -923,6 +923,9 @@
         gap: 0.62rem;
         align-items: center;
       }
+      .seerr-modal__person-text {
+        min-width: 0;
+      }
       .seerr-modal__person-avatar {
         width: 2.45rem;
         aspect-ratio: 1;
@@ -941,6 +944,9 @@
       }
       .seerr-modal__person strong {
         display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         color: var(--seerr-text);
         font-size: 0.9rem;
         line-height: 1.2;
@@ -1104,7 +1110,22 @@
         }
       }
       @media (max-width: 520px) {
-        .seerr-modal__people,
+        .seerr-modal__people {
+          gap: 0.85rem 0.72rem;
+        }
+        .seerr-modal__person {
+          grid-template-columns: 2.15rem minmax(0, 1fr);
+          gap: 0.5rem;
+        }
+        .seerr-modal__person-avatar {
+          width: 2.15rem;
+        }
+        .seerr-modal__person strong {
+          font-size: 0.82rem;
+        }
+        .seerr-modal__person span {
+          font-size: 0.72rem;
+        }
         .seerr-modal__aside {
           grid-template-columns: 1fr;
         }
@@ -1519,7 +1540,7 @@
           ${people.map((group) => `<section class="seerr-modal__section">
             <h3 class="sectionTitle seerr-modal__section-title">${escapeHtml(group.title)}</h3>
             <div class="seerr-modal__person-list">
-              ${group.items.map((person) => `<div class="seerr-modal__person">${personAvatar(person)}<div><strong>${escapeHtml(person.name)}</strong><span>${escapeHtml(person.detail)}</span></div></div>`).join('')}
+              ${group.items.map((person) => `<div class="seerr-modal__person">${personAvatar(person)}<div class="seerr-modal__person-text"><strong>${escapeHtml(person.name)}</strong><span>${escapeHtml(person.detail)}</span></div></div>`).join('')}
             </div>
           </section>`).join('')}
         </div>`
