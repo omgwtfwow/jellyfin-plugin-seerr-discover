@@ -4,9 +4,6 @@
   const rootSelector = '#seerrDiscoverRoot';
   const styleId = 'seerr-discover-style';
   const discoverLoadingKey = 'discover';
-  const discoverLoadingModeParam = 'seerrDiscoverLoading';
-  const discoverLoadingModeStorageKey = 'seerrDiscoverLoadingMode';
-  const defaultDiscoverLoadingMode = 'native';
   const discoverTopCushionPx = 8;
   const defaultRails = [
     { id: 'trending-movies', title: 'Trending Movies', feed: 'trending-movies' },
@@ -49,46 +46,6 @@
   };
 
   let rails = defaultRails;
-
-  function normalizeDiscoverLoadingMode(value) {
-    const normalized = String(value || '').trim().toLowerCase();
-    return normalized === 'native' || normalized === 'skeleton' ? normalized : '';
-  }
-
-  function discoverLoadingModeFromUrl() {
-    const searchMode = safeSearchParam(window.location.search, discoverLoadingModeParam);
-    if (searchMode) return searchMode;
-
-    const hash = window.location.hash || '';
-    const queryIndex = hash.indexOf('?');
-    return queryIndex >= 0 ? safeSearchParam(hash.slice(queryIndex + 1), discoverLoadingModeParam) : '';
-  }
-
-  function safeSearchParam(value, key) {
-    try {
-      return normalizeDiscoverLoadingMode(new URLSearchParams(value).get(key));
-    } catch {
-      return '';
-    }
-  }
-
-  function discoverLoadingMode() {
-    const urlMode = discoverLoadingModeFromUrl();
-    if (urlMode) {
-      try {
-        window.localStorage?.setItem(discoverLoadingModeStorageKey, urlMode);
-      } catch {
-        // Ignore storage failures; URL override still applies for this load.
-      }
-      return urlMode;
-    }
-
-    try {
-      return normalizeDiscoverLoadingMode(window.localStorage?.getItem(discoverLoadingModeStorageKey)) || defaultDiscoverLoadingMode;
-    } catch {
-      return defaultDiscoverLoadingMode;
-    }
-  }
 
   function currentDashboard() {
     if (window.Dashboard) return window.Dashboard;
@@ -542,52 +499,6 @@
       }
       .seerr-discover--loading {
         min-height: clamp(14rem, 32vh, 24rem);
-      }
-      .seerr-skeleton {
-        pointer-events: none;
-        user-select: none;
-      }
-      .seerr-skeleton__title,
-      .seerr-skeleton__poster,
-      .seerr-skeleton__line {
-        border-radius: 0.48rem;
-        background: linear-gradient(
-          90deg,
-          rgb(var(--seerr-text-channel) / 0.08),
-          rgb(var(--seerr-text-channel) / 0.16),
-          rgb(var(--seerr-text-channel) / 0.08)
-        );
-        background-size: 220% 100%;
-        animation: seerr-skeleton-pulse 1.25s ease-in-out infinite;
-      }
-      .seerr-skeleton__title {
-        width: min(12rem, 52vw);
-        height: 1.15rem;
-      }
-      .seerr-skeleton__card {
-        display: grid;
-        grid-template-rows: auto minmax(3.2rem, auto);
-        gap: 0;
-      }
-      .seerr-skeleton__poster {
-        aspect-ratio: 2 / 3;
-        box-shadow: inset 0 0 0 1px var(--seerr-border-soft);
-      }
-      .seerr-skeleton__meta {
-        display: grid;
-        gap: 0.38rem;
-        min-width: 0;
-        padding: 0.55rem 0.1rem 0;
-      }
-      .seerr-skeleton__line {
-        height: 0.8rem;
-      }
-      .seerr-skeleton__line--short {
-        width: 58%;
-      }
-      @keyframes seerr-skeleton-pulse {
-        0% { background-position: 120% 0; }
-        100% { background-position: -120% 0; }
       }
       .seerr-card {
         display: grid;
@@ -1132,13 +1043,6 @@
         .seerr-modal__trailer-list { left: 0; right: 0; min-width: 100%; }
         .seerr-modal__people { grid-template-columns: 1fr; }
       }
-      @media (prefers-reduced-motion: reduce) {
-        .seerr-skeleton__title,
-        .seerr-skeleton__poster,
-        .seerr-skeleton__line {
-          animation: none;
-        }
-      }
       .seerr-discover-tab-content[data-seerr-active="true"] {
         display: block !important;
       }
@@ -1435,41 +1339,12 @@
     `;
   }
 
-  function skeletonRailTemplate(rail) {
-    return `
-      <section class="seerr-discover__rail seerr-skeleton" data-seerr-skeleton-rail="${escapeHtml(rail.id)}" aria-hidden="true">
-        <div class="seerr-skeleton__title"></div>
-        <div class="seerr-discover__scroller">
-          ${Array.from({ length: 8 }, skeletonCard).join('')}
-        </div>
-      </section>
-    `;
-  }
-
-  function skeletonCard() {
-    return `
-      <div class="seerr-skeleton__card">
-        <div class="seerr-skeleton__poster"></div>
-        <div class="seerr-skeleton__meta">
-          <div class="seerr-skeleton__line"></div>
-          <div class="seerr-skeleton__line seerr-skeleton__line--short"></div>
-        </div>
-      </div>
-    `;
-  }
-
   function renderDiscoverLoading(root) {
-    const mode = root.__seerrLoadingMode || discoverLoadingMode();
     ensureDiscoverNativeLoading(root);
-    const loadingMarkup = mode === 'skeleton'
-      ? rails.slice(0, Math.min(rails.length, 4)).map(skeletonRailTemplate).join('')
-      : '';
 
     root.innerHTML = `
       <div class="seerr-discover seerr-discover--loading" aria-busy="true" aria-label="Loading Discover" role="status">
-        <div data-seerr-rails>
-          ${loadingMarkup}
-        </div>
+        <div data-seerr-rails></div>
       </div>
     `;
   }
@@ -2541,16 +2416,14 @@
   }
 
   function ensureDiscoverNativeLoading(root) {
-    if (root.__seerrLoadingMode !== 'native' || root.__seerrNativeLoadingVisible === true || !isDiscoverRootActive(root)) {
+    if (root.__seerrNativeLoadingVisible === true || !isDiscoverRootActive(root)) {
       return;
     }
     root.__seerrNativeLoadingVisible = showDiscoverNativeLoading();
   }
 
   function startDiscoverLoading(root) {
-    root.__seerrLoadingMode = discoverLoadingMode();
     root.__seerrNativeLoadingVisible = false;
-    root.dataset.seerrLoading = root.__seerrLoadingMode;
     root.setAttribute('aria-busy', 'true');
     state.loading.add(discoverLoadingKey);
     ensureDiscoverNativeLoading(root);
@@ -2563,7 +2436,6 @@
     if (root) {
       root.__seerrNativeLoadingVisible = false;
       root.removeAttribute('aria-busy');
-      delete root.dataset.seerrLoading;
     }
     state.loading.delete(discoverLoadingKey);
   }

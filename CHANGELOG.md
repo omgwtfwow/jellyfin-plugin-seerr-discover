@@ -8,8 +8,8 @@
   responsive desktop/mobile details layout.
 - Keep Jellyfin's native no-results message visible and place requestable Seerr
   search results underneath it.
-- Smooth the Discover tab first-load experience with a native Jellyfin loading
-  mode plus a staging override for comparing inline skeleton placeholders.
+- Smooth the Discover tab first-load experience with Jellyfin's native loading
+  overlay.
 - Remove the duplicate inline loading notice when the native Jellyfin loader is
   active.
 - Promote Discover rail titles to H2 headings for clearer page hierarchy.
