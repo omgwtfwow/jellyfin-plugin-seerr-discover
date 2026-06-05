@@ -234,16 +234,6 @@ public sealed class SeerrClient : ISeerrClient
     }
 
     /// <inheritdoc />
-    public Task<string> GetCollectionAsync(int collectionId, CancellationToken cancellationToken)
-    {
-        var path = QueryHelpers.AddQueryString(
-            $"/api/v1/collection/{collectionId.ToString(CultureInfo.InvariantCulture)}",
-            "language",
-            Config.Language);
-        return SendAsync(HttpMethod.Get, path, null, true, cancellationToken);
-    }
-
-    /// <inheritdoc />
     public async Task<(bool Found, string Json)> GetMappedUserAsync(Guid jellyfinUserId, CancellationToken cancellationToken)
     {
         try

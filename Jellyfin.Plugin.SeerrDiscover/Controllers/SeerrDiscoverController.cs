@@ -180,8 +180,7 @@ public sealed class SeerrDiscoverController : ControllerBase
             detailRails = new
             {
                 similar = config.EnableDetailSimilar,
-                recommended = config.EnableDetailRecommended,
-                collections = config.EnableDetailCollections
+                recommended = config.EnableDetailRecommended
             },
             discoverRails = BuildDiscoverRails(config)
                 .Select(rail => new { id = rail.Id, title = rail.Title, feed = rail.Feed }),
@@ -263,7 +262,7 @@ public sealed class SeerrDiscoverController : ControllerBase
     }
 
     /// <summary>
-    /// Gets optional detail modal related rails.
+    /// Gets optional detail page related rails.
     /// </summary>
     [HttpGet("related/{mediaType}/{tmdbId:int}")]
     [Produces("application/json")]
@@ -607,15 +606,6 @@ public sealed class SeerrDiscoverController : ControllerBase
             }
         }
 
-        if (mediaType == "movie" && config.EnableDetailCollections)
-        {
-            var collection = await BuildCollectionRailAsync(tmdbId, cancellationToken).ConfigureAwait(false);
-            if (collection is not null)
-            {
-                rails.Add(collection);
-            }
-        }
-
         return JsonSerializer.Serialize(new JsonObject { ["rails"] = rails });
     }
 
@@ -637,67 +627,6 @@ public sealed class SeerrDiscoverController : ControllerBase
                 ["id"] = relation,
                 ["title"] = title,
                 ["results"] = results.DeepClone()
-            };
-        }
-        catch (SeerrHttpException)
-        {
-            return null;
-        }
-    }
-
-    private async Task<JsonObject?> BuildCollectionRailAsync(int tmdbId, CancellationToken cancellationToken)
-    {
-        JsonObject? detail;
-        try
-        {
-            detail = JsonNode.Parse(await _seerrClient.GetMediaAsync("movie", tmdbId, cancellationToken).ConfigureAwait(false)) as JsonObject;
-        }
-        catch (SeerrHttpException)
-        {
-            return null;
-        }
-
-        var collectionId = detail?["collection"]?["id"]?.GetValue<int>() ?? 0;
-        if (collectionId <= 0)
-        {
-            return null;
-        }
-
-        try
-        {
-            var collection = JsonNode.Parse(await _seerrClient.GetCollectionAsync(collectionId, cancellationToken).ConfigureAwait(false)) as JsonObject;
-            var parts = collection?["parts"] as JsonArray;
-            if (parts is null || parts.Count == 0)
-            {
-                return null;
-            }
-
-            var results = new JsonArray();
-            foreach (var part in parts)
-            {
-                if (part is not JsonObject partObject)
-                {
-                    continue;
-                }
-
-                var id = partObject["id"]?.GetValue<int>() ?? 0;
-                if (id > 0 && id != tmdbId)
-                {
-                    results.Add(partObject.DeepClone());
-                }
-            }
-
-            if (results.Count == 0)
-            {
-                return null;
-            }
-
-            RemoveRequestUserData(results);
-            return new JsonObject
-            {
-                ["id"] = "collection",
-                ["title"] = collection?["name"]?.GetValue<string>() ?? "From This Collection",
-                ["results"] = results
             };
         }
         catch (SeerrHttpException)
@@ -835,8 +764,7 @@ public sealed class SeerrDiscoverController : ControllerBase
             EnableRecentlyRequested = config.EnableRecentlyRequested,
             EnablePopularWithServer = config.EnablePopularWithServer,
             EnableDetailSimilar = config.EnableDetailSimilar,
-            EnableDetailRecommended = config.EnableDetailRecommended,
-            EnableDetailCollections = config.EnableDetailCollections
+            EnableDetailRecommended = config.EnableDetailRecommended
         };
 
         dto.ExtraRails.AddRange(NormalizeExtraRails(config.ExtraRails).Select(ToExtraRailDto));
@@ -867,7 +795,6 @@ public sealed class SeerrDiscoverController : ControllerBase
         config.EnablePopularWithServer = update.EnablePopularWithServer;
         config.EnableDetailSimilar = update.EnableDetailSimilar;
         config.EnableDetailRecommended = update.EnableDetailRecommended;
-        config.EnableDetailCollections = update.EnableDetailCollections;
         config.ExtraRails = NormalizeExtraRails(update.ExtraRails?.Select(FromExtraRailDto)).ToList();
 
         if (update.ClearSeerrApiKey)

@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using Jellyfin.Plugin.SeerrDiscover.Configuration;
 using Jellyfin.Plugin.SeerrDiscover.Controllers;
 using Jellyfin.Plugin.SeerrDiscover.Models;
+using Jellyfin.Plugin.SeerrDiscover.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -243,6 +244,51 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("<h3 class=\"sectionTitle seerr-modal__section-title\">Tags</h3>", source, StringComparison.Ordinal);
         Assert.Contains("<h3 class=\"sectionTitle seerr-modal__section-title\">${escapeHtml(group.title)}</h3>", source, StringComparison.Ordinal);
         Assert.DoesNotContain("#itemDetailPage", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DiscoverAsset_AddsNativeDetailRelatedRailsWithNativeHooks()
+    {
+        var source = ReadBrowserAsset("discover.js");
+
+        Assert.Contains("document.querySelector('.libraryPage:not(.hide)')", source, StringComparison.Ordinal);
+        Assert.Contains("querySelector('.detailPageContent')", source, StringComparison.Ordinal);
+        Assert.Contains("detailContent.querySelector('#similarCollapsible')", source, StringComparison.Ordinal);
+        Assert.Contains("document.addEventListener('viewshow', scheduleMount);", source, StringComparison.Ordinal);
+        Assert.Contains("typeof AbortController !== 'undefined' ? new AbortController() : null", source, StringComparison.Ordinal);
+        Assert.Contains("data-seerr-native-detail-related", source, StringComparison.Ordinal);
+        Assert.Contains("native-detail-${rail.id}", source, StringComparison.Ordinal);
+        Assert.Contains("verticalSection emby-scroller-container seerr-discover__rail", source, StringComparison.Ordinal);
+        Assert.Contains("sectionTitle sectionTitle-cards padded-left seerr-discover__rail-title", source, StringComparison.Ordinal);
+        Assert.Contains("const layoutClass = isBackdropFallback ? 'overflowBackdropCard' : 'overflowPortraitCard';", source, StringComparison.Ordinal);
+        Assert.Contains("card ${layoutClass} card-hoverable card-withuserdata seerr-card", source, StringComparison.Ordinal);
+        Assert.Contains("cardBox cardBox-bottompadded", source, StringComparison.Ordinal);
+        Assert.Contains("cardScalable", source, StringComparison.Ordinal);
+        Assert.Contains("cardImageContainer coveredImage cardContent", source, StringComparison.Ordinal);
+        Assert.Contains("cardText cardTextCentered cardText-first", source, StringComparison.Ordinal);
+        Assert.Contains("cardText cardTextCentered cardText-secondary", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("#itemDetailPage", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DiscoverAsset_DoesNotExposeCollectionsRelatedRail()
+    {
+        var source = ReadBrowserAsset("discover.js");
+        var configPage = ReadConfigurationPage();
+
+        Assert.DoesNotContain("EnableDetailCollections", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("EnableDetailCollections", configPage, StringComparison.Ordinal);
+        Assert.DoesNotContain("Show movie collection entries", configPage, StringComparison.Ordinal);
+        Assert.DoesNotContain("detailRails.collections", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ServerConfiguration_DoesNotExposeCollectionsRelatedRail()
+    {
+        Assert.Null(typeof(PluginConfiguration).GetProperty("EnableDetailCollections"));
+        Assert.Null(typeof(SeerrDiscoverConfigurationDto).GetProperty("EnableDetailCollections"));
+        Assert.Null(typeof(SeerrDiscoverConfigurationUpdate).GetProperty("EnableDetailCollections"));
+        Assert.DoesNotContain(typeof(ISeerrClient).GetMethods(), method => method.Name.Contains("Collection", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -620,7 +666,6 @@ public sealed class SeerrDiscoverControllerTests
             EnablePopularWithServer = true,
             EnableDetailSimilar = true,
             EnableDetailRecommended = true,
-            EnableDetailCollections = true,
             ExtraRails =
             [
                 new SeerrExtraRailDto
@@ -649,7 +694,6 @@ public sealed class SeerrDiscoverControllerTests
         Assert.True(config.EnablePopularWithServer);
         Assert.True(config.EnableDetailSimilar);
         Assert.True(config.EnableDetailRecommended);
-        Assert.True(config.EnableDetailCollections);
         Assert.True(IsFeedEnabled(config, "recently-requested"));
         Assert.True(IsFeedEnabled(config, "server-popular"));
         Assert.True(IsFeedEnabled(config, "genre-movie-27"));
@@ -777,6 +821,16 @@ public sealed class SeerrDiscoverControllerTests
     private static string ReadBrowserAsset(string fileName)
     {
         var resourceName = $"Jellyfin.Plugin.SeerrDiscover.Web.{fileName}";
+        using var stream = typeof(SeerrDiscoverController).Assembly.GetManifestResourceStream(resourceName);
+
+        Assert.NotNull(stream);
+        using var reader = new StreamReader(stream!);
+        return reader.ReadToEnd();
+    }
+
+    private static string ReadConfigurationPage()
+    {
+        var resourceName = "Jellyfin.Plugin.SeerrDiscover.Configuration.configPage.html";
         using var stream = typeof(SeerrDiscoverController).Assembly.GetManifestResourceStream(resourceName);
 
         Assert.NotNull(stream);
