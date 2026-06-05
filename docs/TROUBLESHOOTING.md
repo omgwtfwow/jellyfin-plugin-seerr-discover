@@ -27,10 +27,10 @@
 
 ## Discover Tab Is Blank
 
-- Check that the loader points to the installed version:
+- Check that the loader points to the plugin asset:
 
   ```js
-  script.src = '/SeerrDiscover/assets/discover.js?v=<installed-version>';
+  script.src = '/SeerrDiscover/assets/discover.js';
   ```
 
 - Open the asset URL in the browser or network panel. It should return `200` and `text/javascript`.

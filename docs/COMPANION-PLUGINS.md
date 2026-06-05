@@ -42,16 +42,16 @@ Create an authenticated JavaScript entry:
   var script = document.createElement('script');
   script.id = 'seerr-discover-loader';
   script.defer = true;
-  script.src = '/SeerrDiscover/assets/discover.js?v=<installed-version>';
+  script.src = '/SeerrDiscover/assets/discover.js';
   document.head.appendChild(script);
 }());
 ```
 
-Replace `<installed-version>` with the version shown on the Jellyfin plugin details page.
+The asset URL serves the installed Seerr Discover version. No version placeholder is required.
 
 ## After Changes
 
 - Restart Jellyfin after installing or upgrading plugins.
 - Hard-refresh Jellyfin Web after changing Custom Tabs or JavaScript Injector settings.
 - In Jellyfin Desktop or mobile app webviews, fully quit and reopen the client if the old asset remains cached.
-- If the Discover page is blank, open browser dev tools and check whether `/SeerrDiscover/assets/discover.js?v=<installed-version>` returns `200`.
+- If the Discover page is blank, open browser dev tools and check whether `/SeerrDiscover/assets/discover.js` returns `200`.

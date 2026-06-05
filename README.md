@@ -32,7 +32,7 @@ The server plugin provides the Jellyfin API proxy and browser asset. Custom Tabs
    <div class="sections"><div id="seerrDiscoverRoot"></div></div>
    ```
 
-3. In JavaScript Injector, add an authenticated JavaScript entry and paste this loader. Replace `<installed-version>` with the Seerr Discover version shown in Dashboard > Plugins.
+3. In JavaScript Injector, add an authenticated JavaScript entry and paste this loader:
 
    ```js
    (function () {
@@ -40,7 +40,7 @@ The server plugin provides the Jellyfin API proxy and browser asset. Custom Tabs
      var script = document.createElement('script');
      script.id = 'seerr-discover-loader';
      script.defer = true;
-     script.src = '/SeerrDiscover/assets/discover.js?v=<installed-version>';
+     script.src = '/SeerrDiscover/assets/discover.js';
      document.head.appendChild(script);
    }());
    ```

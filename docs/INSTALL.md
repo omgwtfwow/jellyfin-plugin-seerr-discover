@@ -61,7 +61,7 @@ Custom Tabs: add a tab named `Discover` with:
 <div class="sections"><div id="seerrDiscoverRoot"></div></div>
 ```
 
-JavaScript Injector: add an authenticated script. Replace `<installed-version>` with the Seerr Discover version shown in Dashboard > Plugins.
+JavaScript Injector: add an authenticated script.
 
 ```js
 (function () {
@@ -69,7 +69,7 @@ JavaScript Injector: add an authenticated script. Replace `<installed-version>` 
   var script = document.createElement('script');
   script.id = 'seerr-discover-loader';
   script.defer = true;
-  script.src = '/SeerrDiscover/assets/discover.js?v=<installed-version>';
+  script.src = '/SeerrDiscover/assets/discover.js';
   document.head.appendChild(script);
 }());
 ```
