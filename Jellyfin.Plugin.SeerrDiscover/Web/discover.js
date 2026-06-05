@@ -962,7 +962,7 @@
       }
       @media (max-width: 720px) {
         .seerr-discover-tab-content {
-          --seerr-tab-top-offset: calc(clamp(7.25rem, 13vh, 9rem) + env(safe-area-inset-top));
+          --seerr-tab-top-offset: calc(clamp(9.25rem, 17vh, 10.75rem) + env(safe-area-inset-top));
           padding:
             var(--seerr-tab-top-offset)
             max(0.5rem, env(safe-area-inset-right))
