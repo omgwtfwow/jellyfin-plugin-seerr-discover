@@ -34,6 +34,7 @@
   ```
 
 - Open the asset URL in the browser or network panel. It should return `200` and `text/javascript`.
+- The JavaScript asset is public/auditable client code by design. Loading the file without a Jellyfin session must not expose Seerr data or credentials.
 - Hard-refresh Jellyfin Web. In Jellyfin Desktop or mobile app webviews, fully close and reopen the client.
 - Confirm the Jellyfin user is authenticated. The plugin endpoints require Jellyfin auth.
 - The Discover tab is rails-only. Use Jellyfin's native search page for search results.
@@ -79,8 +80,8 @@ Trailer links open YouTube URLs from inside the Jellyfin Web client. Some mobile
 
 ## Browser Traffic Shows the Seerr API Key
 
-This should not happen. Browser JavaScript should call `/SeerrDiscover/*` endpoints for Seerr traffic with Jellyfin auth. Local Jellyfin API requests, such as `/Items`, can appear for library availability matching, but they should not contain the Seerr API key.
+This should not happen. Browser JavaScript is public/auditable and should never contain the stored Seerr API key, Jellyfin tokens, or secret request headers. Seerr traffic should call `/SeerrDiscover/*` endpoints with Jellyfin auth, and the Jellyfin server should add any Seerr credentials server-side. Local Jellyfin API requests, such as `/Items`, can appear for library availability matching, but they should not contain the Seerr API key.
 
 - Remove screenshots/logs that include secrets before filing an issue.
 - Disable the plugin until the exposure is understood.
-- File a security-sensitive issue with reproduction steps.
+- File a security-sensitive issue with reproduction steps, including the browser network path where `X-Api-Key` or the stored Seerr API key appeared.

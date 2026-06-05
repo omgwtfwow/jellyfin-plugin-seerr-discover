@@ -139,10 +139,12 @@ Most installs only need the Seerr URLs, Seerr API key, companion plugin setup, a
 
 ## Security
 
-- The Seerr API key is sent only from Jellyfin server code to Seerr.
-- The browser asset calls `/SeerrDiscover/*` with Jellyfin authentication for Seerr traffic.
+- Browser JavaScript is public, auditable client code. It is not a secret and must not contain Seerr API keys, Jellyfin tokens, or stored credentials.
+- The Seerr API key is stored in Jellyfin plugin configuration and sent only from Jellyfin server code to Seerr.
+- The browser asset calls `/SeerrDiscover/*` with Jellyfin authentication for Seerr traffic. Anonymous access to a JavaScript file is not anonymous access to Seerr data.
 - The admin config page uses redacted plugin-owned endpoints so the stored API key is not written into the page.
 - Request creation requires a mapped Jellyfin/Seerr user by default.
+- Treat any browser network path that contains `X-Api-Key` or the stored Seerr API key value as a security bug.
 
 ## Development
 
