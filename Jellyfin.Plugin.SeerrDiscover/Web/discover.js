@@ -522,6 +522,9 @@
         cursor: pointer;
         flex: 0 0 auto;
       }
+      .seerr-discover__scroller > .seerr-card:first-child {
+        margin-left: 0;
+      }
       .seerr-card:focus-visible {
         outline: 2px solid rgb(var(--seerr-text-channel) / 0.42);
         outline-offset: 3px;
@@ -3321,13 +3324,10 @@
             <label class="inputLabel inputLabelUnfocused" for="RailTitle-${escapeHtml(row.Id)}">Heading</label>
             <input id="RailTitle-${escapeHtml(row.Id)}" is="emby-input" type="text" maxlength="96" value="${escapeHtml(row.TitleOverride)}" placeholder="${escapeHtml(row.Title)}" data-config-rail-title="${escapeHtml(row.Id)}" aria-label="${escapeHtml(row.Title)} custom heading" />
           </div>
-          <div class="selectContainer seerr-config-rail-layout">
-            <label class="selectLabel" for="RailLayout-${escapeHtml(row.Id)}">Artwork layout</label>
-            <select id="RailLayout-${escapeHtml(row.Id)}" is="emby-select" data-config-rail-layout="${escapeHtml(row.Id)}" aria-label="${escapeHtml(row.Title)} artwork layout">
-              <option value="vertical" ${row.ArtworkLayout === artworkLayoutHorizontal ? '' : 'selected'}>Vertical poster</option>
-              <option value="horizontal" ${row.ArtworkLayout === artworkLayoutHorizontal ? 'selected' : ''}>Horizontal backdrop</option>
-            </select>
-          </div>
+          <label class="emby-checkbox-label seerr-config-rail-layout">
+            <input type="checkbox" is="emby-checkbox" data-config-rail-layout="${escapeHtml(row.Id)}" aria-label="${escapeHtml(row.Title)} horizontal backdrop artwork" ${row.ArtworkLayout === artworkLayoutHorizontal ? 'checked' : ''} />
+            <span>Horizontal backdrop</span>
+          </label>
           <button is="emby-button" type="button" class="emby-button seerr-config-row-button seerr-config-row-button--up" data-config-rail-move="${escapeHtml(row.Id)}" data-config-rail-direction="-1" ${index === 0 ? 'disabled' : ''}>
             <span>Move up</span>
           </button>
@@ -3351,9 +3351,9 @@
       });
     });
 
-    list.querySelectorAll('[data-config-rail-layout]').forEach((select) => {
-      select.addEventListener('change', () => {
-        setConfigRailLayout(page, presentationProperty, select.getAttribute('data-config-rail-layout') || '', select.value);
+    list.querySelectorAll('[data-config-rail-layout]').forEach((input) => {
+      input.addEventListener('change', () => {
+        setConfigRailLayout(page, presentationProperty, input.getAttribute('data-config-rail-layout') || '', input.checked ? artworkLayoutHorizontal : artworkLayoutVertical);
       });
     });
 

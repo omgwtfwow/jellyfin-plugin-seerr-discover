@@ -238,6 +238,16 @@ public sealed class SeerrDiscoverControllerTests
     }
 
     [Fact]
+    public void DiscoverAsset_AlignsRailHeadingsWithFirstThumbnail()
+    {
+        var source = ReadBrowserAsset("discover.js");
+        var firstCardRule = Regex.Match(source, @"\.seerr-discover__scroller\s*>\s*\.seerr-card:first-child\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
+
+        Assert.True(firstCardRule.Success, "Discover rail scrollers should reset the first card margin so rail headings align with the first thumbnail.");
+        Assert.Contains("margin-left: 0;", firstCardRule.Groups["body"].Value, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DiscoverAsset_AddsSafeNativeHooksToModal()
     {
         var source = ReadBrowserAsset("discover.js");
@@ -304,7 +314,8 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("data-config-rail-title", source, StringComparison.Ordinal);
         Assert.Contains("normalizeConfigRailTitle", source, StringComparison.Ordinal);
         Assert.Contains("data-config-rail-move", source, StringComparison.Ordinal);
-        Assert.Contains("Vertical poster", source, StringComparison.Ordinal);
+        Assert.Contains("type=\"checkbox\" is=\"emby-checkbox\" data-config-rail-layout", source, StringComparison.Ordinal);
+        Assert.Contains("input.checked ? artworkLayoutHorizontal : artworkLayoutVertical", source, StringComparison.Ordinal);
         Assert.Contains("Horizontal backdrop", source, StringComparison.Ordinal);
         Assert.Contains("id=\"DiscoverRailList\"", configPage, StringComparison.Ordinal);
         Assert.Contains("id=\"DetailRailList\"", configPage, StringComparison.Ordinal);
