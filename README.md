@@ -33,6 +33,10 @@ These screenshots were captured from a live Jellyfin Web session and show the pl
 | --- | --- |
 | ![Screenshot of the Seerr Discover detail modal](docs/assets/screenshots/detail-modal.jpg) | ![Screenshot of Seerr Discover on a narrow mobile layout](docs/assets/screenshots/mobile-layout.jpg) |
 
+| Optional rail catalog |
+| --- |
+| ![Screenshot of the Seerr Discover optional rail catalog in Jellyfin plugin settings](docs/assets/screenshots/optional-rails-catalog.jpg) |
+
 ## Requirements
 
 - Jellyfin Server `10.11.x`; current releases target `targetAbi: 10.11.10.0`
@@ -47,7 +51,8 @@ Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI s
 
 ## Features
 
-- Rails-only Discover tab for configurable Trending Movies, Trending TV, Popular Movies, Popular TV, and Upcoming Movies rows
+- Rails-only Discover tab for configurable Trending Movies, Trending TV, Popular Movies, Popular TV, Upcoming Movies, and Upcoming TV rows
+- Optional admin-selected rails for genres, movie studios, TV networks, original languages, and keywords
 - Requestable Seerr movie and series results inside Jellyfin's native search page
 - Detail modal with poster/backdrop, metadata, cast/crew, trailers, and Seerr links
 - Request creation as the mapped Seerr user
@@ -75,12 +80,33 @@ See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) if the plugin does not ap
 
 Open Jellyfin Dashboard > Plugins > Seerr Discover.
 
-- `Seerr base URL`: internal URL from Jellyfin to Seerr, for example `http://seerr:5055`
-- `Seerr public URL`: browser URL for Open in Seerr links, for example `https://seerr.example.com`
-- `Seerr API key`: write-only in the config page; blank preserves the existing key
-- cache TTLs: bounded between 5 and 3600 seconds
-- `Require mapped Seerr users`: recommended and enabled by default
-- `Show Seerr results in Jellyfin search`: recommended and enabled by default
+Most installs only need the Seerr URLs, Seerr API key, companion plugin setup, and the default rail choices. The optional rail catalog can add opt-in Discover rows by genre, movie studio, TV network, original language, or keyword. Genres, languages, and networks can be listed without a query; studios and keywords use search. Added optional rails can be enabled, disabled, or removed before saving.
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| Seerr base URL | `http://seerr:5055` | Internal URL Jellyfin uses to call Seerr. |
+| Seerr public URL | blank | Browser URL used by Open in Seerr links. |
+| Seerr API key | blank | Write-only server-side key; leaving the field blank preserves a stored key. |
+| Language | `en` | Language passed to Seerr/TMDB-backed endpoints. |
+| Discover cache seconds | `600` | Cache TTL for Discover rail responses. |
+| Details cache seconds | `300` | Cache TTL for detail modal responses. |
+| Search cache seconds | `60` | Cache TTL for native search integration. |
+| User cache seconds | `60` | Cache TTL for mapped-user and quota lookups. |
+| Require mapped Seerr users | On | Requests must be created as the mapped Seerr user. |
+| Show Seerr results in Jellyfin search | On | Adds Seerr results to Jellyfin's native search page. |
+| Default 4K requests | Off | Creates 4K requests by default when enabled. |
+| Trending Movies rail | On | Shows Seerr/TMDB trending movies. |
+| Trending TV rail | On | Shows Seerr/TMDB trending series. |
+| Popular Movies rail | On | Shows popular movies. |
+| Popular TV rail | On | Shows popular series. |
+| Upcoming Movies rail | On | Shows upcoming movies. |
+| Upcoming TV rail | On | Shows upcoming series. |
+| Recently Requested rail | Off | Shows recent request media only; requester details are stripped server-side. |
+| Popular With This Server rail | Off | Dedupes recent server requests into media cards. |
+| Similar titles in detail modals | Off | Adds similar-title rows inside detail modals. |
+| Recommended titles in detail modals | Off | Adds recommended-title rows inside detail modals. |
+| Movie collection entries in detail modals | Off | Adds franchise/collection entries inside movie detail modals. |
+| Optional rail catalog | none configured | Adds admin-selected genre, studio, network, language, or keyword rails. |
 
 ## Security
 
