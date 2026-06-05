@@ -275,7 +275,6 @@ public sealed class SeerrDiscoverControllerTests
         var nativeScrollerRule = Regex.Matches(source, @"\.seerr-native-detail-related\s+\.seerr-discover__scroller\s*\{(?<body>.*?)\}", RegexOptions.Singleline)
             .Cast<Match>()
             .SingleOrDefault(match => match.Groups["body"].Value.Contains("display:", StringComparison.Ordinal));
-        var nativeHorizontalCardRule = Regex.Match(source, @"\.seerr-native-detail-related\s+\.seerr-discover__rail\[data-seerr-artwork-layout=""horizontal""\]\s+\.seerr-card\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
 
         Assert.Contains("document.querySelector('.libraryPage:not(.hide)')", source, StringComparison.Ordinal);
         Assert.Contains("querySelector('.detailPageContent')", source, StringComparison.Ordinal);
@@ -293,8 +292,9 @@ public sealed class SeerrDiscoverControllerTests
         Assert.NotNull(nativeScrollerRule);
         Assert.Contains("display: flex;", nativeScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("flex-wrap: nowrap;", nativeScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
-        Assert.True(nativeHorizontalCardRule.Success, "Native detail horizontal rails should use larger detail-page card sizing than the modal.");
-        Assert.Contains("width: clamp(30rem, 40vw, 44rem);", nativeHorizontalCardRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.DoesNotContain(".seerr-native-detail-related .seerr-discover__rail[data-seerr-artwork-layout=\"horizontal\"] .seerr-card", source, StringComparison.Ordinal);
+        Assert.DoesNotContain(".seerr-native-detail-related .seerr-discover__rail[data-seerr-artwork-layout=\"vertical\"] .seerr-card", source, StringComparison.Ordinal);
+        Assert.DoesNotContain(".seerr-native-detail-related .seerr-card", source, StringComparison.Ordinal);
         Assert.Contains("padding-left: 0 !important;", source, StringComparison.Ordinal);
         Assert.Contains("padding-right: 0 !important;", source, StringComparison.Ordinal);
         Assert.Contains("artworkLayout: normalizeArtworkLayout(rail.artworkLayout)", source, StringComparison.Ordinal);
@@ -303,6 +303,7 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("cardBox cardBox-bottompadded", source, StringComparison.Ordinal);
         Assert.Contains("cardScalable", source, StringComparison.Ordinal);
         Assert.Contains("cardImageContainer coveredImage cardContent", source, StringComparison.Ordinal);
+        Assert.Contains("sizes=\"${isHorizontal ? '(max-width: 720px) 76vw, 20rem' : '(max-width: 720px) 42vw, 13.5rem'}\"", source, StringComparison.Ordinal);
         Assert.Contains("cardText cardTextCentered cardText-first", source, StringComparison.Ordinal);
         Assert.Contains("cardText cardTextCentered cardText-secondary", source, StringComparison.Ordinal);
         Assert.DoesNotContain("#itemDetailPage", source, StringComparison.Ordinal);
