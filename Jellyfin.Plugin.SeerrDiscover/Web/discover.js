@@ -888,6 +888,9 @@
         grid-template-columns: 1fr;
         gap: 0.72rem;
       }
+      .seerr-modal__fact {
+        min-width: 0;
+      }
       .seerr-modal__fact-label {
         color: var(--seerr-disabled);
         font-size: 0.75rem;
@@ -898,6 +901,7 @@
         margin-top: 0.12rem;
         color: var(--seerr-text);
         font-size: 0.88rem;
+        overflow-wrap: anywhere;
       }
       .seerr-modal__people {
         display: grid;
@@ -1125,6 +1129,10 @@
         }
         .seerr-modal__person span {
           font-size: 0.72rem;
+        }
+        .seerr-modal__facts {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.72rem 0.95rem;
         }
         .seerr-modal__aside {
           grid-template-columns: 1fr;
@@ -1531,7 +1539,7 @@
       ? `<section class="seerr-modal__section">
           <h3 class="sectionTitle seerr-modal__section-title">Details</h3>
           <div class="seerr-modal__facts">
-            ${facts.map((fact) => `<div><div class="seerr-modal__fact-label">${escapeHtml(fact.label)}</div><div class="seerr-modal__fact-value">${escapeHtml(fact.value)}</div></div>`).join('')}
+            ${facts.map((fact) => `<div class="seerr-modal__fact"><div class="seerr-modal__fact-label">${escapeHtml(fact.label)}</div><div class="seerr-modal__fact-value">${escapeHtml(fact.value)}</div></div>`).join('')}
           </div>
         </section>`
       : '';

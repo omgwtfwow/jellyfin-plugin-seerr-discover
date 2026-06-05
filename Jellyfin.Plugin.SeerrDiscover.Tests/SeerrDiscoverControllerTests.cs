@@ -291,6 +291,21 @@ public sealed class SeerrDiscoverControllerTests
     }
 
     [Fact]
+    public void DiscoverAsset_UsesTwoColumnCompactModalFacts()
+    {
+        var source = ReadBrowserAsset("discover.js");
+        var factRule = Regex.Match(source, @"\.seerr-modal__fact\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
+        var factValueRule = Regex.Match(source, @"\.seerr-modal__fact-value\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
+
+        Assert.True(factRule.Success, "Discover modal facts should use scoped containment.");
+        Assert.True(factValueRule.Success, "Discover modal fact values should keep scoped wrapping rules.");
+        Assert.Contains("min-width: 0;", factRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("overflow-wrap: anywhere;", factValueRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains(".seerr-modal__facts {\n          grid-template-columns: repeat(2, minmax(0, 1fr));\n          gap: 0.72rem 0.95rem;", source, StringComparison.Ordinal);
+        Assert.Contains("class=\"seerr-modal__fact\"", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DiscoverAsset_ConstrainsModalOverviewAndRelatedCards()
     {
         var source = ReadBrowserAsset("discover.js");
