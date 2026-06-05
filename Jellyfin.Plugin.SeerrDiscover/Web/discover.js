@@ -9,6 +9,7 @@
     { id: 'movies', title: 'Popular Movies', feed: 'movies' },
     { id: 'tv', title: 'Popular TV', feed: 'tv' },
     { id: 'upcoming', title: 'Upcoming Movies', feed: 'upcoming' },
+    { id: 'upcoming-tv', title: 'Upcoming TV', feed: 'upcoming-tv' },
   ];
   const state = {
     mountedRoot: null,
@@ -919,6 +920,18 @@
         flex-wrap: wrap;
         gap: 0.35rem;
       }
+      .seerr-modal__related {
+        margin-top: 1.4rem;
+      }
+      .seerr-modal__related .seerr-discover__rail {
+        margin: 1.1rem 0 0;
+      }
+      .seerr-modal__related .seerr-discover__rail:first-child {
+        margin-top: 0;
+      }
+      .seerr-modal__related .seerr-discover__scroller {
+        padding: 0 0 0.4rem;
+      }
       .seerr-modal__close {
         position: absolute;
         top: 0.7rem;
@@ -1212,7 +1225,11 @@
   }
 
   function bindRoot(root) {
-    root.querySelectorAll('[data-seerr-id]').forEach((button) => {
+    bindCards(root);
+  }
+
+  function bindCards(container) {
+    container.querySelectorAll('[data-seerr-id]').forEach((button) => {
       button.addEventListener('click', () => openDetails(button.getAttribute('data-seerr-type'), button.getAttribute('data-seerr-id')));
     });
   }
@@ -1310,6 +1327,7 @@
               <p id="seerr-modal-overview" class="seerr-modal__overview">${escapeHtml(detail.overview || 'No overview available.')}</p>
             </section>
             ${peopleSection}
+            <div class="seerr-modal__related" data-seerr-related></div>
           </div>
           <aside class="seerr-modal__aside">
             ${factsSection}
@@ -1346,6 +1364,39 @@
       requestMedia(type, detail, event.currentTarget);
     });
     modal.querySelector('.seerr-modal__close')?.focus();
+    loadRelatedRails(type, detail.id, modal);
+  }
+
+  function loadRelatedRails(type, id, modal) {
+    const target = modal.querySelector('[data-seerr-related]');
+    if (!target || !type || !id) return;
+
+    apiFetch(`/SeerrDiscover/related/${encodeURIComponent(type)}/${encodeURIComponent(id)}`)
+      .then((data) => {
+        const relatedRails = Array.isArray(data?.rails) ? data.rails : [];
+        return Promise.all(relatedRails.map((rail) => filterAndEnrichItems(rail.results)
+          .then((items) => ({
+            id: String(rail.id || ''),
+            title: String(rail.title || ''),
+            items,
+          }))));
+      })
+      .then((relatedRails) => {
+        if (!document.body.contains(modal)) return;
+        const activeRails = relatedRails.filter((rail) => rail.id && rail.title && rail.items.length);
+        if (!activeRails.length) {
+          target.innerHTML = '';
+          return;
+        }
+
+        target.innerHTML = activeRails
+          .map((rail) => railTemplate({ id: `related-${rail.id}`, title: rail.title }, rail.items))
+          .join('');
+        bindCards(target);
+      })
+      .catch((error) => {
+        console.warn('Seerr Discover related rails failed', error);
+      });
   }
 
   function requestActions(requestDisabled, mapped) {
@@ -1860,9 +1911,8 @@
       return defaultRails;
     }
 
-    const allowedFeeds = new Set(defaultRails.map((rail) => rail.feed));
     return discoverRails
-      .filter((rail) => rail && allowedFeeds.has(rail.feed) && rail.id && rail.title)
+      .filter((rail) => rail && rail.feed && rail.id && rail.title)
       .map((rail) => ({
         id: String(rail.id),
         title: String(rail.title),

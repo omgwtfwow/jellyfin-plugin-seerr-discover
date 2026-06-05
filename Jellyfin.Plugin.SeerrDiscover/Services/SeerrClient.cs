@@ -55,7 +55,8 @@ public sealed class SeerrClient : ISeerrClient
             "movies" => "/api/v1/discover/movies",
             "tv" => "/api/v1/discover/tv",
             "upcoming" => "/api/v1/discover/movies/upcoming",
-            _ => throw new ArgumentException("Unsupported discover feed.", nameof(feed))
+            "upcoming-tv" => "/api/v1/discover/tv/upcoming",
+            _ => BuildExtraDiscoverPath(normalizedFeed) ?? throw new ArgumentException("Unsupported discover feed.", nameof(feed))
         };
 
         var query = new Dictionary<string, string?>
@@ -82,6 +83,49 @@ public sealed class SeerrClient : ISeerrClient
         return QueryHelpers.AddQueryString(path, query);
     }
 
+    private static string? BuildExtraDiscoverPath(string normalizedFeed)
+    {
+        var parts = normalizedFeed.Split('-', 3, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length != 3)
+        {
+            return null;
+        }
+
+        var kind = parts[0];
+        var mediaType = parts[1];
+        var value = Uri.EscapeDataString(parts[2]);
+        return (kind, mediaType) switch
+        {
+            ("genre", "movie") => $"/api/v1/discover/movies/genre/{value}",
+            ("genre", "tv") => $"/api/v1/discover/tv/genre/{value}",
+            ("studio", "movie") => $"/api/v1/discover/movies/studio/{value}",
+            ("network", "tv") => $"/api/v1/discover/tv/network/{value}",
+            ("language", "movie") => $"/api/v1/discover/movies/language/{value}",
+            ("language", "tv") => $"/api/v1/discover/tv/language/{value}",
+            ("keyword", "movie") => $"/api/v1/discover/keyword/{value}/movies",
+            ("keyword", "tv") => QueryHelpers.AddQueryString("/api/v1/discover/tv", new Dictionary<string, string?>
+            {
+                ["keywords"] = parts[2],
+                ["sortBy"] = "popularity.desc"
+            }),
+            _ => null
+        };
+    }
+
+    /// <inheritdoc />
+    public Task<string> GetRequestsAsync(int take, int skip, string sort, CancellationToken cancellationToken)
+    {
+        var path = QueryHelpers.AddQueryString(
+            "/api/v1/request",
+            new Dictionary<string, string?>
+            {
+                ["take"] = Math.Clamp(take, 1, 100).ToString(CultureInfo.InvariantCulture),
+                ["skip"] = Math.Max(skip, 0).ToString(CultureInfo.InvariantCulture),
+                ["sort"] = string.IsNullOrWhiteSpace(sort) ? "added" : sort
+            });
+        return SendAsync(HttpMethod.Get, path, null, true, cancellationToken);
+    }
+
     /// <inheritdoc />
     public Task<string> SearchAsync(string query, int page, CancellationToken cancellationToken)
     {
@@ -97,6 +141,59 @@ public sealed class SeerrClient : ISeerrClient
     }
 
     /// <inheritdoc />
+    public Task<string> SearchCompaniesAsync(string query, int page, CancellationToken cancellationToken)
+    {
+        var path = QueryHelpers.AddQueryString(
+            "/api/v1/search/company",
+            new Dictionary<string, string?>
+            {
+                ["query"] = query,
+                ["page"] = Math.Max(page, 1).ToString(CultureInfo.InvariantCulture)
+            });
+        return SendAsync(HttpMethod.Get, path, null, true, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<string> SearchKeywordsAsync(string query, int page, CancellationToken cancellationToken)
+    {
+        var path = QueryHelpers.AddQueryString(
+            "/api/v1/search/keyword",
+            new Dictionary<string, string?>
+            {
+                ["query"] = query,
+                ["page"] = Math.Max(page, 1).ToString(CultureInfo.InvariantCulture)
+            });
+        return SendAsync(HttpMethod.Get, path, null, true, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<string> GetGenresAsync(string mediaType, CancellationToken cancellationToken)
+    {
+        var normalized = mediaType.Trim().ToLowerInvariant();
+        var path = normalized switch
+        {
+            "movie" => "/api/v1/genres/movie",
+            "tv" => "/api/v1/genres/tv",
+            _ => throw new ArgumentException("mediaType must be movie or tv.", nameof(mediaType))
+        };
+
+        path = QueryHelpers.AddQueryString(path, "language", Config.Language);
+        return SendAsync(HttpMethod.Get, path, null, true, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<string> GetLanguagesAsync(CancellationToken cancellationToken)
+        => SendAsync(HttpMethod.Get, "/api/v1/languages", null, true, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<string> GetStudioAsync(int studioId, CancellationToken cancellationToken)
+        => SendAsync(HttpMethod.Get, $"/api/v1/studio/{studioId.ToString(CultureInfo.InvariantCulture)}", null, true, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<string> GetNetworkAsync(int networkId, CancellationToken cancellationToken)
+        => SendAsync(HttpMethod.Get, $"/api/v1/network/{networkId.ToString(CultureInfo.InvariantCulture)}", null, true, cancellationToken);
+
+    /// <inheritdoc />
     public Task<string> GetMediaAsync(string mediaType, int tmdbId, CancellationToken cancellationToken)
     {
         var normalized = mediaType.Trim().ToLowerInvariant();
@@ -108,6 +205,41 @@ public sealed class SeerrClient : ISeerrClient
         };
 
         path = QueryHelpers.AddQueryString(path, "language", Config.Language);
+        return SendAsync(HttpMethod.Get, path, null, true, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<string> GetRelatedAsync(string mediaType, int tmdbId, string relation, int page, CancellationToken cancellationToken)
+    {
+        var normalized = mediaType.Trim().ToLowerInvariant();
+        var normalizedRelation = relation.Trim().ToLowerInvariant();
+        var id = tmdbId.ToString(CultureInfo.InvariantCulture);
+        var path = (normalized, normalizedRelation) switch
+        {
+            ("movie", "recommended") => $"/api/v1/movie/{id}/recommendations",
+            ("movie", "similar") => $"/api/v1/movie/{id}/similar",
+            ("tv", "recommended") => $"/api/v1/tv/{id}/recommendations",
+            ("tv", "similar") => $"/api/v1/tv/{id}/similar",
+            _ => throw new ArgumentException("Unsupported related feed.", nameof(relation))
+        };
+
+        path = QueryHelpers.AddQueryString(
+            path,
+            new Dictionary<string, string?>
+            {
+                ["page"] = Math.Max(page, 1).ToString(CultureInfo.InvariantCulture),
+                ["language"] = Config.Language
+            });
+        return SendAsync(HttpMethod.Get, path, null, true, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<string> GetCollectionAsync(int collectionId, CancellationToken cancellationToken)
+    {
+        var path = QueryHelpers.AddQueryString(
+            $"/api/v1/collection/{collectionId.ToString(CultureInfo.InvariantCulture)}",
+            "language",
+            Config.Language);
         return SendAsync(HttpMethod.Get, path, null, true, cancellationToken);
     }
 

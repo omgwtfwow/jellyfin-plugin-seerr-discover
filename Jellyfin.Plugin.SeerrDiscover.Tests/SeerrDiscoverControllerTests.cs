@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json.Nodes;
 using Jellyfin.Plugin.SeerrDiscover.Configuration;
 using Jellyfin.Plugin.SeerrDiscover.Controllers;
 using Jellyfin.Plugin.SeerrDiscover.Models;
@@ -159,6 +160,114 @@ public sealed class SeerrDiscoverControllerTests
         ApplyConfigurationUpdate(config, update);
 
         Assert.False(config.EnableNativeSearchIntegration);
+    }
+
+    [Fact]
+    public void ApplyConfigurationUpdate_SavesExpandedRailSettings()
+    {
+        var config = new PluginConfiguration();
+        var update = new SeerrDiscoverConfigurationUpdate
+        {
+            SeerrBaseUrl = "http://seerr:5055",
+            Language = "en",
+            EnableTrending = true,
+            EnableTrendingMovies = true,
+            EnableTrendingTv = true,
+            EnableMovies = true,
+            EnableTv = true,
+            EnableUpcoming = true,
+            EnableUpcomingTv = false,
+            EnableRecentlyRequested = true,
+            EnablePopularWithServer = true,
+            EnableDetailSimilar = true,
+            EnableDetailRecommended = true,
+            EnableDetailCollections = true,
+            ExtraRails =
+            [
+                new SeerrExtraRailDto
+                {
+                    Kind = "Genre",
+                    MediaType = "Movie",
+                    Value = "27",
+                    Title = "Horror Movies",
+                    Enabled = true
+                },
+                new SeerrExtraRailDto
+                {
+                    Kind = "Network",
+                    MediaType = "tv",
+                    Value = "49",
+                    Title = "HBO TV",
+                    Enabled = false
+                }
+            ]
+        };
+
+        ApplyConfigurationUpdate(config, update);
+
+        Assert.False(config.EnableUpcomingTv);
+        Assert.True(config.EnableRecentlyRequested);
+        Assert.True(config.EnablePopularWithServer);
+        Assert.True(config.EnableDetailSimilar);
+        Assert.True(config.EnableDetailRecommended);
+        Assert.True(config.EnableDetailCollections);
+        Assert.True(IsFeedEnabled(config, "recently-requested"));
+        Assert.True(IsFeedEnabled(config, "server-popular"));
+        Assert.True(IsFeedEnabled(config, "genre-movie-27"));
+        Assert.False(IsFeedEnabled(config, "network-tv-49"));
+    }
+
+    [Fact]
+    public void IsFeedEnabled_RejectsUnconfiguredExpandedRails()
+    {
+        var config = new PluginConfiguration
+        {
+            EnableRecentlyRequested = false,
+            EnablePopularWithServer = false,
+            ExtraRails =
+            [
+                new SeerrExtraRail
+                {
+                    Kind = "genre",
+                    MediaType = "movie",
+                    Value = "27",
+                    Title = "Horror Movies",
+                    Enabled = false
+                }
+            ]
+        };
+
+        Assert.False(IsFeedEnabled(config, "recently-requested"));
+        Assert.False(IsFeedEnabled(config, "server-popular"));
+        Assert.False(IsFeedEnabled(config, "genre-movie-27"));
+        Assert.False(IsFeedEnabled(config, "genre-tv-27"));
+    }
+
+    [Fact]
+    public void RemoveRequestUserData_StripsRequesterFields()
+    {
+        var node = JsonNode.Parse("""
+        {
+          "mediaInfo": {
+            "requests": [
+              {
+                "id": 1,
+                "requestedBy": { "email": "user@example.com" },
+                "modifiedBy": { "username": "admin" }
+              }
+            ]
+          }
+        }
+        """);
+
+        var method = typeof(SeerrDiscoverController).GetMethod("RemoveRequestUserData", BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.NotNull(method);
+        method!.Invoke(null, [node]);
+        var json = node!.ToJsonString();
+        Assert.DoesNotContain("requestedBy", json);
+        Assert.DoesNotContain("modifiedBy", json);
+        Assert.Contains("\"id\":1", json);
     }
 
     [Fact]
