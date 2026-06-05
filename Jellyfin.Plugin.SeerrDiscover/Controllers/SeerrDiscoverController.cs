@@ -83,12 +83,24 @@ public sealed class SeerrDiscoverController : ControllerBase
     [HttpGet("assets/discover.js")]
     [Produces("text/javascript")]
     public ActionResult GetDiscoverAsset()
+        => GetEmbeddedJavaScript($"{typeof(Plugin).Namespace}.Web.discover.js", "Embedded Discover asset is missing.");
+
+    /// <summary>
+    /// Serves the plugin configuration page controller asset.
+    /// </summary>
+    /// <returns>JavaScript asset.</returns>
+    [AllowAnonymous]
+    [HttpGet("assets/configPage.js")]
+    [Produces("text/javascript")]
+    public ActionResult GetConfigPageAsset()
+        => GetEmbeddedJavaScript($"{typeof(Plugin).Namespace}.Web.configPage.js", "Embedded config page asset is missing.");
+
+    private ActionResult GetEmbeddedJavaScript(string resourceName, string missingMessage)
     {
-        var resourceName = $"{typeof(Plugin).Namespace}.Web.discover.js";
         using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
         if (stream is null)
         {
-            return NotFound("Embedded Discover asset is missing.");
+            return NotFound(missingMessage);
         }
 
         using var reader = new StreamReader(stream);

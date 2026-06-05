@@ -21,6 +21,8 @@
   <ItemGroup>
     <None Remove="Configuration\configPage.html" />
     <EmbeddedResource Include="Configuration\configPage.html" />
+    <None Remove="Web\configPage.js" />
+    <EmbeddedResource Include="Web\configPage.js" />
     <None Remove="Web\discover.js" />
     <EmbeddedResource Include="Web\discover.js" />
   </ItemGroup>
