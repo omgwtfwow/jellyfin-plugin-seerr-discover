@@ -88,15 +88,16 @@ Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI s
 - Available/requested/requestable state badges
 - Watch Now and Open Details handoff for available Jellyfin items
 - Theme-aware Jellyfin Web styling
+- Discover tab spacing follows Jellyfin Web/client layout classes and active theme CSS at runtime
 - Server-side cache for discover, details, search, and mapped user lookups
 
 ## Compatibility
 
 | Client or surface | Status | Notes |
 | --- | --- | --- |
-| Jellyfin Web | Supported | Primary target. |
-| Jellyfin Desktop | Supported through Jellyfin Web UI | Hard refresh or client restart may be required after loader changes. |
-| Jellyfin mobile apps | Best effort through embedded web UI | Trailer handoff behavior depends on the client/webview. |
+| Jellyfin Web | Supported | Primary target. Discover spacing is computed from Jellyfin Web's active page/header CSS. |
+| Jellyfin Desktop | Supported through Jellyfin Web UI | Hard refresh or client restart may be required after loader changes. Verify spacing in the app, not only a resized browser window. |
+| Jellyfin mobile apps | Best effort through embedded web UI | Mobile webviews can use different Jellyfin layout classes and header behavior; verify Discover after app restart. Trailer handoff behavior depends on the client/webview. |
 | Android TV and native TV clients | Not supported | These clients do not expose the custom Jellyfin Web tab surface. |
 
 ## Installation and Setup

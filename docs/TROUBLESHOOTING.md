@@ -63,12 +63,13 @@ Seerr, Radarr/Sonarr, and Jellyfin can update at different times. Seerr Discover
 
 ## Content Is Too Close to Client Edges
 
-The Discover page is injected into Jellyfin Web through Custom Tabs. Browser, desktop, and mobile clients can host Jellyfin Web with slightly different outer wrappers.
+The Discover page is injected into Jellyfin Web through Custom Tabs. Browser, desktop, and mobile clients can host Jellyfin Web with different layout classes, header behavior, and theme CSS. Seerr Discover computes its top spacing from Jellyfin Web's active page/header CSS at runtime instead of relying only on fixed breakpoints.
 
 - Confirm the installed asset includes the latest spacing fix.
 - Update the JavaScript Injector query string after upgrading.
 - Hard-refresh or restart the client app.
-- If the issue remains, report the client type, viewport size, Jellyfin version, and a screenshot.
+- Test the actual affected client. A resized desktop browser does not fully emulate Jellyfin Desktop or mobile app webviews.
+- If the issue remains, report the client type, viewport size, Jellyfin version, active theme or custom CSS, whether the client is desktop or mobile app, and a screenshot.
 
 ## Trailer Opens but Mobile Navigation Is Awkward
 
