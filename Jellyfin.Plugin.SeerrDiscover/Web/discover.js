@@ -293,18 +293,14 @@
         padding-top: 0.15rem;
       }
       .seerr-discover-tab-content {
-        --seerr-tab-top-offset-fallback: calc(clamp(5.2rem, 8.5vh, 7rem) + env(safe-area-inset-top));
-        --seerr-tab-top-offset-dynamic: env(safe-area-inset-top);
+        --seerr-tab-top-offset: calc(clamp(5.9rem, 8.8vh, 7.2rem) + env(safe-area-inset-top));
         box-sizing: border-box;
         min-height: 100%;
         padding:
-          var(--seerr-tab-top-offset-dynamic)
+          var(--seerr-tab-top-offset)
           max(clamp(0.75rem, 1.5vw, 1.25rem), env(safe-area-inset-right))
           calc(clamp(1.6rem, 4vh, 3rem) + env(safe-area-inset-bottom))
           max(clamp(0.75rem, 1.5vw, 1.25rem), env(safe-area-inset-left));
-      }
-      .seerr-discover-tab-content[data-seerr-pane-source="fallback"] {
-        --seerr-tab-top-offset-dynamic: var(--seerr-tab-top-offset-fallback);
       }
       .seerr-discover-tab-content > .sections {
         box-sizing: border-box;
@@ -968,9 +964,9 @@
       }
       @media (max-width: 720px) {
         .seerr-discover-tab-content {
-          --seerr-tab-top-offset-fallback: calc(clamp(7.25rem, 13vh, 9rem) + env(safe-area-inset-top));
+          --seerr-tab-top-offset: calc(clamp(7.25rem, 13vh, 9rem) + env(safe-area-inset-top));
           padding:
-            var(--seerr-tab-top-offset-dynamic)
+            var(--seerr-tab-top-offset)
             max(0.5rem, env(safe-area-inset-right))
             calc(1.5rem + env(safe-area-inset-bottom))
             max(0.5rem, env(safe-area-inset-left));
@@ -1088,14 +1084,6 @@
 
     const content = pane.querySelector('.seerr-discover');
     if (!content) return;
-
-    const tabs = button?.closest?.('.emby-tabs-slider, .emby-tabs') || button;
-    if (tabs) {
-      const tabsBottom = tabs.getBoundingClientRect().bottom;
-      const paneTop = pane.getBoundingClientRect().top;
-      const offset = Math.max(0, Math.ceil(tabsBottom - paneTop + 16));
-      pane.style.setProperty('--seerr-tab-top-offset-dynamic', `${offset}px`);
-    }
 
     content.style.setProperty('--seerr-content-overlap-offset', '0px');
   }
