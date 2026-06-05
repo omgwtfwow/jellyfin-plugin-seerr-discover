@@ -203,6 +203,7 @@
             ];
             let extraRails = [];
             let configLoadStarted = false;
+            let configLoadAttempts = 0;
 
             function currentApiClient() {
                 if (window.ApiClient) return window.ApiClient;
@@ -214,6 +215,45 @@
                     return connectionManager.currentApiClient();
                 }
                 return null;
+            }
+
+            function currentDashboard() {
+                if (window.Dashboard) return window.Dashboard;
+                if (typeof Dashboard !== 'undefined') return Dashboard;
+                return null;
+            }
+
+            function canRequest() {
+                const client = currentApiClient();
+                return !!(client && typeof client.fetch === 'function') || typeof fetch === 'function';
+            }
+
+            function showLoading() {
+                const dashboard = currentDashboard();
+                if (dashboard && typeof dashboard.showLoadingMsg === 'function') {
+                    dashboard.showLoadingMsg();
+                }
+            }
+
+            function hideLoading() {
+                const dashboard = currentDashboard();
+                if (dashboard && typeof dashboard.hideLoadingMsg === 'function') {
+                    dashboard.hideLoadingMsg();
+                }
+            }
+
+            function showAlert(message) {
+                const dashboard = currentDashboard();
+                if (dashboard && typeof dashboard.alert === 'function') {
+                    dashboard.alert({ message });
+                }
+            }
+
+            function processUpdateResult(result) {
+                const dashboard = currentDashboard();
+                if (dashboard && typeof dashboard.processPluginConfigurationUpdateResult === 'function') {
+                    dashboard.processPluginConfigurationUpdateResult(result);
+                }
             }
 
             function configValue(config, field) {
@@ -528,26 +568,30 @@
 
             function loadConfiguration() {
                 if (configLoadStarted) return;
+                if (!canRequest() && configLoadAttempts < 50) {
+                    configLoadAttempts += 1;
+                    setTimeout(loadConfiguration, 100);
+                    return;
+                }
+
                 configLoadStarted = true;
-                Dashboard.showLoadingMsg();
+                showLoading();
                 apiFetch('SeerrDiscover/config').then((config) => {
                     setForm(config);
-                    Dashboard.hideLoadingMsg();
+                    hideLoading();
                 }).catch((error) => {
                     configLoadStarted = false;
-                    Dashboard.hideLoadingMsg();
-                    Dashboard.alert({
-                        message: error?.message || 'Failed to load Seerr Discover configuration.'
-                    });
+                    hideLoading();
+                    showAlert(error?.message || 'Failed to load Seerr Discover configuration.');
                 });
             }
 
             page.addEventListener('pageshow', loadConfiguration);
-            setTimeout(loadConfiguration, 0);
+            setTimeout(loadConfiguration, 100);
 
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
-                Dashboard.showLoadingMsg();
+                showLoading();
                 apiFetch('SeerrDiscover/config').then((config) => {
                     return apiFetch('SeerrDiscover/config', {
                         method: 'POST',
@@ -555,12 +599,10 @@
                     });
                 }).then((config) => {
                     setForm(config);
-                    Dashboard.processPluginConfigurationUpdateResult();
+                    processUpdateResult(config);
                 }).catch((error) => {
-                    Dashboard.hideLoadingMsg();
-                    Dashboard.alert({
-                        message: error?.message || 'Failed to save Seerr Discover configuration.'
-                    });
+                    hideLoading();
+                    showAlert(error?.message || 'Failed to save Seerr Discover configuration.');
                 });
                 return false;
             });
