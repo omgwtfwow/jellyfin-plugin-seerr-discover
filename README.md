@@ -17,9 +17,38 @@ https://omgwtfwow.github.io/jellyfin-plugin-seerr-discover/manifest.json
 1. Add the repository URL in Jellyfin: Dashboard > Plugins > Repositories.
 2. Install Seerr Discover from Dashboard > Plugins > Catalog, then restart Jellyfin.
 3. Configure Seerr Discover with your internal Seerr URL, public Seerr URL, and Seerr API key.
-4. Install and configure the companion plugins listed below.
+4. Install and configure the companion plugins using the copy-paste setup below.
 5. Hard-refresh Jellyfin Web or restart the client app.
 6. Use Jellyfin's normal search page for Seerr search results; use the Discover tab for browse rails.
+
+## Companion Plugin Setup
+
+The server plugin provides the Jellyfin API proxy and browser asset. Custom Tabs creates the `Discover` tab, and JavaScript Injector loads the asset. File Transformation may also be required by your JavaScript Injector installation.
+
+1. Install Custom Tabs, JavaScript Injector, and File Transformation if your JavaScript Injector install requires it.
+2. In Custom Tabs, add a tab named `Discover` and paste this content:
+
+   ```html
+   <div class="sections"><div id="seerrDiscoverRoot"></div></div>
+   ```
+
+3. In JavaScript Injector, add an authenticated JavaScript entry and paste this loader. Replace `<installed-version>` with the Seerr Discover version shown in Dashboard > Plugins.
+
+   ```js
+   (function () {
+     if (document.getElementById('seerr-discover-loader')) return;
+     var script = document.createElement('script');
+     script.id = 'seerr-discover-loader';
+     script.defer = true;
+     script.src = '/SeerrDiscover/assets/discover.js?v=<installed-version>';
+     document.head.appendChild(script);
+   }());
+   ```
+
+4. Save the companion plugin settings, restart Jellyfin if the plugin manager asks, then hard-refresh Jellyfin Web.
+5. Confirm the `Discover` tab appears. Native Jellyfin search should also show a `Requestable from Seerr` row when Seerr has matching results.
+
+See [Companion Plugins](docs/COMPANION-PLUGINS.md) for repository sources, compatibility notes, and troubleshooting.
 
 ## Screenshots
 
@@ -47,7 +76,7 @@ These screenshots were captured from a live Jellyfin Web session and show the pl
 - JavaScript Injector plugin
 - File Transformation plugin, if required by your JavaScript Injector installation
 
-Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI surface. The server plugin provides the API proxy and web asset; Custom Tabs provides the Jellyfin Web mount point. See [Companion Plugins](docs/COMPANION-PLUGINS.md).
+Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI surface. The server plugin provides the API proxy and web asset; Custom Tabs provides the Jellyfin Web mount point.
 
 ## Features
 
