@@ -1213,10 +1213,11 @@
 
     const nativeTopOffset = nativeJellyfinTopOffset();
     const headerHeight = jellyfinHeaderHeight();
-    const topOffset = Math.max(nativeTopOffset, headerHeight ? headerHeight + 1 : 0);
+    const desiredTopOffset = Math.max(nativeTopOffset, headerHeight ? headerHeight + 1 : 0);
 
-    if (topOffset > 0) {
-      pane.style.setProperty('--seerr-tab-top-offset', `${roundCssPx(topOffset)}px`);
+    if (desiredTopOffset > 0) {
+      const remainingTopOffset = Math.max(desiredTopOffset - paneHostTopOffset(pane), 0);
+      pane.style.setProperty('--seerr-tab-top-offset', `${roundCssPx(remainingTopOffset)}px`);
     } else {
       pane.style.removeProperty('--seerr-tab-top-offset');
     }
@@ -1253,6 +1254,11 @@
     const header = document.querySelector('.skinHeader');
     const height = header?.offsetHeight || 0;
     return Number.isFinite(height) && height > 0 ? height : 0;
+  }
+
+  function paneHostTopOffset(pane) {
+    const top = pane?.offsetTop || 0;
+    return Number.isFinite(top) && top > 0 ? top : 0;
   }
 
   function parseCssPx(value) {
