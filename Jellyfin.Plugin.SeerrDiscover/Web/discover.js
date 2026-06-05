@@ -1078,7 +1078,7 @@
         overflow-x: auto;
       }
       .seerr-native-detail-related .seerr-discover__rail[data-seerr-artwork-layout="horizontal"] .seerr-card {
-        width: clamp(22rem, 30vw, 32rem);
+        width: clamp(30rem, 40vw, 44rem);
       }
       @media (min-width: 100em) {
         .seerr-discover-tab-content {
@@ -1453,7 +1453,7 @@
     const statusBadge = status ? `<span class="seerr-card__badge ${escapeHtml(badgeClass)}">${escapeHtml(status)}</span>` : '';
     const imageClass = isHorizontal ? ' seerr-card__image--backdrop' : '';
     const imageStyle = image ? ` style="--seerr-artwork:url('${escapeHtml(image)}')"` : '';
-    const srcSetAttribute = srcSet ? ` srcset="${escapeHtml(srcSet)}" sizes="${isHorizontal ? '(max-width: 720px) 76vw, 20rem' : '(max-width: 720px) 42vw, 13.5rem'}"` : '';
+    const srcSetAttribute = srcSet ? ` srcset="${escapeHtml(srcSet)}" sizes="${isHorizontal ? '(max-width: 720px) 76vw, 40rem' : '(max-width: 720px) 42vw, 13.5rem'}"` : '';
     const title = mediaTitle(item);
     return `
       <div class="card ${layoutClass} card-hoverable card-withuserdata seerr-card" role="button" tabindex="0" aria-label="Open details for ${escapeHtml(title)}" data-seerr-type="${escapeHtml(mediaType(item))}" data-seerr-id="${escapeHtml(item.id)}">
