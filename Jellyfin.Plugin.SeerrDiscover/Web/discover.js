@@ -1077,87 +1077,9 @@
         max-width: 100%;
         overflow-x: auto;
       }
-      .seerr-native-detail-related .overflowBackdropCard {
-        width: 72vw;
-      }
-      .seerr-native-detail-related .overflowPortraitCard {
-        width: 40vw;
-      }
-      @media (min-width: 25em) {
-        .seerr-native-detail-related .overflowPortraitCard {
-          width: 31.2vw;
-        }
-      }
-      @media (min-width: 35em) {
-        .seerr-native-detail-related .overflowBackdropCard {
-          width: 45.5vw;
-        }
-      }
-      @media (min-width: 43.75em) {
-        .seerr-native-detail-related .overflowPortraitCard {
-          width: 23.1vw;
-        }
-      }
-      @media (min-width: 48.125em) {
-        .seerr-native-detail-related .overflowBackdropCard {
-          width: 30vw;
-        }
-      }
-      @media (orientation: landscape) {
-        .seerr-native-detail-related .overflowBackdropCard {
-          width: 30vw;
-        }
-        .seerr-native-detail-related .overflowPortraitCard {
-          width: 23.1vw;
-        }
-      }
-      @media (orientation: landscape) and (min-width: 48.125em) {
-        .seerr-native-detail-related .overflowBackdropCard {
-          width: 23.1vw;
-        }
-      }
-      @media (min-width: 50em) {
-        .seerr-native-detail-related .overflowPortraitCard {
-          width: 18.5vw;
-        }
-      }
-      @media (min-width: 75em) {
-        .seerr-native-detail-related .overflowBackdropCard {
-          width: 23.1vw;
-        }
-        .seerr-native-detail-related .overflowPortraitCard {
-          width: 15.5vw;
-        }
-      }
-      @media (min-width: 87.5em) {
-        .seerr-native-detail-related .overflowPortraitCard {
-          width: 13.3vw;
-        }
-      }
       @media (min-width: 100em) {
         .seerr-discover-tab-content {
           --seerr-tab-top-offset: calc(6.7em + env(safe-area-inset-top));
-        }
-        .seerr-native-detail-related .overflowBackdropCard {
-          width: 18.7vw;
-        }
-        .seerr-native-detail-related .overflowPortraitCard {
-          width: 11.6vw;
-        }
-      }
-      @media (min-width: 120em) {
-        .seerr-native-detail-related .overflowPortraitCard {
-          width: 10.41vw;
-        }
-      }
-      @media (min-width: 131.25em) {
-        .seerr-native-detail-related .overflowPortraitCard {
-          width: 9.3vw;
-        }
-      }
-      @media (min-width: 156.25em) {
-        .seerr-native-detail-related .overflowBackdropCard {
-          width: 15.6vw;
         }
       }
       @media (max-width: 720px) {
