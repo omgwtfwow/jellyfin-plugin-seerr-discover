@@ -3,7 +3,7 @@ export default class SeerrDiscoverConfigPageController {
     if (!view || view.dataset.seerrConfigControllerLoaded === 'true') return;
     view.dataset.seerrConfigControllerLoaded = 'true';
 
-    if (window.SeerrDiscoverConfigPageLoaded) return;
+    if (view.dataset.seerrConfigInlineLoaded === 'true') return;
 
     const script = view.querySelector('script[data-seerr-config-inline]');
     if (!script?.textContent) {

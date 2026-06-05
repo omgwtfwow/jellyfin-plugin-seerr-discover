@@ -2388,6 +2388,7 @@
   }
 
   function mount() {
+    initializeConfigPage();
     ensureCustomTabRoot();
     const root = document.querySelector(rootSelector);
     if (!root) {
@@ -2399,6 +2400,20 @@
     root.__seerrRailData = {};
     render();
     Promise.all([loadMe(), loadRails()]).then(render).catch((error) => setError(error.message || String(error)));
+  }
+
+  function initializeConfigPage() {
+    const page = document.querySelector('#SeerrDiscoverConfigPage');
+    if (!page || page.dataset.seerrConfigInlineLoaded === 'true') return;
+
+    const script = page.querySelector('script[data-seerr-config-inline]');
+    if (!script?.textContent) return;
+
+    try {
+      new Function(script.textContent)();
+    } catch (error) {
+      console.warn('Seerr Discover config page failed to initialize', error);
+    }
   }
 
   function scheduleMount() {
