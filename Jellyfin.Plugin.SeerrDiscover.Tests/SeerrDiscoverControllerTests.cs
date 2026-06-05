@@ -101,18 +101,26 @@ public sealed class SeerrDiscoverControllerTests
     }
 
     [Fact]
-    public void DiscoverAsset_UsesStaticTabletHeaderClearance()
+    public void DiscoverAsset_UsesJellyfinNativeHeaderClearanceScale()
     {
         var source = ReadBrowserAsset("discover.js");
-        var tabletRule = Regex.Match(
+        var largeRule = Regex.Match(
             source,
-            @"@media \(max-width: 1199px\)\s*\{\s*\.seerr-discover-tab-content\s*\{(?<body>.*?)\}\s*\}",
+            @"@media \(min-width: 100em\)\s*\{\s*\.seerr-discover-tab-content\s*\{(?<body>.*?)\}\s*\}",
             RegexOptions.Singleline);
         var updateSpacing = Regex.Match(source, @"function\s+updateDiscoverSpacing\(\)\s*\{(?<body>.*?)\n  \}", RegexOptions.Singleline);
+        var topOffsetRules = Regex.Matches(source, @"--seerr-tab-top-offset:\s*(?<value>[^;]+);")
+            .Select(match => match.Groups["value"].Value)
+            .ToArray();
 
-        Assert.True(tabletRule.Success, "discover.js should keep an explicit tablet header breakpoint.");
-        Assert.Contains("--seerr-tab-top-offset: calc(9.25rem + env(safe-area-inset-top));", tabletRule.Groups["body"].Value, StringComparison.Ordinal);
-        Assert.DoesNotContain("vh", tabletRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("calc(7.5em + env(safe-area-inset-top))", topOffsetRules);
+        Assert.True(largeRule.Success, "discover.js should mirror Jellyfin's large pageWithAbsoluteTabs breakpoint.");
+        Assert.Contains("--seerr-tab-top-offset: calc(6.7em + env(safe-area-inset-top));", largeRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.All(topOffsetRules, rule =>
+        {
+            Assert.DoesNotContain("rem", rule, StringComparison.Ordinal);
+            Assert.DoesNotContain("vh", rule, StringComparison.Ordinal);
+        });
         Assert.True(updateSpacing.Success, "discover.js should keep the Discover spacing update function explicit.");
         Assert.DoesNotContain("getBoundingClientRect", updateSpacing.Groups["body"].Value, StringComparison.Ordinal);
     }
