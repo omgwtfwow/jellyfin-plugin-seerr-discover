@@ -201,8 +201,7 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("function card(item, artworkLayout = artworkLayoutVertical)", source, StringComparison.Ordinal);
         Assert.Contains("const layoutClass = isHorizontal ? 'overflowBackdropCard' : 'overflowPortraitCard';", source, StringComparison.Ordinal);
         Assert.Contains("const padderClass = isHorizontal ? 'cardPadder-overflowBackdrop' : 'cardPadder-overflowPortrait';", source, StringComparison.Ordinal);
-        Assert.Contains("const preferredImagePath = item.posterPath || item.backdropPath;", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("item.backdropPath || item.posterPath", source, StringComparison.Ordinal);
+        Assert.Contains("const preferredImagePath = isHorizontal ? (item.backdropPath || item.posterPath) : (item.posterPath || item.backdropPath);", source, StringComparison.Ordinal);
         Assert.Contains("data-seerr-artwork-layout", source, StringComparison.Ordinal);
         Assert.Contains("results.map((item) => card(item, artworkLayout)).join('')", source, StringComparison.Ordinal);
         Assert.Contains("const statusBadge = status ? `<span class=\"seerr-card__badge", source, StringComparison.Ordinal);
@@ -358,10 +357,10 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("data-config-rail-move", source, StringComparison.Ordinal);
         Assert.Contains("type=\"checkbox\" is=\"emby-checkbox\" data-config-rail-layout", source, StringComparison.Ordinal);
         Assert.Contains("input.checked ? artworkLayoutHorizontal : artworkLayoutVertical", source, StringComparison.Ordinal);
-        Assert.Contains("Horizontal cover", source, StringComparison.Ordinal);
-        Assert.Contains("horizontal cover layout", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("Horizontal backdrop", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("horizontal backdrop artwork", source, StringComparison.Ordinal);
+        Assert.Contains("Horizontal landscape", source, StringComparison.Ordinal);
+        Assert.Contains("horizontal landscape layout", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Horizontal cover", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("horizontal cover layout", source, StringComparison.Ordinal);
         Assert.Contains("id=\"DiscoverRailList\"", configPage, StringComparison.Ordinal);
         Assert.Contains("id=\"DetailRailList\"", configPage, StringComparison.Ordinal);
         Assert.Contains("seerr-config-rail-heading", configPage, StringComparison.Ordinal);

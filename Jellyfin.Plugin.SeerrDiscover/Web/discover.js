@@ -1514,7 +1514,7 @@
   function card(item, artworkLayout = artworkLayoutVertical) {
     const layout = normalizeArtworkLayout(artworkLayout);
     const isHorizontal = layout === artworkLayoutHorizontal;
-    const preferredImagePath = item.posterPath || item.backdropPath;
+    const preferredImagePath = isHorizontal ? (item.backdropPath || item.posterPath) : (item.posterPath || item.backdropPath);
     const selectedImageIsBackdrop = preferredImagePath && preferredImagePath === item.backdropPath;
     const image = preferredImagePath ? tmdbImage(preferredImagePath, selectedImageIsBackdrop ? 'w780' : 'w500') : '';
     const srcSet = preferredImagePath
@@ -3414,8 +3414,8 @@
             <input id="RailTitle-${escapeHtml(row.Id)}" is="emby-input" type="text" maxlength="96" value="${escapeHtml(row.TitleOverride)}" placeholder="${escapeHtml(row.Title)}" data-config-rail-title="${escapeHtml(row.Id)}" aria-label="${escapeHtml(row.Title)} custom heading" />
           </div>
           <label class="emby-checkbox-label seerr-config-rail-layout">
-            <input type="checkbox" is="emby-checkbox" data-config-rail-layout="${escapeHtml(row.Id)}" aria-label="${escapeHtml(row.Title)} horizontal cover layout" ${row.ArtworkLayout === artworkLayoutHorizontal ? 'checked' : ''} />
-            <span>Horizontal cover</span>
+            <input type="checkbox" is="emby-checkbox" data-config-rail-layout="${escapeHtml(row.Id)}" aria-label="${escapeHtml(row.Title)} horizontal landscape layout" ${row.ArtworkLayout === artworkLayoutHorizontal ? 'checked' : ''} />
+            <span>Horizontal landscape</span>
           </label>
           <button is="emby-button" type="button" class="emby-button seerr-config-row-button seerr-config-row-button--up" data-config-rail-move="${escapeHtml(row.Id)}" data-config-rail-direction="-1" ${index === 0 ? 'disabled' : ''}>
             <span>Move up</span>
