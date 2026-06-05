@@ -7,6 +7,7 @@
   const discoverLoadingModeParam = 'seerrDiscoverLoading';
   const discoverLoadingModeStorageKey = 'seerrDiscoverLoadingMode';
   const defaultDiscoverLoadingMode = 'native';
+  const discoverTopCushionPx = 8;
   const defaultRails = [
     { id: 'trending-movies', title: 'Trending Movies', feed: 'trending-movies' },
     { id: 'trending-tv', title: 'Trending TV', feed: 'trending-tv' },
@@ -1216,7 +1217,7 @@
     const desiredTopOffset = Math.max(nativeTopOffset, headerHeight ? headerHeight + 1 : 0);
 
     if (desiredTopOffset > 0) {
-      const remainingTopOffset = Math.max(desiredTopOffset - paneHostTopOffset(pane), 0);
+      const remainingTopOffset = Math.max(desiredTopOffset - paneHostTopOffset(pane) + discoverTopCushionPx, 0);
       pane.style.setProperty('--seerr-tab-top-offset', `${roundCssPx(remainingTopOffset)}px`);
     } else {
       pane.style.removeProperty('--seerr-tab-top-offset');
