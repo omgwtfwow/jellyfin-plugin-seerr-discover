@@ -5,6 +5,7 @@
     <title>Seerr Discover</title>
     <style>
         #SeerrDiscoverConfigPage .seerr-config-options {
+            color: inherit;
             display: flex;
             flex-wrap: wrap;
             gap: .6em;
@@ -21,13 +22,14 @@
 
         #SeerrDiscoverConfigPage .seerr-config-option-button.emby-button {
             align-items: center;
-            background: transparent;
-            background: color-mix(in srgb, currentColor 8%, transparent);
+            background-color: transparent !important;
+            background-color: color-mix(in srgb, currentColor 8%, transparent) !important;
+            background-image: none !important;
             border: .08em solid currentColor;
-            border-color: color-mix(in srgb, currentColor 28%, transparent);
+            border-color: color-mix(in srgb, currentColor 28%, transparent) !important;
             border-radius: .45em;
-            box-shadow: none;
-            color: inherit;
+            box-shadow: none !important;
+            color: inherit !important;
             display: inline-flex;
             height: auto;
             justify-content: flex-start;
@@ -42,8 +44,8 @@
 
         #SeerrDiscoverConfigPage .seerr-config-option-button.emby-button:hover,
         #SeerrDiscoverConfigPage .seerr-config-option-button.emby-button:focus-visible {
-            background: color-mix(in srgb, currentColor 14%, transparent);
-            border-color: color-mix(in srgb, currentColor 46%, transparent);
+            background-color: color-mix(in srgb, currentColor 14%, transparent) !important;
+            border-color: color-mix(in srgb, currentColor 46%, transparent) !important;
         }
 
         #SeerrDiscoverConfigPage .seerr-config-option-button span {
@@ -229,8 +231,8 @@
                 <button is="emby-button" type="button" id="SearchExtraRailOptions" class="raised emby-button">
                     <span>Find rail options</span>
                 </button>
-                <div id="ExtraRailOptions" class="fieldDescription seerr-config-options"></div>
-                <div id="ExtraRailList" class="fieldDescription seerr-config-extra-rails"></div>
+                <div id="ExtraRailOptions" class="seerr-config-options"></div>
+                <div id="ExtraRailList" class="seerr-config-extra-rails"></div>
                 <button is="emby-button" type="submit" class="raised button-submit block emby-button">
                     <span>Save</span>
                 </button>
