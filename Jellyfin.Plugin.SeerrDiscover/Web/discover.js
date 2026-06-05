@@ -597,6 +597,7 @@
         padding: 0;
         background: transparent;
         color: inherit;
+        font: inherit;
         text-align: left;
         cursor: pointer;
       }
@@ -1064,6 +1065,7 @@
         border-radius: 50%;
         background: rgb(var(--seerr-bg-channel) / 0.72);
         color: var(--seerr-text);
+        font-family: inherit;
         font-size: 1.35rem;
         box-shadow: 0 0.45rem 1.2rem rgb(var(--seerr-bg-channel) / 0.4);
         cursor: pointer;

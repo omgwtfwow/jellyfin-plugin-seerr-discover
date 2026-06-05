@@ -188,6 +188,34 @@ public sealed class SeerrDiscoverControllerTests
     }
 
     [Fact]
+    public void DiscoverAsset_RawButtonsInheritJellyfinTypography()
+    {
+        var source = ReadBrowserAsset("discover.js");
+        var cardRule = CssRuleBodies(@"\.seerr-card").Single();
+
+        AssertRuleContains(@"\.seerr-discover__button", "font: inherit;");
+        Assert.Contains("font: inherit;", cardRule, StringComparison.Ordinal);
+        Assert.DoesNotContain("font-family", cardRule, StringComparison.OrdinalIgnoreCase);
+        AssertRuleContains(@"\.seerr-modal__close", "font-family: inherit;");
+        AssertRuleContains(@"\.seerr-modal__trailer-link", "font: inherit;");
+        AssertRuleContains(@"\.seerr-toast__close", "font: inherit;");
+
+        string[] CssRuleBodies(string selectorPattern)
+        {
+            return Regex.Matches(source, $@"{selectorPattern}\s*\{{(?<body>.*?)\}}", RegexOptions.Singleline)
+                .Select(match => match.Groups["body"].Value)
+                .ToArray();
+        }
+
+        void AssertRuleContains(string selectorPattern, string expected)
+        {
+            var bodies = CssRuleBodies(selectorPattern);
+            Assert.NotEmpty(bodies);
+            Assert.Contains(bodies, body => body.Contains(expected, StringComparison.Ordinal));
+        }
+    }
+
+    [Fact]
     public void Controller_DefaultsToJellyfinAuthenticatedEndpoints()
     {
         Assert.Contains(

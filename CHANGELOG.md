@@ -13,6 +13,8 @@
 - Remove the duplicate inline loading notice when the native Jellyfin loader is
   active.
 - Promote Discover rail titles to H2 headings for clearer page hierarchy.
+- Keep raw Discover controls on the inherited Jellyfin font instead of browser
+  button defaults.
 - Refresh README screenshots around the core Discover rails, native search,
   detail modal, and mobile layout flows.
 - Remove redundant request-state screenshots from the release docs.
