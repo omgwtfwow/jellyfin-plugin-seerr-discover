@@ -3,6 +3,69 @@
 <head>
     <meta charset="utf-8">
     <title>Seerr Discover</title>
+    <style>
+        #SeerrDiscoverConfigPage .seerr-config-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .6em;
+            margin: .9em 0 1.4em;
+        }
+
+        #SeerrDiscoverConfigPage .seerr-config-options:empty {
+            display: none;
+        }
+
+        #SeerrDiscoverConfigPage .seerr-config-options p {
+            margin: 0;
+        }
+
+        #SeerrDiscoverConfigPage .seerr-config-option-button.emby-button {
+            align-items: center;
+            background: transparent;
+            background: color-mix(in srgb, currentColor 8%, transparent);
+            border: .08em solid currentColor;
+            border-color: color-mix(in srgb, currentColor 28%, transparent);
+            border-radius: .45em;
+            box-shadow: none;
+            color: inherit;
+            display: inline-flex;
+            height: auto;
+            justify-content: flex-start;
+            margin: 0;
+            max-width: 100%;
+            min-height: 2.45em;
+            min-width: 0;
+            padding: .55em .85em;
+            text-align: left;
+            width: auto;
+        }
+
+        #SeerrDiscoverConfigPage .seerr-config-option-button.emby-button:hover,
+        #SeerrDiscoverConfigPage .seerr-config-option-button.emby-button:focus-visible {
+            background: color-mix(in srgb, currentColor 14%, transparent);
+            border-color: color-mix(in srgb, currentColor 46%, transparent);
+        }
+
+        #SeerrDiscoverConfigPage .seerr-config-option-button span {
+            display: inline;
+            font-size: .94em;
+            font-weight: 500;
+            line-height: 1.25;
+            overflow-wrap: anywhere;
+            white-space: normal;
+        }
+
+        @media (max-width: 42em) {
+            #SeerrDiscoverConfigPage .seerr-config-options {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+
+            #SeerrDiscoverConfigPage .seerr-config-option-button.emby-button {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
 <div id="SeerrDiscoverConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-checkbox,emby-select" data-controller="../SeerrDiscover/assets/configPage.js">
@@ -166,8 +229,8 @@
                 <button is="emby-button" type="button" id="SearchExtraRailOptions" class="raised emby-button">
                     <span>Find rail options</span>
                 </button>
-                <div id="ExtraRailOptions" class="fieldDescription"></div>
-                <div id="ExtraRailList" class="fieldDescription"></div>
+                <div id="ExtraRailOptions" class="fieldDescription seerr-config-options"></div>
+                <div id="ExtraRailList" class="fieldDescription seerr-config-extra-rails"></div>
                 <button is="emby-button" type="submit" class="raised button-submit block emby-button">
                     <span>Save</span>
                 </button>
@@ -485,7 +548,7 @@
                 }
 
                 options.innerHTML = items.map((item, index) => `
-                    <button is="emby-button" type="button" class="emby-button" data-rail-option-index="${index}">
+                    <button is="emby-button" type="button" class="emby-button seerr-config-option-button" data-rail-option-index="${index}">
                         <span>Add ${escapeHtml(optionTitle(kind, mediaType, item))}</span>
                     </button>
                 `).join('');
