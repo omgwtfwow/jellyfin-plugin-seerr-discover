@@ -60,6 +60,65 @@
             white-space: normal;
         }
 
+        #SeerrDiscoverConfigPage .seerr-config-extra-rails {
+            display: grid;
+            gap: .55em;
+            margin: 1.25em 0 1.5em;
+            max-width: 45em;
+        }
+
+        #SeerrDiscoverConfigPage .seerr-config-extra-rails p {
+            color: color-mix(in srgb, currentColor 62%, transparent);
+            margin: 0;
+        }
+
+        #SeerrDiscoverConfigPage .seerr-config-extra-rail {
+            align-items: center;
+            border: .08em solid color-mix(in srgb, currentColor 20%, transparent);
+            border-radius: .45em;
+            display: grid;
+            gap: .65em;
+            grid-template-columns: minmax(0, 1fr) auto;
+            min-height: 3em;
+            padding: .45em .55em .45em 0;
+        }
+
+        #SeerrDiscoverConfigPage .seerr-config-extra-rail .emby-checkbox-label {
+            min-width: 0;
+        }
+
+        #SeerrDiscoverConfigPage .seerr-config-extra-rail-title {
+            overflow-wrap: anywhere;
+        }
+
+        #SeerrDiscoverConfigPage .seerr-config-remove-button.emby-button {
+            background-color: transparent !important;
+            background-color: color-mix(in srgb, currentColor 7%, transparent) !important;
+            background-image: none !important;
+            border: .08em solid color-mix(in srgb, currentColor 26%, transparent) !important;
+            border-radius: .4em;
+            box-shadow: none !important;
+            color: inherit !important;
+            height: auto;
+            margin: 0;
+            min-height: 2.25em;
+            min-width: 0;
+            padding: .45em .75em;
+            width: auto;
+        }
+
+        #SeerrDiscoverConfigPage .seerr-config-remove-button.emby-button:hover,
+        #SeerrDiscoverConfigPage .seerr-config-remove-button.emby-button:focus-visible {
+            background-color: color-mix(in srgb, currentColor 13%, transparent) !important;
+            border-color: color-mix(in srgb, currentColor 44%, transparent) !important;
+        }
+
+        #SeerrDiscoverConfigPage .seerr-config-remove-button span {
+            font-size: .92em;
+            font-weight: 500;
+            line-height: 1.2;
+        }
+
         @media (max-width: 42em) {
             #SeerrDiscoverConfigPage .seerr-config-options {
                 display: grid;
@@ -67,6 +126,17 @@
             }
 
             #SeerrDiscoverConfigPage .seerr-config-option-button.emby-button {
+                width: 100%;
+            }
+
+            #SeerrDiscoverConfigPage .seerr-config-extra-rail {
+                align-items: stretch;
+                grid-template-columns: 1fr;
+                padding: .55em;
+            }
+
+            #SeerrDiscoverConfigPage .seerr-config-remove-button.emby-button {
+                justify-content: center;
                 width: 100%;
             }
         }
@@ -491,12 +561,12 @@
                 }
 
                 list.innerHTML = extraRails.map((rail) => `
-                    <div class="checkboxContainer checkboxContainer-withDescription" data-extra-rail="${rail.Id}">
+                    <div class="seerr-config-extra-rail" data-extra-rail="${rail.Id}">
                         <label class="emby-checkbox-label">
                             <input type="checkbox" is="emby-checkbox" data-extra-rail-enabled="${rail.Id}" ${rail.Enabled ? 'checked' : ''} />
-                            <span>${escapeHtml(rail.Title)}</span>
+                            <span class="seerr-config-extra-rail-title">${escapeHtml(rail.Title)}</span>
                         </label>
-                        <button is="emby-button" type="button" class="emby-button" data-extra-rail-remove="${rail.Id}">
+                        <button is="emby-button" type="button" class="emby-button seerr-config-remove-button" data-extra-rail-remove="${rail.Id}">
                             <span>Remove</span>
                         </button>
                     </div>
