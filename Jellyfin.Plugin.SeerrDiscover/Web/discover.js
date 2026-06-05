@@ -1000,6 +1000,10 @@
       .seerr-modal__related .seerr-discover__rail:first-child {
         margin-top: 0;
       }
+      .seerr-modal__related .seerr-discover__rail-title {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
       .seerr-modal__related .seerr-discover__scroller {
         gap: 0.6rem;
         max-width: 100%;
@@ -1041,6 +1045,24 @@
         background: rgb(var(--seerr-text-channel) / 0.14);
         outline: 2px solid rgb(var(--seerr-text-channel) / 0.34);
         outline-offset: 2px;
+      }
+      .seerr-native-detail-related {
+        display: grid;
+        gap: 1.35rem;
+        min-width: 0;
+      }
+      .seerr-native-detail-related .seerr-discover__rail {
+        min-width: 0;
+        margin: 0;
+      }
+      .seerr-native-detail-related .seerr-discover__rail-title,
+      .seerr-native-detail-related .seerr-discover__scroller {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      .seerr-native-detail-related .seerr-discover__scroller {
+        max-width: 100%;
+        overflow-x: auto;
       }
       @media (min-width: 100em) {
         .seerr-discover-tab-content {

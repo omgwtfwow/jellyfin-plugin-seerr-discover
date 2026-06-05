@@ -263,6 +263,10 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("native-detail-${rail.id}", source, StringComparison.Ordinal);
         Assert.Contains("verticalSection emby-scroller-container seerr-discover__rail", source, StringComparison.Ordinal);
         Assert.Contains("sectionTitle sectionTitle-cards padded-left seerr-discover__rail-title", source, StringComparison.Ordinal);
+        Assert.Contains(".seerr-native-detail-related .seerr-discover__rail-title,", source, StringComparison.Ordinal);
+        Assert.Contains(".seerr-native-detail-related .seerr-discover__scroller", source, StringComparison.Ordinal);
+        Assert.Contains("padding-left: 0 !important;", source, StringComparison.Ordinal);
+        Assert.Contains("padding-right: 0 !important;", source, StringComparison.Ordinal);
         Assert.Contains("artworkLayout: normalizeArtworkLayout(rail.artworkLayout)", source, StringComparison.Ordinal);
         Assert.Contains("const layoutClass = isHorizontal ? 'overflowBackdropCard' : 'overflowPortraitCard';", source, StringComparison.Ordinal);
         Assert.Contains("card ${layoutClass} card-hoverable card-withuserdata seerr-card", source, StringComparison.Ordinal);
