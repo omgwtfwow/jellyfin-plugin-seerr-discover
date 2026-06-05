@@ -525,7 +525,7 @@
         flex-direction: column;
         gap: 0.6rem;
       }
-      .seerr-discover__rail h3 {
+      .seerr-discover__rail h2 {
         margin: 0;
         font-size: 1.15rem;
         font-weight: 650;
@@ -1425,7 +1425,7 @@
     const results = supportedResults(items);
     return `
       <section class="seerr-discover__rail" data-seerr-rail="${escapeHtml(rail.id)}">
-        <h3>${escapeHtml(rail.title)}</h3>
+        <h2>${escapeHtml(rail.title)}</h2>
         <div class="seerr-discover__scroller">
           ${results.length ? results.map(card).join('') : '<div class="seerr-discover__notice">No results</div>'}
         </div>

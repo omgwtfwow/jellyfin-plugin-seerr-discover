@@ -177,6 +177,17 @@ public sealed class SeerrDiscoverControllerTests
     }
 
     [Fact]
+    public void DiscoverAsset_UsesH2RailHeadings()
+    {
+        var source = ReadBrowserAsset("discover.js");
+
+        Assert.Contains(".seerr-discover__rail h2", source, StringComparison.Ordinal);
+        Assert.Contains("<h2>${escapeHtml(rail.title)}</h2>", source, StringComparison.Ordinal);
+        Assert.DoesNotContain(".seerr-discover__rail h3", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("<h3>${escapeHtml(rail.title)}</h3>", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Controller_DefaultsToJellyfinAuthenticatedEndpoints()
     {
         Assert.Contains(
