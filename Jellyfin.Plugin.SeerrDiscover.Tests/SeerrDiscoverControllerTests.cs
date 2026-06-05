@@ -294,7 +294,7 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("display: flex;", nativeScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("flex-wrap: nowrap;", nativeScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.True(nativeHorizontalCardRule.Success, "Native detail horizontal rails should use larger detail-page card sizing than the modal.");
-        Assert.Contains("width: clamp(22rem, 30vw, 32rem);", nativeHorizontalCardRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("width: clamp(30rem, 40vw, 44rem);", nativeHorizontalCardRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("padding-left: 0 !important;", source, StringComparison.Ordinal);
         Assert.Contains("padding-right: 0 !important;", source, StringComparison.Ordinal);
         Assert.Contains("artworkLayout: normalizeArtworkLayout(rail.artworkLayout)", source, StringComparison.Ordinal);
