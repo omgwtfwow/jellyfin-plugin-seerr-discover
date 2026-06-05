@@ -271,25 +271,24 @@
                 }
             }
 
-            function apiUrl(path) {
+            function apiUrl(path, query) {
                 const client = currentApiClient();
                 const cleanPath = path.replace(/^\//, '');
-                const queryIndex = cleanPath.indexOf('?');
-                const route = queryIndex === -1 ? cleanPath : cleanPath.slice(0, queryIndex);
-                const query = queryIndex === -1 ? '' : cleanPath.slice(queryIndex + 1);
+                const route = `/${cleanPath}`;
                 if (client && typeof client.getUrl === 'function') {
-                    const url = client.getUrl(route);
-                    return query ? `${url}${url.includes('?') ? '&' : '?'}${query}` : url;
+                    return client.getUrl(route, query);
                 }
 
-                return `/${cleanPath}`;
+                const params = query ? new URLSearchParams(query).toString() : '';
+                return `${route}${params ? `?${params}` : ''}`;
             }
 
             function apiFetch(path, options) {
                 const client = currentApiClient();
+                const url = apiUrl(path, options?.query);
                 if (client && typeof client.fetch === 'function') {
                     return client.fetch({
-                        url: apiUrl(path),
+                        url,
                         type: options?.method || 'GET',
                         data: options?.body,
                         contentType: options?.body ? 'application/json' : undefined,
@@ -300,7 +299,7 @@
 
                 if (client && typeof client.ajax === 'function') {
                     return client.ajax({
-                        url: apiUrl(path),
+                        url,
                         type: options?.method || 'GET',
                         data: options?.body,
                         contentType: options?.body ? 'application/json' : undefined,
@@ -310,7 +309,7 @@
                 }
 
                 if (typeof fetch === 'function') {
-                    return fetch(apiUrl(path), {
+                    return fetch(url, {
                         method: options?.method || 'GET',
                         credentials: 'same-origin',
                         headers: {
@@ -510,9 +509,9 @@
                     return;
                 }
 
-                const params = new URLSearchParams({ kind, mediaType });
-                if (query.trim()) params.set('query', query.trim());
-                apiFetch(`SeerrDiscover/rail-options?${params.toString()}`)
+                const params = { kind, mediaType };
+                if (query.trim()) params.query = query.trim();
+                apiFetch('SeerrDiscover/rail-options', { query: params })
                     .then((payload) => renderRailOptions(kind, mediaType, payload, query))
                     .catch((error) => {
                         if (options) options.textContent = errorMessage(error, 'Failed to load rail options.');
