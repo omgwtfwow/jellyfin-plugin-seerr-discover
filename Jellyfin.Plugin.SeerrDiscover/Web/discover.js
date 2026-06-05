@@ -588,16 +588,22 @@
         background: var(--jf-palette-Alert-infoStandardBg, rgb(var(--seerr-primary-channel) / 0.18));
         color: var(--jf-palette-Alert-infoColor, var(--seerr-text));
       }
-      .seerr-card__meta {
+      .seerr-card .seerr-card__meta {
         min-width: 0;
+        white-space: normal;
       }
-      .seerr-card__title {
+      .seerr-card .seerr-card__meta bdi {
+        white-space: normal;
+      }
+      .seerr-card .seerr-card__title {
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
         min-height: 2.3em;
         line-height: 1.15;
+        overflow-wrap: anywhere;
+        white-space: normal;
       }
       .seerr-card__year {
         color: var(--seerr-disabled);
