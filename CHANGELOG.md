@@ -17,6 +17,8 @@
   button defaults.
 - Expose Jellyfin-native section, card, and modal class hooks so Custom CSS
   themes can style Discover more like native Jellyfin surfaces.
+- Keep mobile detail modal metadata before related rails so Details and Tags
+  do not fall beneath recommendations.
 - Refresh README screenshots around the core Discover rails, native search,
   detail modal, and mobile layout flows.
 - Remove redundant request-state screenshots from the release docs.

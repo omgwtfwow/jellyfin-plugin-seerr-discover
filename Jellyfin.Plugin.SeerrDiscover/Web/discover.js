@@ -873,7 +873,13 @@
         align-content: start;
         gap: 1rem;
       }
+      .seerr-modal__main {
+        grid-column: 1;
+        grid-row: 1;
+      }
       .seerr-modal__aside {
+        grid-column: 2;
+        grid-row: 1;
         border-left: 1px solid var(--seerr-border-soft);
         padding-left: clamp(1rem, 2vw, 1.4rem);
       }
@@ -954,6 +960,7 @@
         gap: 0.35rem;
       }
       .seerr-modal__related {
+        grid-column: 1 / -1;
         min-width: 0;
         max-width: 100%;
         margin-top: 1.4rem;
@@ -1052,6 +1059,12 @@
           grid-template-columns: 1fr;
           padding: 1rem;
         }
+        .seerr-modal__main,
+        .seerr-modal__aside,
+        .seerr-modal__related {
+          grid-column: 1;
+          grid-row: auto;
+        }
         .seerr-modal__aside {
           border-left: 0;
           padding: 0;
@@ -1074,10 +1087,20 @@
           grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.72fr);
           gap: 1rem;
         }
+        .seerr-modal__main {
+          grid-column: 1;
+          grid-row: 1;
+        }
         .seerr-modal__aside {
+          grid-column: 2;
+          grid-row: 1;
           border-left: 1px solid var(--seerr-border-soft);
           padding-left: 1rem;
           grid-template-columns: 1fr;
+        }
+        .seerr-modal__related {
+          grid-column: 1 / -1;
+          grid-row: auto;
         }
       }
       @media (max-width: 520px) {
@@ -1544,12 +1567,12 @@
               <p id="seerr-modal-overview" class="seerr-modal__overview">${escapeHtml(detail.overview || 'No overview available.')}</p>
             </section>
             ${peopleSection}
-            <div class="seerr-modal__related" data-seerr-related></div>
           </div>
           <aside class="seerr-modal__aside">
             ${factsSection}
             ${keywordSection}
           </aside>
+          <div class="seerr-modal__related" data-seerr-related></div>
         </div>
       </div>
     `;
