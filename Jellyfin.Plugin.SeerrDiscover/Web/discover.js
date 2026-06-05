@@ -495,7 +495,7 @@
         background: rgb(var(--seerr-text-channel) / 0.08);
       }
       .seerr-discover__rail {
-        --seerr-card-artwork-inset: 0.6em;
+        --seerr-card-artwork-inset: 0.6rem;
         display: flex;
         flex-direction: column;
         gap: 0.6rem;

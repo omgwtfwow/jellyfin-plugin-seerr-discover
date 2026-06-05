@@ -248,7 +248,7 @@ public sealed class SeerrDiscoverControllerTests
         Assert.True(railRule.Success, "Discover rails should define the native card artwork inset used for title alignment.");
         Assert.True(titleRule.Success, "Discover rail titles should keep an explicit alignment rule.");
         Assert.True(firstCardRule.Success, "Discover rail scrollers should reset the first card margin so rail headings align with the first thumbnail.");
-        Assert.Contains("--seerr-card-artwork-inset: 0.6em;", railRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("--seerr-card-artwork-inset: 0.6rem;", railRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("transform: translateX(var(--seerr-card-artwork-inset));", titleRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("margin-left: 0;", firstCardRule.Groups["body"].Value, StringComparison.Ordinal);
     }
