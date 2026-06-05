@@ -590,24 +590,6 @@
       }
       .seerr-card .seerr-card__meta {
         min-width: 0;
-        white-space: normal;
-      }
-      .seerr-card .seerr-card__meta bdi {
-        white-space: normal;
-      }
-      .seerr-card .seerr-card__title {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        min-height: 2.3em;
-        line-height: 1.15;
-        overflow-wrap: anywhere;
-        white-space: normal;
-      }
-      .seerr-card__year {
-        color: var(--seerr-disabled);
-        font-size: 0.82em;
       }
       .seerr-modal {
         position: fixed;
@@ -1321,11 +1303,10 @@
               </span>
             </span>
           </div>
-          <div class="cardText cardTextCentered cardText-first seerr-card__meta">
-            <bdi><span class="seerr-card__title">
-              ${escapeHtml(title)}${year ? ` <span class="seerr-card__year">${escapeHtml(year)}</span>` : ''}
-            </span></bdi>
+          <div class="cardText cardTextCentered cardText-first seerr-card__meta seerr-card__title" title="${escapeHtml(title)}">
+            <bdi>${escapeHtml(title)}</bdi>
           </div>
+          ${year ? `<div class="cardText cardTextCentered cardText-secondary seerr-card__meta seerr-card__year">${escapeHtml(year)}</div>` : ''}
         </div>
       </div>
     `;

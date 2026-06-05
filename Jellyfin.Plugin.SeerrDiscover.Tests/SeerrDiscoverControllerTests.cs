@@ -225,17 +225,17 @@ public sealed class SeerrDiscoverControllerTests
     }
 
     [Fact]
-    public void DiscoverAsset_KeepsDiscoverCardTitlesWrappedInsideNativeCardText()
+    public void DiscoverAsset_UsesNativeCardTextRowsForTitleAndYear()
     {
         var source = ReadBrowserAsset("discover.js");
-        var titleRule = Regex.Match(source, @"\.seerr-card \.seerr-card__title\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
         var metaRule = Regex.Match(source, @"\.seerr-card \.seerr-card__meta\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
 
-        Assert.True(titleRule.Success, "Discover cards should keep a scoped title rule after adopting native cardText classes.");
         Assert.True(metaRule.Success, "Discover cards should keep a scoped metadata rule after adopting native cardText classes.");
-        Assert.Contains("white-space: normal;", titleRule.Groups["body"].Value, StringComparison.Ordinal);
-        Assert.Contains("overflow-wrap: anywhere;", titleRule.Groups["body"].Value, StringComparison.Ordinal);
-        Assert.Contains("white-space: normal;", metaRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("cardText cardTextCentered cardText-first seerr-card__meta seerr-card__title", source, StringComparison.Ordinal);
+        Assert.Contains("cardText cardTextCentered cardText-secondary seerr-card__meta seerr-card__year", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("white-space: normal;", metaRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.DoesNotMatch(@"\.seerr-card \.seerr-card__title\s*\{", source);
+        Assert.DoesNotContain("${escapeHtml(title)}${year ? ` <span", source, StringComparison.Ordinal);
     }
 
     [Fact]
