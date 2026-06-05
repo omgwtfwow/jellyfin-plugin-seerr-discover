@@ -211,6 +211,26 @@ public sealed class SeerrDiscoverControllerTests
     }
 
     [Fact]
+    public void DiscoverAsset_UsesFlexRailsForNativeCardWidths()
+    {
+        var source = ReadBrowserAsset("discover.js");
+        var scrollerRule = Regex.Matches(source, @"\.seerr-discover__scroller\s*\{(?<body>.*?)\}", RegexOptions.Singleline)
+            .Cast<Match>()
+            .Single(match => match.Groups["body"].Value.Contains("display:", StringComparison.Ordinal));
+        var cardRule = Regex.Match(source, @"\.seerr-card\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
+
+        Assert.True(cardRule.Success, "Discover cards should keep an explicit card rule.");
+        Assert.Contains("display: flex;", scrollerRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("flex-wrap: nowrap;", scrollerRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("gap: 0.78rem;", scrollerRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("overflow-x: auto;", scrollerRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("flex: 0 0 auto;", cardRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains(".seerr-discover__scroller { gap: 0.65rem; }", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("grid-auto-columns", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("grid-auto-flow: column", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DiscoverAsset_AddsSafeNativeHooksToModal()
     {
         var source = ReadBrowserAsset("discover.js");

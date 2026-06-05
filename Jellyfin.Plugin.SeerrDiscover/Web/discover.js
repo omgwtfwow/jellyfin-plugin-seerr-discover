@@ -486,9 +486,8 @@
         margin: 0;
       }
       .seerr-discover__scroller {
-        display: grid;
-        grid-auto-flow: column;
-        grid-auto-columns: minmax(11rem, 13.5rem);
+        display: flex;
+        flex-wrap: nowrap;
         gap: 0.78rem;
         overflow-x: auto;
         padding: 0.15rem 0 0.7rem;
@@ -504,6 +503,7 @@
         color: inherit;
         font: inherit;
         cursor: pointer;
+        flex: 0 0 auto;
       }
       .seerr-card:focus-visible {
         outline: 2px solid rgb(var(--seerr-text-channel) / 0.42);
@@ -996,7 +996,7 @@
             max(0.5rem, env(safe-area-inset-left));
         }
         .seerr-discover { padding-inline: clamp(0.85rem, 3vw, 1.15rem); }
-        .seerr-discover__scroller { grid-auto-columns: minmax(9.8rem, 42vw); }
+        .seerr-discover__scroller { gap: 0.65rem; }
         .seerr-toast-region {
           left: max(1rem, env(safe-area-inset-left));
           right: max(1rem, env(safe-area-inset-right));
