@@ -454,7 +454,7 @@ public sealed class SeerrDiscoverControllerTests
         Assert.True(overviewRule.Success, "Discover modal overview should keep scoped wrapping rules.");
         Assert.True(relatedRule.Success, "Discover modal related area should keep scoped containment rules.");
         Assert.True(relatedScrollerRule.Success, "Discover modal related scroller should keep scoped overflow rules.");
-        Assert.True(relatedCardRule.Success, "Discover modal related cards should keep scoped compact sizing.");
+        Assert.True(relatedCardRule.Success, "Discover modal related cards should keep scoped balanced sizing.");
         Assert.Contains("max-width: calc(100vw - 1rem);", panelRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("overflow-x: hidden;", panelRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("overflow-y: auto;", panelRule.Groups["body"].Value, StringComparison.Ordinal);
@@ -468,7 +468,8 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("overflow: hidden;", relatedRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("max-width: 100%;", relatedScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("overflow-x: auto;", relatedScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
-        Assert.Contains("width: clamp(6.7rem, 10vw, 8.6rem);", relatedCardRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("width: clamp(8rem, 12vw, 10.5rem);", relatedCardRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("width: clamp(7.2rem, 26vw, 9.2rem);", source, StringComparison.Ordinal);
         Assert.Contains(".seerr-modal__related .cardText", source, StringComparison.Ordinal);
         Assert.Contains(".seerr-modal__related .seerr-card__badge", source, StringComparison.Ordinal);
     }
