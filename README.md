@@ -60,13 +60,13 @@ These screenshots were captured from live Jellyfin Web sessions and show the plu
 | --- | --- |
 | ![Screenshot of Seerr Discover browse rails in Jellyfin Web](docs/assets/screenshots/discover-rails.jpg) | ![Screenshot of requestable Seerr results in Jellyfin native search](docs/assets/screenshots/native-search.jpg) |
 
-| Detail modal | Native detail page rails |
+| Detail modal | Mobile layout |
 | --- | --- |
-| ![Screenshot of the Seerr Discover detail modal](docs/assets/screenshots/detail-modal.jpg) | ![Screenshot of Seerr Discover native Jellyfin detail page rails](docs/assets/screenshots/native-detail-rails.jpg) |
+| ![Screenshot of the Seerr Discover detail modal](docs/assets/screenshots/detail-modal.jpg) | ![Screenshot of Seerr Discover on a narrow mobile layout](docs/assets/screenshots/mobile-layout.jpg) |
 
-| Mobile layout | Rail settings and optional catalog |
-| --- | --- |
-| ![Screenshot of Seerr Discover on a narrow mobile layout](docs/assets/screenshots/mobile-layout.jpg) | ![Screenshot of Seerr Discover rail settings and optional catalog in Jellyfin plugin settings](docs/assets/screenshots/optional-rails-catalog.jpg) |
+| Rail settings and optional catalog |
+| --- |
+| ![Screenshot of Seerr Discover rail settings and optional catalog in Jellyfin plugin settings](docs/assets/screenshots/optional-rails-catalog.jpg) |
 
 ## Requirements
 

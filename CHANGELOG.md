@@ -13,8 +13,8 @@
   rendering so custom themes can style Seerr Discover like native Jellyfin UI.
 - Keep the JavaScript Injector loader versionless at
   `/SeerrDiscover/assets/discover.js`.
-- Refresh README screenshots for native detail page rails and current rail
-  settings without the removed Collections control.
+- Refresh README screenshots for current rail settings without the removed
+  Collections control.
 
 ## 0.3.0.0
 
