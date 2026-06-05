@@ -116,6 +116,14 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("calc(7.5em + env(safe-area-inset-top))", topOffsetRules);
         Assert.True(largeRule.Success, "discover.js should mirror Jellyfin's large pageWithAbsoluteTabs breakpoint.");
         Assert.Contains("--seerr-tab-top-offset: calc(6.7em + env(safe-area-inset-top));", largeRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("seerr-jellyfin-spacing-probe", source, StringComparison.Ordinal);
+        Assert.Contains("libraryPage pageWithAbsoluteTabs seerr-jellyfin-spacing-probe", source, StringComparison.Ordinal);
+        Assert.Contains("window.getComputedStyle(probe).paddingTop", source, StringComparison.Ordinal);
+        Assert.Contains("pane.style.setProperty('--seerr-tab-top-offset'", source, StringComparison.Ordinal);
+        Assert.Contains("header?.offsetHeight", source, StringComparison.Ordinal);
+        Assert.Contains("new window.ResizeObserver(scheduleDiscoverSpacing)", source, StringComparison.Ordinal);
+        Assert.Contains("new window.MutationObserver", source, StringComparison.Ordinal);
+        Assert.Contains("window.visualViewport?.addEventListener('resize', scheduleDiscoverSpacing)", source, StringComparison.Ordinal);
         Assert.All(topOffsetRules, rule =>
         {
             Assert.DoesNotContain("rem", rule, StringComparison.Ordinal);
@@ -123,6 +131,31 @@ public sealed class SeerrDiscoverControllerTests
         });
         Assert.True(updateSpacing.Success, "discover.js should keep the Discover spacing update function explicit.");
         Assert.DoesNotContain("getBoundingClientRect", updateSpacing.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.DoesNotContain("pane.getBoundingClientRect", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("tabs.getBoundingClientRect", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("tabsBottom - paneTop", source, StringComparison.Ordinal);
+        Assert.DoesNotMatch(new Regex(@"addEventListener\(\s*['""]scroll['""]", RegexOptions.IgnoreCase), source);
+    }
+
+    [Fact]
+    public void LayoutSpacing_DoesNotAddAdminOffsetConfiguration()
+    {
+        var forbiddenProperties = new[]
+        {
+            "DesktopTopOffsetAdjustmentPx",
+            "MobileTopOffsetAdjustmentPx",
+            "TvTopOffsetAdjustmentPx"
+        };
+        var configProperties = typeof(PluginConfiguration).GetProperties().Select(property => property.Name).ToArray();
+        var dtoProperties = typeof(SeerrDiscoverConfigurationDto).GetProperties().Select(property => property.Name).ToArray();
+        var updateProperties = typeof(SeerrDiscoverConfigurationUpdate).GetProperties().Select(property => property.Name).ToArray();
+
+        foreach (var property in forbiddenProperties)
+        {
+            Assert.DoesNotContain(property, configProperties);
+            Assert.DoesNotContain(property, dtoProperties);
+            Assert.DoesNotContain(property, updateProperties);
+        }
     }
 
     [Fact]

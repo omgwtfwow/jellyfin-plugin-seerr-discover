@@ -29,6 +29,10 @@
   };
   let nextToastId = 1;
   let spacingFrame = 0;
+  let spacingResizeObserver = null;
+  let spacingMutationObserver = null;
+  let spacingResizeTargets = [];
+  let spacingMutationTargets = [];
   const nativeSearch = {
     input: null,
     debounceId: 0,
@@ -357,6 +361,16 @@
         margin: 0;
         padding: 0;
         width: 100%;
+      }
+      .seerr-jellyfin-spacing-probe {
+        position: absolute !important;
+        inset: 0 auto auto 0 !important;
+        display: block !important;
+        visibility: hidden !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+        width: 1px !important;
+        height: 1px !important;
       }
       .seerr-modal {
         --seerr-bg: var(--jf-palette-background-default, #101010);
@@ -1189,6 +1203,7 @@
   }
 
   function updateDiscoverSpacing() {
+    ensureDiscoverSpacingObservers();
     const button = discoverTabButton();
     const pane = markDiscoverPane() || discoverTabPane(button);
     if (!pane) return;
@@ -1196,12 +1211,116 @@
     const content = pane.querySelector('.seerr-discover');
     if (!content) return;
 
+    const nativeTopOffset = nativeJellyfinTopOffset();
+    const headerHeight = jellyfinHeaderHeight();
+    const topOffset = Math.max(nativeTopOffset, headerHeight ? headerHeight + 1 : 0);
+
+    if (topOffset > 0) {
+      pane.style.setProperty('--seerr-tab-top-offset', `${roundCssPx(topOffset)}px`);
+    } else {
+      pane.style.removeProperty('--seerr-tab-top-offset');
+    }
     content.style.setProperty('--seerr-content-overlap-offset', '0px');
   }
 
   function scheduleDiscoverSpacing() {
     window.cancelAnimationFrame(spacingFrame);
     spacingFrame = window.requestAnimationFrame(updateDiscoverSpacing);
+  }
+
+  function nativeJellyfinTopOffset() {
+    const probe = ensureJellyfinSpacingProbe();
+    if (!probe) return 0;
+
+    return parseCssPx(window.getComputedStyle(probe).paddingTop);
+  }
+
+  function ensureJellyfinSpacingProbe() {
+    if (!document.body) return null;
+
+    let probe = document.querySelector('.seerr-jellyfin-spacing-probe');
+    if (!probe) {
+      probe = document.createElement('div');
+      probe.className = 'libraryPage pageWithAbsoluteTabs seerr-jellyfin-spacing-probe';
+      probe.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(probe);
+    }
+
+    return probe;
+  }
+
+  function jellyfinHeaderHeight() {
+    const header = document.querySelector('.skinHeader');
+    const height = header?.offsetHeight || 0;
+    return Number.isFinite(height) && height > 0 ? height : 0;
+  }
+
+  function parseCssPx(value) {
+    const parsed = Number.parseFloat(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  }
+
+  function roundCssPx(value) {
+    return Math.round(value * 100) / 100;
+  }
+
+  function ensureDiscoverSpacingObservers() {
+    observeDiscoverSpacingResizeTargets();
+    observeDiscoverSpacingMutations();
+  }
+
+  function discoverSpacingTargets() {
+    return [
+      document.querySelector('.skinHeader'),
+      document.querySelector('.headerTabs'),
+      document.querySelector('.emby-tabs-slider'),
+    ].filter(Boolean);
+  }
+
+  function observeDiscoverSpacingResizeTargets() {
+    if (!window.ResizeObserver) return;
+    if (!spacingResizeObserver) {
+      spacingResizeObserver = new window.ResizeObserver(scheduleDiscoverSpacing);
+    }
+
+    const targets = discoverSpacingTargets();
+    spacingResizeTargets
+      .filter((target) => !targets.includes(target))
+      .forEach((target) => spacingResizeObserver.unobserve(target));
+    targets
+      .filter((target) => !spacingResizeTargets.includes(target))
+      .forEach((target) => spacingResizeObserver.observe(target));
+    spacingResizeTargets = targets;
+  }
+
+  function observeDiscoverSpacingMutations() {
+    if (!window.MutationObserver) return;
+    if (!spacingMutationObserver) {
+      spacingMutationObserver = new window.MutationObserver(() => {
+        observeDiscoverSpacingResizeTargets();
+        scheduleDiscoverSpacing();
+      });
+    }
+
+    const targets = [
+      document.documentElement,
+      document.body,
+      ...discoverSpacingTargets(),
+    ].filter(Boolean);
+    const unchanged = targets.length === spacingMutationTargets.length
+      && targets.every((target, index) => target === spacingMutationTargets[index]);
+    if (unchanged) return;
+
+    spacingMutationObserver.disconnect();
+    targets.forEach((target) => {
+      spacingMutationObserver.observe(target, {
+        attributes: true,
+        attributeFilter: ['class', 'style'],
+        childList: target === document.documentElement || target === document.body,
+        subtree: false,
+      });
+    });
+    spacingMutationTargets = targets;
   }
 
   function syncCustomTabVisibility() {
@@ -2991,6 +3110,7 @@
   });
   window.addEventListener('resize', scheduleDiscoverSpacing);
   window.addEventListener('orientationchange', scheduleDiscoverSpacing);
+  window.visualViewport?.addEventListener('resize', scheduleDiscoverSpacing);
   document.addEventListener('click', (event) => {
     const button = event.target && event.target.closest ? event.target.closest('button') : null;
     if (button && button.closest('.emby-tabs-slider')) {
