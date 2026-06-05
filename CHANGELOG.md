@@ -21,6 +21,8 @@
   do not fall beneath recommendations.
 - Keep Cast and Crew side by side in the phone-width detail modal with compact
   ellipsized people rows.
+- Render Details facts in two columns on phone-width detail modals while
+  keeping Tags below them.
 - Refresh README screenshots around the core Discover rails, native search,
   detail modal, and mobile layout flows.
 - Remove redundant request-state screenshots from the release docs.
