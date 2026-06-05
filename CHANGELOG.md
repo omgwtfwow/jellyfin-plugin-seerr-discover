@@ -19,6 +19,8 @@
   themes can style Discover more like native Jellyfin surfaces.
 - Keep mobile detail modal metadata before related rails so Details and Tags
   do not fall beneath recommendations.
+- Keep Cast and Crew side by side in the phone-width detail modal with compact
+  ellipsized people rows.
 - Refresh README screenshots around the core Discover rails, native search,
   detail modal, and mobile layout flows.
 - Remove redundant request-state screenshots from the release docs.
