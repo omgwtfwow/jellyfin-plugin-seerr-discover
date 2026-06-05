@@ -223,7 +223,7 @@ public sealed class SeerrDiscoverControllerTests
         var source = ReadBrowserAsset("discover.js");
         var scrollerRule = Regex.Matches(source, @"\.seerr-discover__scroller\s*\{(?<body>.*?)\}", RegexOptions.Singleline)
             .Cast<Match>()
-            .Single(match => match.Groups["body"].Value.Contains("display:", StringComparison.Ordinal));
+            .Single(match => match.Groups["body"].Value.Contains("gap: 0.78rem;", StringComparison.Ordinal));
         var cardRule = Regex.Match(source, @"\.seerr-card\s*\{(?<body>.*?)\}", RegexOptions.Singleline);
 
         Assert.True(cardRule.Success, "Discover cards should keep an explicit card rule.");
@@ -266,18 +266,26 @@ public sealed class SeerrDiscoverControllerTests
     public void DiscoverAsset_AddsNativeDetailRelatedRailsWithNativeHooks()
     {
         var source = ReadBrowserAsset("discover.js");
+        var nativeScrollerRule = Regex.Matches(source, @"\.seerr-native-detail-related\s+\.seerr-discover__scroller\s*\{(?<body>.*?)\}", RegexOptions.Singleline)
+            .Cast<Match>()
+            .SingleOrDefault(match => match.Groups["body"].Value.Contains("display:", StringComparison.Ordinal));
 
         Assert.Contains("document.querySelector('.libraryPage:not(.hide)')", source, StringComparison.Ordinal);
         Assert.Contains("querySelector('.detailPageContent')", source, StringComparison.Ordinal);
         Assert.Contains("detailContent.querySelector('#similarCollapsible')", source, StringComparison.Ordinal);
         Assert.Contains("document.addEventListener('viewshow', scheduleMount);", source, StringComparison.Ordinal);
         Assert.Contains("typeof AbortController !== 'undefined' ? new AbortController() : null", source, StringComparison.Ordinal);
+        Assert.Contains("function loadNativeDetailRelatedRails(detailContent, key, type, tmdbId, itemId) {\n    ensureStyle();", source, StringComparison.Ordinal);
         Assert.Contains("data-seerr-native-detail-related", source, StringComparison.Ordinal);
         Assert.Contains("native-detail-${rail.id}", source, StringComparison.Ordinal);
         Assert.Contains("verticalSection emby-scroller-container seerr-discover__rail", source, StringComparison.Ordinal);
         Assert.Contains("sectionTitle sectionTitle-cards padded-left seerr-discover__rail-title", source, StringComparison.Ordinal);
         Assert.Contains(".seerr-native-detail-related .seerr-discover__rail-title,", source, StringComparison.Ordinal);
         Assert.Contains(".seerr-native-detail-related .seerr-discover__scroller", source, StringComparison.Ordinal);
+        Assert.True(nativeScrollerRule?.Success, "Native detail related rails should explicitly keep a horizontal scroller.");
+        Assert.NotNull(nativeScrollerRule);
+        Assert.Contains("display: flex;", nativeScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains("flex-wrap: nowrap;", nativeScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("padding-left: 0 !important;", source, StringComparison.Ordinal);
         Assert.Contains("padding-right: 0 !important;", source, StringComparison.Ordinal);
         Assert.Contains("artworkLayout: normalizeArtworkLayout(rail.artworkLayout)", source, StringComparison.Ordinal);

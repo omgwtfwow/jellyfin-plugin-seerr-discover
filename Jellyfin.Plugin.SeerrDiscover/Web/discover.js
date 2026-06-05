@@ -1055,6 +1055,8 @@
         min-width: 0;
       }
       .seerr-native-detail-related .seerr-discover__rail {
+        display: flex;
+        flex-direction: column;
         min-width: 0;
         margin: 0;
       }
@@ -1064,6 +1066,8 @@
         padding-right: 0 !important;
       }
       .seerr-native-detail-related .seerr-discover__scroller {
+        display: flex;
+        flex-wrap: nowrap;
         max-width: 100%;
         overflow-x: auto;
       }
@@ -1825,6 +1829,7 @@
   }
 
   function loadNativeDetailRelatedRails(detailContent, key, type, tmdbId, itemId) {
+    ensureStyle();
     abortNativeDetailRequest();
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     nativeDetails.abortController = controller;
