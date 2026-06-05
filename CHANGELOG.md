@@ -10,6 +10,8 @@
   search results underneath it.
 - Smooth the Discover tab first-load experience with a native Jellyfin loading
   mode plus a staging override for comparing inline skeleton placeholders.
+- Remove the duplicate inline loading notice when the native Jellyfin loader is
+  active.
 - Refresh README screenshots around the core Discover rails, native search,
   detail modal, and mobile layout flows.
 - Remove redundant request-state screenshots from the release docs.

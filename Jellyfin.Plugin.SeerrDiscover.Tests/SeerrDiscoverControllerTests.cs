@@ -173,6 +173,7 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("showLoadingMsg", source, StringComparison.Ordinal);
         Assert.Contains("hideLoadingMsg", source, StringComparison.Ordinal);
         Assert.Contains("seerr-skeleton", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Loading Discover...", source, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -543,10 +543,6 @@
       .seerr-discover--loading {
         min-height: clamp(14rem, 32vh, 24rem);
       }
-      .seerr-discover__loading-fallback {
-        width: fit-content;
-        max-width: 100%;
-      }
       .seerr-skeleton {
         pointer-events: none;
         user-select: none;
@@ -1463,12 +1459,9 @@
   function renderDiscoverLoading(root) {
     const mode = root.__seerrLoadingMode || discoverLoadingMode();
     ensureDiscoverNativeLoading(root);
-    const nativeLoaderVisible = mode === 'native' && root.__seerrNativeLoadingVisible === true;
     const loadingMarkup = mode === 'skeleton'
       ? rails.slice(0, Math.min(rails.length, 4)).map(skeletonRailTemplate).join('')
-      : nativeLoaderVisible
-        ? ''
-        : '<div class="seerr-discover__notice seerr-discover__loading-fallback">Loading Discover...</div>';
+      : '';
 
     root.innerHTML = `
       <div class="seerr-discover seerr-discover--loading" aria-busy="true" aria-label="Loading Discover" role="status">
