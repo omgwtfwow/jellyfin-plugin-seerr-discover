@@ -1431,10 +1431,10 @@
       : '';
     const layoutClass = isHorizontal ? 'overflowBackdropCard' : 'overflowPortraitCard';
     const padderClass = isHorizontal ? 'cardPadder-overflowBackdrop' : 'cardPadder-overflowPortrait';
-    const typeLabel = mediaType(item) === 'tv' ? 'Series' : 'Movie';
     const status = cardStatusLabel(item);
     const year = (mediaDate(item) || '').slice(0, 4);
     const badgeClass = cardBadgeClass(status);
+    const statusBadge = status ? `<span class="seerr-card__badge ${escapeHtml(badgeClass)}">${escapeHtml(status)}</span>` : '';
     const imageClass = isHorizontal ? ' seerr-card__image--backdrop' : '';
     const imageStyle = image ? ` style="--seerr-artwork:url('${escapeHtml(image)}')"` : '';
     const srcSetAttribute = srcSet ? ` srcset="${escapeHtml(srcSet)}" sizes="${isHorizontal ? '(max-width: 720px) 76vw, 20rem' : '(max-width: 720px) 42vw, 13.5rem'}"` : '';
@@ -1446,10 +1446,7 @@
             <div class="cardPadder ${padderClass} seerr-card__padder"></div>
             <span class="cardImageContainer coveredImage cardContent seerr-card__image${imageClass}" role="img" aria-label="${escapeHtml(title)}"${imageStyle}>
               ${image ? `<img loading="lazy" src="${escapeHtml(image)}"${srcSetAttribute} alt="">` : ''}
-              <span class="seerr-card__badges">
-                <span class="seerr-card__badge">${escapeHtml(typeLabel)}</span>
-                ${status ? `<span class="seerr-card__badge ${escapeHtml(badgeClass)}">${escapeHtml(status)}</span>` : ''}
-              </span>
+              ${statusBadge ? `<span class="seerr-card__badges">${statusBadge}</span>` : ''}
             </span>
           </div>
           <div class="cardText cardTextCentered cardText-first seerr-card__meta seerr-card__title" title="${escapeHtml(title)}">
@@ -3095,10 +3092,12 @@
     assignConfigValue(config, 'DiscoverRailPresentation', (page.__seerrDiscoverRailPresentation || []).map((rail) => ({
       Id: rail.Id,
       ArtworkLayout: normalizeConfigArtworkLayout(rail.ArtworkLayout),
+      Title: normalizeConfigRailTitle(rail.Title),
     })));
     assignConfigValue(config, 'DetailRailPresentation', (page.__seerrDetailRailPresentation || []).map((rail) => ({
       Id: rail.Id,
       ArtworkLayout: normalizeConfigArtworkLayout(rail.ArtworkLayout),
+      Title: normalizeConfigRailTitle(rail.Title),
     })));
     assignConfigValue(config, 'ExtraRails', (page.__seerrExtraRails || []).map((rail) => ({
       Id: rail.Id,
@@ -3204,6 +3203,10 @@
     return normalizeArtworkLayout(value);
   }
 
+  function normalizeConfigRailTitle(value) {
+    return String(value || '').trim().slice(0, 96);
+  }
+
   function normalizeConfigRailPresentation(presentation, knownIds) {
     const ids = (knownIds || []).map(normalizeConfigToken).filter(Boolean);
     const normalized = [];
@@ -3215,13 +3218,14 @@
       normalized.push({
         Id: id,
         ArtworkLayout: normalizeConfigArtworkLayout(item.ArtworkLayout || item.artworkLayout),
+        Title: normalizeConfigRailTitle(item.Title || item.title),
       });
     });
 
     ids.forEach((id) => {
       if (seen.has(id)) return;
       seen.add(id);
-      normalized.push({ Id: id, ArtworkLayout: artworkLayoutVertical });
+      normalized.push({ Id: id, ArtworkLayout: artworkLayoutVertical, Title: '' });
     });
     return normalized;
   }
@@ -3245,6 +3249,11 @@
   function setConfigRailLayout(page, property, id, value) {
     const item = configRailPresentationItem(page, property, id);
     if (item) item.ArtworkLayout = normalizeConfigArtworkLayout(value);
+  }
+
+  function setConfigRailTitle(page, property, id, value) {
+    const item = configRailPresentationItem(page, property, id);
+    if (item) item.Title = normalizeConfigRailTitle(value);
   }
 
   function moveConfigRail(page, property, id, direction) {
@@ -3281,7 +3290,18 @@
     const byId = new Map(rows.map((row) => [row.Id, row]));
     page[presentationProperty] = normalizeConfigRailPresentation(page[presentationProperty], rows.map((row) => row.Id));
     const orderedRows = page[presentationProperty]
-      .map((presentation) => ({ ...byId.get(presentation.Id), ArtworkLayout: presentation.ArtworkLayout }))
+      .map((presentation) => {
+        const definition = byId.get(presentation.Id);
+        if (!definition) return null;
+        const title = normalizeConfigRailTitle(presentation.Title);
+        return {
+          ...definition,
+          ArtworkLayout: presentation.ArtworkLayout,
+          TitleOverride: title,
+          DisplayTitle: title || definition.Title,
+        };
+      })
+      .filter(Boolean)
       .filter((row) => row.Id);
 
     if (!orderedRows.length) {
@@ -3293,24 +3313,28 @@
       const enabled = row.IsExtra ? !!row.ExtraRail.Enabled : !!(page[enabledProperty] || {})[row.Id];
       return `
         <div class="seerr-config-rail-row" data-config-rail-id="${escapeHtml(row.Id)}">
-          <label class="emby-checkbox-label">
+          <label class="emby-checkbox-label seerr-config-rail-enabled">
             <input type="checkbox" is="emby-checkbox" data-config-rail-enabled="${escapeHtml(row.Id)}" ${enabled ? 'checked' : ''} />
-            <span class="seerr-config-rail-title">${escapeHtml(row.Title)}</span>
+            <span class="seerr-config-rail-title" data-config-rail-display-title="${escapeHtml(row.Id)}">${escapeHtml(row.DisplayTitle)}</span>
           </label>
+          <div class="inputContainer seerr-config-rail-heading">
+            <label class="inputLabel inputLabelUnfocused" for="RailTitle-${escapeHtml(row.Id)}">Heading</label>
+            <input id="RailTitle-${escapeHtml(row.Id)}" is="emby-input" type="text" maxlength="96" value="${escapeHtml(row.TitleOverride)}" placeholder="${escapeHtml(row.Title)}" data-config-rail-title="${escapeHtml(row.Id)}" aria-label="${escapeHtml(row.Title)} custom heading" />
+          </div>
           <div class="selectContainer seerr-config-rail-layout">
             <label class="selectLabel" for="RailLayout-${escapeHtml(row.Id)}">Artwork layout</label>
             <select id="RailLayout-${escapeHtml(row.Id)}" is="emby-select" data-config-rail-layout="${escapeHtml(row.Id)}" aria-label="${escapeHtml(row.Title)} artwork layout">
               <option value="vertical" ${row.ArtworkLayout === artworkLayoutHorizontal ? '' : 'selected'}>Vertical poster</option>
-              <option value="horizontal" ${row.ArtworkLayout === artworkLayoutHorizontal ? 'selected' : ''}>Horizontal thumbnail</option>
+              <option value="horizontal" ${row.ArtworkLayout === artworkLayoutHorizontal ? 'selected' : ''}>Horizontal backdrop</option>
             </select>
           </div>
-          <button is="emby-button" type="button" class="emby-button seerr-config-row-button" data-config-rail-move="${escapeHtml(row.Id)}" data-config-rail-direction="-1" ${index === 0 ? 'disabled' : ''}>
+          <button is="emby-button" type="button" class="emby-button seerr-config-row-button seerr-config-row-button--up" data-config-rail-move="${escapeHtml(row.Id)}" data-config-rail-direction="-1" ${index === 0 ? 'disabled' : ''}>
             <span>Move up</span>
           </button>
-          <button is="emby-button" type="button" class="emby-button seerr-config-row-button" data-config-rail-move="${escapeHtml(row.Id)}" data-config-rail-direction="1" ${index === orderedRows.length - 1 ? 'disabled' : ''}>
+          <button is="emby-button" type="button" class="emby-button seerr-config-row-button seerr-config-row-button--down" data-config-rail-move="${escapeHtml(row.Id)}" data-config-rail-direction="1" ${index === orderedRows.length - 1 ? 'disabled' : ''}>
             <span>Move down</span>
           </button>
-          ${row.IsExtra ? `<button is="emby-button" type="button" class="emby-button seerr-config-row-button" data-extra-rail-remove="${escapeHtml(row.Id)}"><span>Remove</span></button>` : ''}
+          ${row.IsExtra ? `<button is="emby-button" type="button" class="emby-button seerr-config-row-button seerr-config-row-button--remove" data-extra-rail-remove="${escapeHtml(row.Id)}"><span>Remove</span></button>` : ''}
         </div>
       `;
     }).join('');
@@ -3330,6 +3354,20 @@
     list.querySelectorAll('[data-config-rail-layout]').forEach((select) => {
       select.addEventListener('change', () => {
         setConfigRailLayout(page, presentationProperty, select.getAttribute('data-config-rail-layout') || '', select.value);
+      });
+    });
+
+    list.querySelectorAll('[data-config-rail-title]').forEach((input) => {
+      input.addEventListener('input', () => {
+        const id = input.getAttribute('data-config-rail-title') || '';
+        const value = normalizeConfigRailTitle(input.value);
+        const row = byId.get(id);
+        setConfigRailTitle(page, presentationProperty, id, value);
+        const label = Array.from(list.querySelectorAll('[data-config-rail-display-title]'))
+          .find((element) => element.getAttribute('data-config-rail-display-title') === id);
+        if (label && row) {
+          label.textContent = value || row.Title;
+        }
       });
     });
 

@@ -124,12 +124,12 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool EnableDetailRecommended { get; set; }
 
     /// <summary>
-    /// Gets or sets Discover page rail ordering and artwork layout.
+    /// Gets or sets Discover page rail ordering, artwork layout, and optional title override.
     /// </summary>
     public List<SeerrRailPresentation> DiscoverRailPresentation { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets detail page rail ordering and artwork layout.
+    /// Gets or sets detail page rail ordering, artwork layout, and optional title override.
     /// </summary>
     public List<SeerrRailPresentation> DetailRailPresentation { get; set; } = new();
 
@@ -140,7 +140,7 @@ public class PluginConfiguration : BasePluginConfiguration
 }
 
 /// <summary>
-/// Persistent rail ordering and artwork layout selection.
+/// Persistent rail ordering, artwork layout selection, and optional title override.
 /// </summary>
 public sealed class SeerrRailPresentation
 {
@@ -153,6 +153,11 @@ public sealed class SeerrRailPresentation
     /// Gets or sets the artwork layout, vertical or horizontal.
     /// </summary>
     public string ArtworkLayout { get; set; } = "vertical";
+
+    /// <summary>
+    /// Gets or sets the optional custom rail title. Blank uses the default title.
+    /// </summary>
+    public string Title { get; set; } = string.Empty;
 }
 
 /// <summary>

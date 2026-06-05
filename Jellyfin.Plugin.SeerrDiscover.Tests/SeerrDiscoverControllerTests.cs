@@ -203,6 +203,9 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("const padderClass = isHorizontal ? 'cardPadder-overflowBackdrop' : 'cardPadder-overflowPortrait';", source, StringComparison.Ordinal);
         Assert.Contains("data-seerr-artwork-layout", source, StringComparison.Ordinal);
         Assert.Contains("results.map((item) => card(item, artworkLayout)).join('')", source, StringComparison.Ordinal);
+        Assert.Contains("const statusBadge = status ? `<span class=\"seerr-card__badge", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("typeLabel", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("${escapeHtml(typeLabel)}", source, StringComparison.Ordinal);
         Assert.Contains("card-hoverable card-withuserdata seerr-card", source, StringComparison.Ordinal);
         Assert.Contains("role=\"button\" tabindex=\"0\"", source, StringComparison.Ordinal);
         Assert.Contains("cardBox cardBox-bottompadded seerr-card__box", source, StringComparison.Ordinal);
@@ -298,11 +301,15 @@ public sealed class SeerrDiscoverControllerTests
 
         Assert.Contains("DiscoverRailPresentation", source, StringComparison.Ordinal);
         Assert.Contains("DetailRailPresentation", source, StringComparison.Ordinal);
+        Assert.Contains("data-config-rail-title", source, StringComparison.Ordinal);
+        Assert.Contains("normalizeConfigRailTitle", source, StringComparison.Ordinal);
         Assert.Contains("data-config-rail-move", source, StringComparison.Ordinal);
         Assert.Contains("Vertical poster", source, StringComparison.Ordinal);
-        Assert.Contains("Horizontal thumbnail", source, StringComparison.Ordinal);
+        Assert.Contains("Horizontal backdrop", source, StringComparison.Ordinal);
         Assert.Contains("id=\"DiscoverRailList\"", configPage, StringComparison.Ordinal);
         Assert.Contains("id=\"DetailRailList\"", configPage, StringComparison.Ordinal);
+        Assert.Contains("seerr-config-rail-heading", configPage, StringComparison.Ordinal);
+        Assert.Contains("grid-template-areas", configPage, StringComparison.Ordinal);
         Assert.Contains("data-seerr-config-loader", configPage, StringComparison.Ordinal);
         Assert.DoesNotContain("id=\"ExtraRailList\"", configPage, StringComparison.Ordinal);
     }
@@ -734,8 +741,10 @@ public sealed class SeerrDiscoverControllerTests
             ["trending-movies", "trending-tv", "movies", "tv", "upcoming", "upcoming-tv", "recently-requested", "server-popular"],
             dto.DiscoverRailPresentation.Select(rail => rail.Id).ToArray());
         Assert.All(dto.DiscoverRailPresentation, rail => Assert.Equal("vertical", rail.ArtworkLayout));
+        Assert.All(dto.DiscoverRailPresentation, rail => Assert.Equal(string.Empty, rail.Title));
         Assert.Equal(["similar", "recommended"], dto.DetailRailPresentation.Select(rail => rail.Id).ToArray());
         Assert.All(dto.DetailRailPresentation, rail => Assert.Equal("vertical", rail.ArtworkLayout));
+        Assert.All(dto.DetailRailPresentation, rail => Assert.Equal(string.Empty, rail.Title));
     }
 
     [Fact]
@@ -770,17 +779,17 @@ public sealed class SeerrDiscoverControllerTests
             ],
             DiscoverRailPresentation =
             [
-                new SeerrRailPresentationDto { Id = "server-popular", ArtworkLayout = "horizontal" },
-                new SeerrRailPresentationDto { Id = "invalid", ArtworkLayout = "horizontal" },
-                new SeerrRailPresentationDto { Id = "movies", ArtworkLayout = "sideways" },
+                new SeerrRailPresentationDto { Id = "server-popular", ArtworkLayout = "horizontal", Title = "Server Favorites" },
+                new SeerrRailPresentationDto { Id = "invalid", ArtworkLayout = "horizontal", Title = "Ignored" },
+                new SeerrRailPresentationDto { Id = "movies", ArtworkLayout = "sideways", Title = "  Popular Picks  " },
                 new SeerrRailPresentationDto { Id = "server-popular", ArtworkLayout = "vertical" },
-                new SeerrRailPresentationDto { Id = "genre-movie-27", ArtworkLayout = "horizontal" }
+                new SeerrRailPresentationDto { Id = "genre-movie-27", ArtworkLayout = "horizontal", Title = new string('x', 120) }
             ],
             DetailRailPresentation =
             [
-                new SeerrRailPresentationDto { Id = "recommended", ArtworkLayout = "horizontal" },
+                new SeerrRailPresentationDto { Id = "recommended", ArtworkLayout = "horizontal", Title = "For You" },
                 new SeerrRailPresentationDto { Id = "collections", ArtworkLayout = "horizontal" },
-                new SeerrRailPresentationDto { Id = "similar", ArtworkLayout = "wide" },
+                new SeerrRailPresentationDto { Id = "similar", ArtworkLayout = "wide", Title = "More Like This" },
                 new SeerrRailPresentationDto { Id = "recommended", ArtworkLayout = "vertical" }
             ]
         };
@@ -793,9 +802,14 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Equal("horizontal", config.DiscoverRailPresentation[0].ArtworkLayout);
         Assert.Equal("vertical", config.DiscoverRailPresentation[1].ArtworkLayout);
         Assert.Equal("horizontal", config.DiscoverRailPresentation[2].ArtworkLayout);
+        Assert.Equal("Server Favorites", config.DiscoverRailPresentation[0].Title);
+        Assert.Equal("Popular Picks", config.DiscoverRailPresentation[1].Title);
+        Assert.Equal(96, config.DiscoverRailPresentation[2].Title.Length);
         Assert.Equal(["recommended", "similar"], config.DetailRailPresentation.Select(rail => rail.Id).ToArray());
         Assert.Equal("horizontal", config.DetailRailPresentation[0].ArtworkLayout);
         Assert.Equal("vertical", config.DetailRailPresentation[1].ArtworkLayout);
+        Assert.Equal("For You", config.DetailRailPresentation[0].Title);
+        Assert.Equal("More Like This", config.DetailRailPresentation[1].Title);
     }
 
     [Fact]
@@ -815,9 +829,9 @@ public sealed class SeerrDiscoverControllerTests
             DiscoverRailPresentation =
             [
                 new SeerrRailPresentation { Id = "server-popular", ArtworkLayout = "horizontal" },
-                new SeerrRailPresentation { Id = "recently-requested", ArtworkLayout = "horizontal" },
-                new SeerrRailPresentation { Id = "movies", ArtworkLayout = "vertical" },
-                new SeerrRailPresentation { Id = "trending-tv", ArtworkLayout = "horizontal" }
+                new SeerrRailPresentation { Id = "recently-requested", ArtworkLayout = "horizontal", Title = "Fresh Requests" },
+                new SeerrRailPresentation { Id = "movies", ArtworkLayout = "vertical", Title = "Movie Picks" },
+                new SeerrRailPresentation { Id = "trending-tv", ArtworkLayout = "horizontal", Title = "TV Heat" }
             ]
         };
 
@@ -825,6 +839,7 @@ public sealed class SeerrDiscoverControllerTests
 
         Assert.Equal(["recently-requested", "movies", "trending-tv", "upcoming"], rails.Select(rail => rail.Id).ToArray());
         Assert.Equal(["horizontal", "vertical", "horizontal", "vertical"], rails.Select(rail => rail.ArtworkLayout).ToArray());
+        Assert.Equal(["Fresh Requests", "Movie Picks", "TV Heat", "Upcoming Movies"], rails.Select(rail => rail.Title).ToArray());
     }
 
     [Fact]
@@ -834,8 +849,8 @@ public sealed class SeerrDiscoverControllerTests
         {
             DetailRailPresentation =
             [
-                new SeerrRailPresentation { Id = "recommended", ArtworkLayout = "horizontal" },
-                new SeerrRailPresentation { Id = "similar", ArtworkLayout = "vertical" }
+                new SeerrRailPresentation { Id = "recommended", ArtworkLayout = "horizontal", Title = "Chosen For You" },
+                new SeerrRailPresentation { Id = "similar", ArtworkLayout = "vertical", Title = "More Like This" }
             ]
         };
 
@@ -843,6 +858,7 @@ public sealed class SeerrDiscoverControllerTests
 
         Assert.Equal(["recommended", "similar"], rails.Select(rail => rail.Id).ToArray());
         Assert.Equal(["horizontal", "vertical"], rails.Select(rail => rail.ArtworkLayout).ToArray());
+        Assert.Equal(["Chosen For You", "More Like This"], rails.Select(rail => rail.Title).ToArray());
     }
 
     [Fact]
@@ -938,7 +954,7 @@ public sealed class SeerrDiscoverControllerTests
         return Assert.IsType<bool>(method!.Invoke(null, [config, feed, mediaType]));
     }
 
-    private static IReadOnlyList<(string Id, string ArtworkLayout)> BuildDiscoverRails(PluginConfiguration config)
+    private static IReadOnlyList<(string Id, string Title, string ArtworkLayout)> BuildDiscoverRails(PluginConfiguration config)
     {
         var method = typeof(SeerrDiscoverController)
             .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
@@ -947,7 +963,7 @@ public sealed class SeerrDiscoverControllerTests
         return ReflectRailPresentation(method.Invoke(null, [config]));
     }
 
-    private static IReadOnlyList<(string Id, string ArtworkLayout)> BuildDetailRails(PluginConfiguration config)
+    private static IReadOnlyList<(string Id, string Title, string ArtworkLayout)> BuildDetailRails(PluginConfiguration config)
     {
         var method = typeof(SeerrDiscoverController).GetMethod("BuildDetailRails", BindingFlags.NonPublic | BindingFlags.Static);
 
@@ -955,7 +971,7 @@ public sealed class SeerrDiscoverControllerTests
         return ReflectRailPresentation(method!.Invoke(null, [config]));
     }
 
-    private static IReadOnlyList<(string Id, string ArtworkLayout)> ReflectRailPresentation(object? rails)
+    private static IReadOnlyList<(string Id, string Title, string ArtworkLayout)> ReflectRailPresentation(object? rails)
     {
         Assert.NotNull(rails);
         return ((System.Collections.IEnumerable)rails!)
@@ -965,6 +981,7 @@ public sealed class SeerrDiscoverControllerTests
                 var type = rail.GetType();
                 return (
                     Id: Assert.IsType<string>(type.GetProperty("Id")?.GetValue(rail)),
+                    Title: Assert.IsType<string>(type.GetProperty("Title")?.GetValue(rail)),
                     ArtworkLayout: Assert.IsType<string>(type.GetProperty("ArtworkLayout")?.GetValue(rail)));
             })
             .ToList();

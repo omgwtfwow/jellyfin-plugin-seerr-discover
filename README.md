@@ -81,7 +81,7 @@ Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI s
 ## Features
 
 - Rails-only Discover tab for configurable Trending Movies, Trending TV, Popular Movies, Popular TV, Upcoming Movies, and Upcoming TV rows
-- Per-rail vertical poster or horizontal thumbnail artwork layouts, with saved rail ordering for Discover and detail page rails
+- Per-rail vertical poster or horizontal backdrop artwork layouts, custom rail headings, and saved rail ordering for Discover and detail page rails
 - Optional admin-selected rails for genres, movie studios, TV networks, original languages, and keywords
 - Requestable Seerr movie and series results inside Jellyfin's native search page
 - Detail modal with poster/backdrop, metadata, cast/crew, trailers, and Seerr links
@@ -111,7 +111,7 @@ See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) if the plugin does not ap
 
 Open Jellyfin Dashboard > Plugins > Seerr Discover.
 
-Most installs only need the Seerr URLs, Seerr API key, companion plugin setup, and the default rail choices. Discover and detail page rail rows can be enabled, moved up or down, and set to vertical poster or horizontal thumbnail artwork before saving. The optional rail catalog can add opt-in Discover rows by genre, movie studio, TV network, original language, or keyword. Genres, languages, and networks can be listed without a query; studios and keywords use search. Added optional rails can be enabled, disabled, reordered, or removed before saving.
+Most installs only need the Seerr URLs, Seerr API key, companion plugin setup, and the default rail choices. Discover and detail page rail rows can be enabled, renamed, moved up or down, and set to vertical poster or horizontal backdrop artwork before saving. The optional rail catalog can add opt-in Discover rows by genre, movie studio, TV network, original language, or keyword. Genres, languages, and networks can be listed without a query; studios and keywords use search. Added optional rails can be enabled, renamed, disabled, reordered, or removed before saving.
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
@@ -126,8 +126,8 @@ Most installs only need the Seerr URLs, Seerr API key, companion plugin setup, a
 | Require mapped Seerr users | On | Requests must be created as the mapped Seerr user. |
 | Show Seerr results in Jellyfin search | On | Adds Seerr results to Jellyfin's native search page. |
 | Default 4K requests | Off | Creates 4K requests by default when enabled. |
-| Discover rails | Built-ins in default order, vertical poster artwork | Enables, reorders, and sets artwork layout for built-in, request-based, and optional Discover rows. |
-| Detail page rails | Similar then Recommended, vertical poster artwork | Enables, reorders, and sets artwork layout for related rows inside Discover modals and native Jellyfin movie/series detail pages. |
+| Discover rails | Built-ins in default order, default headings, vertical poster artwork | Enables, renames, reorders, and sets artwork layout for built-in, request-based, and optional Discover rows. |
+| Detail page rails | Similar then Recommended, default headings, vertical poster artwork | Enables, renames, reorders, and sets artwork layout for related rows inside Discover modals and native Jellyfin movie/series detail pages. |
 | Optional rail catalog | none configured | Adds admin-selected genre, studio, network, language, or keyword rails to the Discover rail list. |
 | Advanced cache | `600` discover, `300` details, `60` search/user | Cache TTLs for Discover rail, detail, native search, mapped-user, and quota responses. |
 

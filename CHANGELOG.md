@@ -23,8 +23,8 @@
   ellipsized people rows.
 - Render Details facts in two columns on phone-width detail modals while
   keeping Tags below them.
-- Add per-rail vertical poster or horizontal thumbnail artwork controls, plus
-  saved rail ordering for Discover and detail page rails.
+- Add per-rail vertical poster or horizontal backdrop artwork controls, custom
+  rail headings, and saved rail ordering for Discover and detail page rails.
 - Refresh README screenshots around the core Discover rails, native search,
   detail modal, and mobile layout flows.
 - Remove redundant request-state screenshots from the release docs.

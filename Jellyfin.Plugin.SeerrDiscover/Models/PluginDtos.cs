@@ -170,12 +170,12 @@ public sealed class SeerrDiscoverConfigurationDto
     public bool EnableDetailRecommended { get; set; }
 
     /// <summary>
-    /// Gets Discover page rail ordering and artwork layout.
+    /// Gets Discover page rail ordering, artwork layout, and optional title override.
     /// </summary>
     public List<SeerrRailPresentationDto> DiscoverRailPresentation { get; } = new();
 
     /// <summary>
-    /// Gets detail page rail ordering and artwork layout.
+    /// Gets detail page rail ordering, artwork layout, and optional title override.
     /// </summary>
     public List<SeerrRailPresentationDto> DetailRailPresentation { get; } = new();
 
@@ -306,12 +306,12 @@ public sealed class SeerrDiscoverConfigurationUpdate
     public bool EnableDetailRecommended { get; set; }
 
     /// <summary>
-    /// Gets or sets Discover page rail ordering and artwork layout.
+    /// Gets or sets Discover page rail ordering, artwork layout, and optional title override.
     /// </summary>
     public List<SeerrRailPresentationDto>? DiscoverRailPresentation { get; set; }
 
     /// <summary>
-    /// Gets or sets detail page rail ordering and artwork layout.
+    /// Gets or sets detail page rail ordering, artwork layout, and optional title override.
     /// </summary>
     public List<SeerrRailPresentationDto>? DetailRailPresentation { get; set; }
 
@@ -322,7 +322,7 @@ public sealed class SeerrDiscoverConfigurationUpdate
 }
 
 /// <summary>
-/// Rail ordering and artwork layout DTO.
+/// Rail ordering, artwork layout, and optional title override DTO.
 /// </summary>
 public sealed class SeerrRailPresentationDto
 {
@@ -335,6 +335,11 @@ public sealed class SeerrRailPresentationDto
     /// Gets or sets the artwork layout, vertical or horizontal.
     /// </summary>
     public string ArtworkLayout { get; set; } = "vertical";
+
+    /// <summary>
+    /// Gets or sets the optional custom rail title. Blank uses the default title.
+    /// </summary>
+    public string Title { get; set; } = string.Empty;
 }
 
 /// <summary>

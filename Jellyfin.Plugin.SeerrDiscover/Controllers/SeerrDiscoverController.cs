@@ -442,7 +442,15 @@ public sealed class SeerrDiscoverController : ControllerBase
     {
         var catalog = BuildDiscoverRailCatalog(config).ToDictionary(rail => rail.Id, StringComparer.OrdinalIgnoreCase);
         return NormalizeRailPresentation(config.DiscoverRailPresentation, catalog.Keys)
-            .Select(presentation => catalog[presentation.Id] with { ArtworkLayout = presentation.ArtworkLayout })
+            .Select(presentation =>
+            {
+                var rail = catalog[presentation.Id];
+                return rail with
+                {
+                    Title = ResolveRailTitle(presentation.Title, rail.Title),
+                    ArtworkLayout = presentation.ArtworkLayout
+                };
+            })
             .Where(rail => includeDisabled || IsFeedEnabled(config, rail.Feed, null))
             .ToList();
     }
@@ -468,7 +476,7 @@ public sealed class SeerrDiscoverController : ControllerBase
             .Select(presentation =>
             {
                 var rail = catalog[presentation.Id];
-                return new DetailRail(rail.Id, rail.Title, presentation.ArtworkLayout);
+                return new DetailRail(rail.Id, ResolveRailTitle(presentation.Title, rail.Title), presentation.ArtworkLayout);
             })
             .ToList();
     }
@@ -899,14 +907,16 @@ public sealed class SeerrDiscoverController : ControllerBase
         => new()
         {
             Id = presentation.Id,
-            ArtworkLayout = presentation.ArtworkLayout
+            ArtworkLayout = presentation.ArtworkLayout,
+            Title = presentation.Title
         };
 
     private static SeerrRailPresentation FromRailPresentationDto(SeerrRailPresentationDto presentation)
         => new()
         {
             Id = presentation.Id,
-            ArtworkLayout = presentation.ArtworkLayout
+            ArtworkLayout = presentation.ArtworkLayout,
+            Title = presentation.Title
         };
 
     private static IReadOnlyList<SeerrRailPresentation> NormalizeRailPresentation(IEnumerable<SeerrRailPresentation>? presentation, IEnumerable<string> knownIds)
@@ -933,7 +943,8 @@ public sealed class SeerrDiscoverController : ControllerBase
                 normalized.Add(new SeerrRailPresentation
                 {
                     Id = canonicalId,
-                    ArtworkLayout = NormalizeArtworkLayout(item.ArtworkLayout)
+                    ArtworkLayout = NormalizeArtworkLayout(item.ArtworkLayout),
+                    Title = NormalizeRailTitle(item.Title)
                 });
             }
         }
@@ -948,7 +959,8 @@ public sealed class SeerrDiscoverController : ControllerBase
             normalized.Add(new SeerrRailPresentation
             {
                 Id = id,
-                ArtworkLayout = ArtworkLayoutVertical
+                ArtworkLayout = ArtworkLayoutVertical,
+                Title = string.Empty
             });
         }
 
@@ -957,6 +969,18 @@ public sealed class SeerrDiscoverController : ControllerBase
 
     private static string NormalizeArtworkLayout(string? value)
         => NormalizeToken(value ?? string.Empty) == ArtworkLayoutHorizontal ? ArtworkLayoutHorizontal : ArtworkLayoutVertical;
+
+    private static string ResolveRailTitle(string? customTitle, string defaultTitle)
+    {
+        var normalizedTitle = NormalizeRailTitle(customTitle);
+        return string.IsNullOrWhiteSpace(normalizedTitle) ? defaultTitle : normalizedTitle;
+    }
+
+    private static string NormalizeRailTitle(string? value)
+    {
+        var title = (value ?? string.Empty).Trim();
+        return title.Length > 96 ? title[..96] : title;
+    }
 
     private static IReadOnlyList<SeerrExtraRail> NormalizeExtraRails(IEnumerable<SeerrExtraRail>? rails)
     {

@@ -36,11 +36,11 @@ public sealed class PluginConfigurationTests
         {
             DiscoverRailPresentation =
             [
-                new SeerrRailPresentation { Id = "movies", ArtworkLayout = "horizontal" }
+                new SeerrRailPresentation { Id = "movies", ArtworkLayout = "horizontal", Title = "Movies Tonight" }
             ],
             DetailRailPresentation =
             [
-                new SeerrRailPresentation { Id = "recommended", ArtworkLayout = "horizontal" }
+                new SeerrRailPresentation { Id = "recommended", ArtworkLayout = "horizontal", Title = "Recommended Next" }
             ]
         };
 
@@ -50,7 +50,9 @@ public sealed class PluginConfigurationTests
         Assert.NotNull(restored);
         Assert.Equal("movies", restored!.DiscoverRailPresentation[0].Id);
         Assert.Equal("horizontal", restored.DiscoverRailPresentation[0].ArtworkLayout);
+        Assert.Equal("Movies Tonight", restored.DiscoverRailPresentation[0].Title);
         Assert.Equal("recommended", restored.DetailRailPresentation[0].Id);
         Assert.Equal("horizontal", restored.DetailRailPresentation[0].ArtworkLayout);
+        Assert.Equal("Recommended Next", restored.DetailRailPresentation[0].Title);
     }
 }

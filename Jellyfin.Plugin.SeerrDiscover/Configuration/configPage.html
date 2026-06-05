@@ -35,7 +35,7 @@
                     display: grid;
                     gap: .55em;
                     margin: .7em 0 1.4em;
-                    max-width: 56em;
+                    max-width: 76em;
                 }
 
                 #SeerrDiscoverConfigPage .seerr-config-rail-list p {
@@ -44,32 +44,62 @@
                 }
 
                 #SeerrDiscoverConfigPage .seerr-config-rail-row {
-                    align-items: center;
+                    align-items: end;
                     border: .08em solid color-mix(in srgb, currentColor 20%, transparent);
                     border-radius: .45em;
                     display: grid;
                     gap: .65em;
-                    grid-template-columns: minmax(12em, 1fr) minmax(11em, .7fr) auto auto auto;
+                    grid-template-areas: "enabled heading layout up down remove";
+                    grid-template-columns: minmax(12em, .85fr) minmax(14em, 1fr) minmax(14em, .9fr) auto auto auto;
                     min-height: 3em;
                     padding: .55em;
                 }
 
-                #SeerrDiscoverConfigPage .seerr-config-rail-row .emby-checkbox-label,
+                #SeerrDiscoverConfigPage .seerr-config-rail-enabled,
+                #SeerrDiscoverConfigPage .seerr-config-rail-heading,
+                #SeerrDiscoverConfigPage .seerr-config-rail-layout,
                 #SeerrDiscoverConfigPage .seerr-config-rail-title {
                     min-width: 0;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-rail-enabled {
+                    align-items: center;
+                    grid-area: enabled;
+                    margin: 0;
                 }
 
                 #SeerrDiscoverConfigPage .seerr-config-rail-title {
                     overflow-wrap: anywhere;
                 }
 
+                #SeerrDiscoverConfigPage .seerr-config-rail-heading {
+                    grid-area: heading;
+                    margin: 0;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-rail-heading .inputLabel {
+                    display: none;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-rail-heading input {
+                    max-width: 100%;
+                    width: 100%;
+                }
+
                 #SeerrDiscoverConfigPage .seerr-config-rail-layout {
+                    grid-area: layout;
                     margin: 0;
                     min-width: 0;
                 }
 
                 #SeerrDiscoverConfigPage .seerr-config-rail-layout .selectLabel {
                     display: none;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-rail-layout select {
+                    max-width: 100%;
+                    min-width: 100%;
+                    width: 100%;
                 }
 
                 #SeerrDiscoverConfigPage .seerr-config-row-button.emby-button {
@@ -86,6 +116,18 @@
                     min-width: 0;
                     padding: .45em .7em;
                     width: auto;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-row-button--up {
+                    grid-area: up;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-row-button--down {
+                    grid-area: down;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-row-button--remove {
+                    grid-area: remove;
                 }
 
                 #SeerrDiscoverConfigPage .seerr-config-row-button.emby-button:hover,
@@ -138,6 +180,15 @@
             white-space: normal;
         }
 
+                @media (max-width: 70em) {
+                    #SeerrDiscoverConfigPage .seerr-config-rail-row {
+                        grid-template-areas:
+                            "enabled layout up down remove"
+                            "heading heading heading heading heading";
+                        grid-template-columns: minmax(12em, 1fr) minmax(14em, 1fr) auto auto auto;
+                    }
+                }
+
                 @media (max-width: 42em) {
                     #SeerrDiscoverConfigPage .seerr-config-options {
                         display: grid;
@@ -150,6 +201,13 @@
 
                     #SeerrDiscoverConfigPage .seerr-config-rail-row {
                         align-items: stretch;
+                        grid-template-areas:
+                            "enabled"
+                            "heading"
+                            "layout"
+                            "up"
+                            "down"
+                            "remove";
                         grid-template-columns: 1fr;
                         padding: .55em;
                     }
