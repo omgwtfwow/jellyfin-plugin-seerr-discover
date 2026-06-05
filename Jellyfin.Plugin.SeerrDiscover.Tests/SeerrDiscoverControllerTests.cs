@@ -121,6 +121,8 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("window.getComputedStyle(probe).paddingTop", source, StringComparison.Ordinal);
         Assert.Contains("pane.style.setProperty('--seerr-tab-top-offset'", source, StringComparison.Ordinal);
         Assert.Contains("header?.offsetHeight", source, StringComparison.Ordinal);
+        Assert.Contains("desiredTopOffset - paneHostTopOffset(pane)", source, StringComparison.Ordinal);
+        Assert.Contains("pane?.offsetTop", source, StringComparison.Ordinal);
         Assert.Contains("new window.ResizeObserver(scheduleDiscoverSpacing)", source, StringComparison.Ordinal);
         Assert.Contains("new window.MutationObserver", source, StringComparison.Ordinal);
         Assert.Contains("window.visualViewport?.addEventListener('resize', scheduleDiscoverSpacing)", source, StringComparison.Ordinal);
