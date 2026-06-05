@@ -113,6 +113,20 @@ public sealed class SeerrDiscoverControllerTests
     }
 
     [Fact]
+    public void DiscoverAsset_DefinesFirstLoadLoadingModes()
+    {
+        var source = ReadBrowserAsset("discover.js");
+
+        Assert.Contains("const defaultDiscoverLoadingMode = 'native';", source, StringComparison.Ordinal);
+        Assert.Contains("const discoverLoadingModeParam = 'seerrDiscoverLoading';", source, StringComparison.Ordinal);
+        Assert.Contains("const discoverLoadingModeStorageKey = 'seerrDiscoverLoadingMode';", source, StringComparison.Ordinal);
+        Assert.Contains("state.loading.add(discoverLoadingKey)", source, StringComparison.Ordinal);
+        Assert.Contains("showLoadingMsg", source, StringComparison.Ordinal);
+        Assert.Contains("hideLoadingMsg", source, StringComparison.Ordinal);
+        Assert.Contains("seerr-skeleton", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Controller_DefaultsToJellyfinAuthenticatedEndpoints()
     {
         Assert.Contains(
