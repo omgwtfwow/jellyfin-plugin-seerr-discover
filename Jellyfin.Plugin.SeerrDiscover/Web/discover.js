@@ -603,8 +603,10 @@
       .seerr-modal__panel {
         position: relative;
         width: min(74rem, 96vw);
+        max-width: calc(100vw - 1rem);
         max-height: 90vh;
-        overflow: auto;
+        overflow-x: hidden;
+        overflow-y: auto;
         border-radius: 0.65rem;
         background: var(--seerr-surface);
         color: var(--seerr-text);
@@ -708,10 +710,14 @@
         line-height: 1.35;
       }
       .seerr-modal__overview {
+        min-width: 0;
+        max-width: 100%;
         margin: 0;
         color: var(--seerr-muted);
         font-size: 0.98rem;
         line-height: 1.5;
+        overflow-wrap: anywhere;
+        white-space: normal;
       }
       .seerr-modal__actions {
         display: flex;
@@ -852,10 +858,13 @@
         font-size: 0.78rem;
       }
       .seerr-modal__details {
+        min-width: 0;
+        max-width: 100%;
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.38fr);
         gap: clamp(1.2rem, 2vw, 1.8rem);
         padding: clamp(1.1rem, 2.6vw, 1.7rem) clamp(1.1rem, 2.6vw, 1.8rem) clamp(1.25rem, 2.8vw, 1.9rem);
+        overflow: hidden;
       }
       .seerr-modal__main,
       .seerr-modal__aside {
@@ -891,6 +900,7 @@
       }
       .seerr-modal__section {
         min-width: 0;
+        max-width: 100%;
       }
       .seerr-modal__section-title {
         margin: 0 0 0.45rem;
@@ -944,16 +954,32 @@
         gap: 0.35rem;
       }
       .seerr-modal__related {
+        min-width: 0;
+        max-width: 100%;
         margin-top: 1.4rem;
+        overflow: hidden;
       }
       .seerr-modal__related .seerr-discover__rail {
+        min-width: 0;
         margin: 1.1rem 0 0;
       }
       .seerr-modal__related .seerr-discover__rail:first-child {
         margin-top: 0;
       }
       .seerr-modal__related .seerr-discover__scroller {
+        gap: 0.6rem;
+        max-width: 100%;
+        overflow-x: auto;
         padding: 0 0 0.4rem;
+      }
+      .seerr-modal__related .seerr-card {
+        width: clamp(6.7rem, 10vw, 8.6rem);
+      }
+      .seerr-modal__related .cardText {
+        font-size: 0.86em;
+      }
+      .seerr-modal__related .seerr-card__badge {
+        font-size: 0.66rem;
       }
       .seerr-modal__close {
         position: absolute;
@@ -1029,6 +1055,8 @@
         .seerr-modal__aside {
           border-left: 0;
           padding: 0;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 1rem;
         }
         .seerr-modal__actions > .seerr-discover__button,
         .seerr-modal__trailer-menu { flex: 1 1 auto; }
@@ -1036,7 +1064,27 @@
         .seerr-modal__trailer-split { width: 100%; }
         .seerr-modal__trailer-main { flex: 1 1 auto; }
         .seerr-modal__trailer-list { left: 0; right: 0; min-width: 100%; }
-        .seerr-modal__people { grid-template-columns: 1fr; }
+        .seerr-modal__people { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .seerr-modal__related .seerr-card {
+          width: clamp(6.4rem, 24vw, 8rem);
+        }
+      }
+      @media (min-width: 580px) and (max-width: 720px) {
+        .seerr-modal__details {
+          grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.72fr);
+          gap: 1rem;
+        }
+        .seerr-modal__aside {
+          border-left: 1px solid var(--seerr-border-soft);
+          padding-left: 1rem;
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 520px) {
+        .seerr-modal__people,
+        .seerr-modal__aside {
+          grid-template-columns: 1fr;
+        }
       }
       .seerr-discover-tab-content[data-seerr-active="true"] {
         display: block !important;
