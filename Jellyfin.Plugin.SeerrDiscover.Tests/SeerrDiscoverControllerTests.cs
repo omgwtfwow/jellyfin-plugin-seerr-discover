@@ -104,10 +104,15 @@ public sealed class SeerrDiscoverControllerTests
     public void DiscoverAsset_UsesStaticTabletHeaderClearance()
     {
         var source = ReadBrowserAsset("discover.js");
+        var tabletRule = Regex.Match(
+            source,
+            @"@media \(max-width: 1199px\)\s*\{\s*\.seerr-discover-tab-content\s*\{(?<body>.*?)\}\s*\}",
+            RegexOptions.Singleline);
         var updateSpacing = Regex.Match(source, @"function\s+updateDiscoverSpacing\(\)\s*\{(?<body>.*?)\n  \}", RegexOptions.Singleline);
 
-        Assert.Contains("@media (max-width: 1199px)", source, StringComparison.Ordinal);
-        Assert.Contains("--seerr-tab-top-offset: calc(clamp(9.25rem, 17vh, 10.75rem) + env(safe-area-inset-top));", source, StringComparison.Ordinal);
+        Assert.True(tabletRule.Success, "discover.js should keep an explicit tablet header breakpoint.");
+        Assert.Contains("--seerr-tab-top-offset: calc(9.25rem + env(safe-area-inset-top));", tabletRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.DoesNotContain("vh", tabletRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.True(updateSpacing.Success, "discover.js should keep the Discover spacing update function explicit.");
         Assert.DoesNotContain("getBoundingClientRect", updateSpacing.Groups["body"].Value, StringComparison.Ordinal);
     }

@@ -1065,7 +1065,7 @@
       }
       @media (max-width: 1199px) {
         .seerr-discover-tab-content {
-          --seerr-tab-top-offset: calc(clamp(9.25rem, 17vh, 10.75rem) + env(safe-area-inset-top));
+          --seerr-tab-top-offset: calc(9.25rem + env(safe-area-inset-top));
         }
       }
       @media (max-width: 720px) {
