@@ -176,10 +176,10 @@
     </div>
     <script type="text/javascript" data-seerr-config-inline="true">
         (function () {
-            if (window.SeerrDiscoverConfigPageLoaded) return;
-            window.SeerrDiscoverConfigPageLoaded = true;
-
             const page = document.querySelector('#SeerrDiscoverConfigPage');
+            if (!page || page.dataset.seerrConfigInlineLoaded === 'true') return;
+            page.dataset.seerrConfigInlineLoaded = 'true';
+
             const form = document.querySelector('#SeerrDiscoverConfigForm');
             const fields = [
                 'SeerrBaseUrl',
