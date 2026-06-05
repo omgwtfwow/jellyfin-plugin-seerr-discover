@@ -2715,7 +2715,7 @@
     }
 
     options.innerHTML = items.map((item, index) => `
-      <button is="emby-button" type="button" class="emby-button" data-rail-option-index="${index}">
+      <button is="emby-button" type="button" class="emby-button seerr-config-option-button" data-rail-option-index="${index}">
         <span>Add ${escapeHtml(configOptionTitle(kind, mediaType, item))}</span>
       </button>
     `).join('');
