@@ -2402,18 +2402,353 @@
     Promise.all([loadMe(), loadRails()]).then(render).catch((error) => setError(error.message || String(error)));
   }
 
-  function initializeConfigPage() {
-    const page = document.querySelector('#SeerrDiscoverConfigPage');
+  function initializeConfigPage(configPage) {
+    const page = configPage || document.querySelector('#SeerrDiscoverConfigPage');
     if (!page || page.dataset.seerrConfigInlineLoaded === 'true') return;
+    page.dataset.seerrConfigInlineLoaded = 'true';
+    page.__seerrExtraRails = [];
 
-    const script = page.querySelector('script[data-seerr-config-inline]');
-    if (!script?.textContent) return;
+    page.querySelector('#ExtraRailKind')?.addEventListener('change', () => enforceConfigRailMediaType(page));
+    page.querySelector('#SearchExtraRailOptions')?.addEventListener('click', () => searchConfigRailOptions(page));
+    page.querySelector('#SeerrDiscoverConfigForm')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      saveConfigPage(page);
+      return false;
+    });
 
-    try {
-      new Function(script.textContent)();
-    } catch (error) {
-      console.warn('Seerr Discover config page failed to initialize', error);
+    loadConfigPage(page);
+  }
+
+  const configFields = [
+    'SeerrBaseUrl',
+    'SeerrPublicUrl',
+    'Language',
+    'DiscoverCacheSeconds',
+    'DetailsCacheSeconds',
+    'SearchCacheSeconds',
+    'UserCacheSeconds',
+    'RequireMappedUser',
+    'EnableNativeSearchIntegration',
+    'DefaultRequest4K',
+    'EnableTrendingMovies',
+    'EnableTrendingTv',
+    'EnableMovies',
+    'EnableTv',
+    'EnableUpcoming',
+    'EnableUpcomingTv',
+    'EnableRecentlyRequested',
+    'EnablePopularWithServer',
+    'EnableDetailSimilar',
+    'EnableDetailRecommended',
+    'EnableDetailCollections',
+  ];
+
+  function configValue(config, field) {
+    if (!config) return undefined;
+    if (Object.prototype.hasOwnProperty.call(config, field)) return config[field];
+    const camelField = `${field.charAt(0).toLowerCase()}${field.slice(1)}`;
+    return config[camelField];
+  }
+
+  function assignConfigValue(config, field, value) {
+    config[field] = value;
+    const camelField = `${field.charAt(0).toLowerCase()}${field.slice(1)}`;
+    if (Object.prototype.hasOwnProperty.call(config, camelField)) {
+      config[camelField] = value;
     }
+  }
+
+  function setConfigForm(page, config) {
+    configFields.forEach((field) => {
+      const input = page.querySelector(`#${field}`);
+      if (!input) return;
+      const value = configValue(config, field);
+      if (input.type === 'checkbox') {
+        input.checked = !!value;
+      } else {
+        input.value = value ?? '';
+        input.dispatchEvent(new CustomEvent('valueset'));
+      }
+    });
+
+    const apiKeyInput = page.querySelector('#SeerrApiKey');
+    const clearApiKeyInput = page.querySelector('#ClearSeerrApiKey');
+    const apiKeyStatus = page.querySelector('#SeerrApiKeyStatus');
+    if (apiKeyInput) {
+      apiKeyInput.value = '';
+      apiKeyInput.placeholder = config.SeerrApiKeyConfigured ? 'Stored key configured' : 'Paste Seerr API key';
+      apiKeyInput.dispatchEvent(new CustomEvent('valueset'));
+    }
+
+    if (clearApiKeyInput) {
+      clearApiKeyInput.checked = false;
+    }
+
+    if (apiKeyStatus) {
+      apiKeyStatus.textContent = config.SeerrApiKeyConfigured
+        ? 'A Seerr API key is configured. Leave blank to keep it, or paste a new key to replace it.'
+        : 'No Seerr API key is configured. Paste a key before using Discover.';
+    }
+
+    page.__seerrExtraRails = (configValue(config, 'ExtraRails') || []).map(normalizeConfigRail).filter((rail) => rail.Id && rail.Title);
+    renderConfigExtraRails(page);
+    enforceConfigRailMediaType(page);
+  }
+
+  function applyConfigForm(page, config) {
+    configFields.forEach((field) => {
+      const input = page.querySelector(`#${field}`);
+      if (!input) return;
+      if (input.type === 'checkbox') {
+        assignConfigValue(config, field, input.checked);
+      } else if (input.type === 'number') {
+        assignConfigValue(config, field, Number.parseInt(input.value || '0', 10));
+      } else {
+        assignConfigValue(config, field, input.value);
+      }
+    });
+
+    assignConfigValue(config, 'SeerrApiKey', page.querySelector('#SeerrApiKey')?.value || '');
+    assignConfigValue(config, 'ClearSeerrApiKey', !!page.querySelector('#ClearSeerrApiKey')?.checked);
+    assignConfigValue(config, 'ExtraRails', (page.__seerrExtraRails || []).map((rail) => ({
+      Id: rail.Id,
+      Kind: rail.Kind,
+      MediaType: rail.MediaType,
+      Value: rail.Value,
+      Title: rail.Title,
+      Enabled: rail.Enabled,
+    })));
+    return config;
+  }
+
+  function loadConfigPage(page) {
+    showConfigLoading();
+    apiFetch('/SeerrDiscover/config')
+      .then((config) => {
+        setConfigForm(page, config);
+        hideConfigLoading();
+      })
+      .catch((error) => {
+        hideConfigLoading();
+        showConfigAlert(`Failed to load Seerr Discover configuration: ${error.message || error}`);
+      });
+  }
+
+  function saveConfigPage(page) {
+    showConfigLoading();
+    apiFetch('/SeerrDiscover/config')
+      .then((config) => apiFetch('/SeerrDiscover/config', {
+        method: 'POST',
+        body: JSON.stringify(applyConfigForm(page, config)),
+      }))
+      .then((config) => {
+        setConfigForm(page, config);
+        state.clientConfig = null;
+        state.clientConfigPromise = null;
+        hideConfigLoading();
+        if (window.Dashboard && typeof window.Dashboard.processPluginConfigurationUpdateResult === 'function') {
+          window.Dashboard.processPluginConfigurationUpdateResult(config);
+        } else {
+          showToast('Settings saved.', 'success');
+        }
+      })
+      .catch((error) => {
+        hideConfigLoading();
+        showConfigAlert(`Failed to save Seerr Discover configuration: ${error.message || error}`);
+      });
+  }
+
+  function showConfigLoading() {
+    if (window.Dashboard && typeof window.Dashboard.showLoadingMsg === 'function') {
+      window.Dashboard.showLoadingMsg();
+    }
+  }
+
+  function hideConfigLoading() {
+    if (window.Dashboard && typeof window.Dashboard.hideLoadingMsg === 'function') {
+      window.Dashboard.hideLoadingMsg();
+    }
+  }
+
+  function showConfigAlert(message) {
+    if (window.Dashboard && typeof window.Dashboard.alert === 'function') {
+      window.Dashboard.alert({ message });
+      return;
+    }
+    showToast(message, 'error', { timeout: 7000 });
+  }
+
+  function normalizeConfigToken(value) {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  function configMediaLabel(mediaType) {
+    return mediaType === 'tv' ? 'TV' : 'Movies';
+  }
+
+  function configRailId(kind, mediaType, value) {
+    const normalizedKind = normalizeConfigToken(kind);
+    const normalizedMediaType = normalizeConfigToken(mediaType);
+    const normalizedValue = normalizedKind === 'language'
+      ? normalizeConfigToken(value).replace(/[^a-z0-9-]/g, '')
+      : normalizeConfigToken(value).replace(/\D/g, '');
+    return `${normalizedKind}-${normalizedMediaType}-${normalizedValue}`;
+  }
+
+  function normalizeConfigRail(rail) {
+    const kind = normalizeConfigToken(rail.Kind || rail.kind);
+    const mediaType = normalizeConfigToken(rail.MediaType || rail.mediaType);
+    const value = String(rail.Value || rail.value || '').trim();
+    const id = configRailId(kind, mediaType, value);
+    return {
+      Id: id,
+      Kind: kind,
+      MediaType: mediaType,
+      Value: kind === 'language' ? normalizeConfigToken(value) : value.replace(/\D/g, ''),
+      Title: String(rail.Title || rail.title || '').trim(),
+      Enabled: !!(rail.Enabled ?? rail.enabled),
+    };
+  }
+
+  function configOptionItems(payload) {
+    if (Array.isArray(payload)) return payload;
+    return Array.isArray(payload?.results) ? payload.results : [];
+  }
+
+  function configOptionValue(option) {
+    return String(option.id ?? option.iso_639_1 ?? option.value ?? '');
+  }
+
+  function configOptionName(option) {
+    return String(option.name || option.english_name || option.englishName || configOptionValue(option));
+  }
+
+  function configOptionTitle(kind, mediaType, option) {
+    return `${configOptionName(option)} ${configMediaLabel(mediaType)}`;
+  }
+
+  function enforceConfigRailMediaType(page) {
+    const kindInput = page.querySelector('#ExtraRailKind');
+    const mediaTypeInput = page.querySelector('#ExtraRailMediaType');
+    if (!kindInput || !mediaTypeInput) return;
+
+    if (kindInput.value === 'studio') {
+      mediaTypeInput.value = 'movie';
+      mediaTypeInput.disabled = true;
+    } else if (kindInput.value === 'network') {
+      mediaTypeInput.value = 'tv';
+      mediaTypeInput.disabled = true;
+    } else {
+      mediaTypeInput.disabled = false;
+    }
+  }
+
+  function renderConfigExtraRails(page) {
+    const list = page.querySelector('#ExtraRailList');
+    if (!list) return;
+
+    const extraRails = page.__seerrExtraRails || [];
+    if (!extraRails.length) {
+      list.innerHTML = '<p>No optional rails configured.</p>';
+      return;
+    }
+
+    list.innerHTML = extraRails.map((rail) => `
+      <div class="checkboxContainer checkboxContainer-withDescription" data-extra-rail="${escapeHtml(rail.Id)}">
+        <label class="emby-checkbox-label">
+          <input type="checkbox" is="emby-checkbox" data-extra-rail-enabled="${escapeHtml(rail.Id)}" ${rail.Enabled ? 'checked' : ''} />
+          <span>${escapeHtml(rail.Title)}</span>
+        </label>
+        <button is="emby-button" type="button" class="emby-button" data-extra-rail-remove="${escapeHtml(rail.Id)}">
+          <span>Remove</span>
+        </button>
+      </div>
+    `).join('');
+
+    list.querySelectorAll('[data-extra-rail-enabled]').forEach((input) => {
+      input.addEventListener('change', () => {
+        const rail = extraRails.find((item) => item.Id === input.getAttribute('data-extra-rail-enabled'));
+        if (rail) rail.Enabled = input.checked;
+      });
+    });
+
+    list.querySelectorAll('[data-extra-rail-remove]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const id = button.getAttribute('data-extra-rail-remove');
+        page.__seerrExtraRails = extraRails.filter((rail) => rail.Id !== id);
+        renderConfigExtraRails(page);
+      });
+    });
+  }
+
+  function addConfigExtraRail(page, kind, mediaType, option) {
+    const value = configOptionValue(option);
+    const id = configRailId(kind, mediaType, value);
+    const extraRails = page.__seerrExtraRails || [];
+    if (!id || extraRails.some((rail) => rail.Id === id)) return;
+
+    extraRails.push({
+      Id: id,
+      Kind: normalizeConfigToken(kind),
+      MediaType: normalizeConfigToken(mediaType),
+      Value: normalizeConfigToken(kind) === 'language' ? normalizeConfigToken(value) : value.replace(/\D/g, ''),
+      Title: configOptionTitle(kind, mediaType, option),
+      Enabled: true,
+    });
+    page.__seerrExtraRails = extraRails;
+    renderConfigExtraRails(page);
+  }
+
+  function renderConfigRailOptions(page, kind, mediaType, payload, query) {
+    const options = page.querySelector('#ExtraRailOptions');
+    if (!options) return;
+
+    const needle = normalizeConfigToken(query);
+    const items = configOptionItems(payload)
+      .filter((item) => configOptionValue(item))
+      .filter((item) => !needle || normalizeConfigToken(configOptionName(item)).includes(needle))
+      .slice(0, 12);
+
+    if (!items.length) {
+      options.innerHTML = '<p>No matching rail options.</p>';
+      return;
+    }
+
+    options.innerHTML = items.map((item, index) => `
+      <button is="emby-button" type="button" class="emby-button" data-rail-option-index="${index}">
+        <span>Add ${escapeHtml(configOptionTitle(kind, mediaType, item))}</span>
+      </button>
+    `).join('');
+
+    options.querySelectorAll('[data-rail-option-index]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const item = items[Number.parseInt(button.getAttribute('data-rail-option-index') || '0', 10)];
+        addConfigExtraRail(page, kind, mediaType, item);
+      });
+    });
+  }
+
+  function searchConfigRailOptions(page) {
+    enforceConfigRailMediaType(page);
+    const kind = page.querySelector('#ExtraRailKind')?.value || 'genre';
+    const mediaType = page.querySelector('#ExtraRailMediaType')?.value || 'movie';
+    const query = page.querySelector('#ExtraRailQuery')?.value || '';
+    const options = page.querySelector('#ExtraRailOptions');
+    if (options) options.textContent = 'Loading...';
+
+    const requiresQuery = kind === 'studio' || kind === 'keyword';
+    if (requiresQuery && !query.trim()) {
+      if (options) options.innerHTML = '<p>Enter a search term first.</p>';
+      return;
+    }
+
+    const params = new URLSearchParams({ kind, mediaType });
+    if (query.trim()) params.set('query', query.trim());
+    apiFetch(`/SeerrDiscover/rail-options?${params.toString()}`)
+      .then((payload) => renderConfigRailOptions(page, kind, mediaType, payload, query))
+      .catch((error) => {
+        if (options) options.textContent = `Failed to load rail options: ${error.message || error}`;
+      });
   }
 
   function scheduleMount() {
@@ -2433,6 +2768,7 @@
   } else {
     scheduleMount();
   }
+  window.SeerrDiscoverInitializeConfigPage = initializeConfigPage;
   window.addEventListener('hashchange', () => {
     closeModal();
     removeNativeSearchSection();
