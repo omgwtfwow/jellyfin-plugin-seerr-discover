@@ -19,9 +19,87 @@
             display: none;
         }
 
-        #SeerrDiscoverConfigPage .seerr-config-options p {
-            margin: 0;
-        }
+                #SeerrDiscoverConfigPage .seerr-config-options p {
+                    margin: 0;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-section {
+                    margin: 0 0 1.65em;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-section .sectionTitle {
+                    margin-bottom: .7em;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-rail-list {
+                    display: grid;
+                    gap: .55em;
+                    margin: .7em 0 1.4em;
+                    max-width: 56em;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-rail-list p {
+                    color: color-mix(in srgb, currentColor 62%, transparent);
+                    margin: 0;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-rail-row {
+                    align-items: center;
+                    border: .08em solid color-mix(in srgb, currentColor 20%, transparent);
+                    border-radius: .45em;
+                    display: grid;
+                    gap: .65em;
+                    grid-template-columns: minmax(12em, 1fr) minmax(11em, .7fr) auto auto auto;
+                    min-height: 3em;
+                    padding: .55em;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-rail-row .emby-checkbox-label,
+                #SeerrDiscoverConfigPage .seerr-config-rail-title {
+                    min-width: 0;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-rail-title {
+                    overflow-wrap: anywhere;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-rail-layout {
+                    margin: 0;
+                    min-width: 0;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-rail-layout .selectLabel {
+                    display: none;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-row-button.emby-button {
+                    background-color: transparent !important;
+                    background-color: color-mix(in srgb, currentColor 7%, transparent) !important;
+                    background-image: none !important;
+                    border: .08em solid color-mix(in srgb, currentColor 26%, transparent) !important;
+                    border-radius: .4em;
+                    box-shadow: none !important;
+                    color: inherit !important;
+                    height: auto;
+                    margin: 0;
+                    min-height: 2.25em;
+                    min-width: 0;
+                    padding: .45em .7em;
+                    width: auto;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-row-button.emby-button:hover,
+                #SeerrDiscoverConfigPage .seerr-config-row-button.emby-button:focus-visible {
+                    background-color: color-mix(in srgb, currentColor 13%, transparent) !important;
+                    border-color: color-mix(in srgb, currentColor 44%, transparent) !important;
+                }
+
+                #SeerrDiscoverConfigPage .seerr-config-row-button span {
+                    font-size: .92em;
+                    font-weight: 500;
+                    line-height: 1.2;
+                    white-space: nowrap;
+                }
 
         #SeerrDiscoverConfigPage .seerr-config-option-button.emby-button {
             align-items: center;
@@ -60,68 +138,9 @@
             white-space: normal;
         }
 
-        #SeerrDiscoverConfigPage .seerr-config-extra-rails {
-            display: grid;
-            gap: .55em;
-            margin: 1.25em 0 1.5em;
-            max-width: 45em;
-        }
-
-        #SeerrDiscoverConfigPage .seerr-config-extra-rails p {
-            color: color-mix(in srgb, currentColor 62%, transparent);
-            margin: 0;
-        }
-
-        #SeerrDiscoverConfigPage .seerr-config-extra-rail {
-            align-items: center;
-            border: .08em solid color-mix(in srgb, currentColor 20%, transparent);
-            border-radius: .45em;
-            display: grid;
-            gap: .65em;
-            grid-template-columns: minmax(0, 1fr) auto;
-            min-height: 3em;
-            padding: .45em .55em .45em 0;
-        }
-
-        #SeerrDiscoverConfigPage .seerr-config-extra-rail .emby-checkbox-label {
-            min-width: 0;
-        }
-
-        #SeerrDiscoverConfigPage .seerr-config-extra-rail-title {
-            overflow-wrap: anywhere;
-        }
-
-        #SeerrDiscoverConfigPage .seerr-config-remove-button.emby-button {
-            background-color: transparent !important;
-            background-color: color-mix(in srgb, currentColor 7%, transparent) !important;
-            background-image: none !important;
-            border: .08em solid color-mix(in srgb, currentColor 26%, transparent) !important;
-            border-radius: .4em;
-            box-shadow: none !important;
-            color: inherit !important;
-            height: auto;
-            margin: 0;
-            min-height: 2.25em;
-            min-width: 0;
-            padding: .45em .75em;
-            width: auto;
-        }
-
-        #SeerrDiscoverConfigPage .seerr-config-remove-button.emby-button:hover,
-        #SeerrDiscoverConfigPage .seerr-config-remove-button.emby-button:focus-visible {
-            background-color: color-mix(in srgb, currentColor 13%, transparent) !important;
-            border-color: color-mix(in srgb, currentColor 44%, transparent) !important;
-        }
-
-        #SeerrDiscoverConfigPage .seerr-config-remove-button span {
-            font-size: .92em;
-            font-weight: 500;
-            line-height: 1.2;
-        }
-
-        @media (max-width: 42em) {
-            #SeerrDiscoverConfigPage .seerr-config-options {
-                display: grid;
+                @media (max-width: 42em) {
+                    #SeerrDiscoverConfigPage .seerr-config-options {
+                        display: grid;
                 grid-template-columns: 1fr;
             }
 
@@ -129,177 +148,132 @@
                 width: 100%;
             }
 
-            #SeerrDiscoverConfigPage .seerr-config-extra-rail {
-                align-items: stretch;
-                grid-template-columns: 1fr;
-                padding: .55em;
-            }
+                    #SeerrDiscoverConfigPage .seerr-config-rail-row {
+                        align-items: stretch;
+                        grid-template-columns: 1fr;
+                        padding: .55em;
+                    }
 
-            #SeerrDiscoverConfigPage .seerr-config-remove-button.emby-button {
-                justify-content: center;
-                width: 100%;
-            }
+                    #SeerrDiscoverConfigPage .seerr-config-row-button.emby-button {
+                        justify-content: center;
+                        width: 100%;
+                    }
         }
     </style>
     <div data-role="content">
         <div class="content-primary">
-            <form id="SeerrDiscoverConfigForm">
-                <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="SeerrBaseUrl">Seerr base URL</label>
-                    <input id="SeerrBaseUrl" name="SeerrBaseUrl" type="text" is="emby-input" />
-                    <div class="fieldDescription">Internal URL used by Jellyfin, usually http://seerr:5055.</div>
-                </div>
-                <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="SeerrPublicUrl">Seerr public URL</label>
-                    <input id="SeerrPublicUrl" name="SeerrPublicUrl" type="text" is="emby-input" />
-                    <div class="fieldDescription">External URL used for browser Open in Seerr links, for example https://seerr.example.com.</div>
-                </div>
-                <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="SeerrApiKey">Seerr API key</label>
-                    <input id="SeerrApiKey" name="SeerrApiKey" type="password" is="emby-input" autocomplete="off" />
-                    <div id="SeerrApiKeyStatus" class="fieldDescription">Leave blank to keep the stored key.</div>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="ClearSeerrApiKey" name="ClearSeerrApiKey" type="checkbox" is="emby-checkbox" />
-                        <span>Clear stored Seerr API key</span>
-                    </label>
-                    <div class="fieldDescription">Only enable this when intentionally disconnecting Seerr Discover from Seerr.</div>
-                </div>
-                <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="Language">Language</label>
-                    <input id="Language" name="Language" type="text" is="emby-input" />
-                </div>
-                <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="DiscoverCacheSeconds">Discover cache seconds</label>
-                    <input id="DiscoverCacheSeconds" name="DiscoverCacheSeconds" type="number" min="5" max="3600" is="emby-input" />
-                </div>
-                <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="DetailsCacheSeconds">Details cache seconds</label>
-                    <input id="DetailsCacheSeconds" name="DetailsCacheSeconds" type="number" min="5" max="3600" is="emby-input" />
-                </div>
-                <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="SearchCacheSeconds">Search cache seconds</label>
-                    <input id="SearchCacheSeconds" name="SearchCacheSeconds" type="number" min="5" max="3600" is="emby-input" />
-                </div>
-                <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="UserCacheSeconds">User cache seconds</label>
-                    <input id="UserCacheSeconds" name="UserCacheSeconds" type="number" min="5" max="3600" is="emby-input" />
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="RequireMappedUser" name="RequireMappedUser" type="checkbox" is="emby-checkbox" />
-                        <span>Require mapped Seerr users for requests</span>
-                    </label>
-                    <div class="fieldDescription">Recommended. Prevents requests from silently falling back to an admin/service account.</div>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="EnableNativeSearchIntegration" name="EnableNativeSearchIntegration" type="checkbox" is="emby-checkbox" />
-                        <span>Show Seerr results in Jellyfin search</span>
-                    </label>
-                    <div class="fieldDescription">Recommended. Adds requestable Seerr movies and shows to Jellyfin's native search page.</div>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="DefaultRequest4K" name="DefaultRequest4K" type="checkbox" is="emby-checkbox" />
-                        <span>Default to 4K requests</span>
-                    </label>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="EnableTrendingMovies" name="EnableTrendingMovies" type="checkbox" is="emby-checkbox" />
-                        <span>Enable Trending Movies rail</span>
-                    </label>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="EnableTrendingTv" name="EnableTrendingTv" type="checkbox" is="emby-checkbox" />
-                        <span>Enable Trending TV rail</span>
-                    </label>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="EnableMovies" name="EnableMovies" type="checkbox" is="emby-checkbox" />
-                        <span>Enable Popular Movies rail</span>
-                    </label>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="EnableTv" name="EnableTv" type="checkbox" is="emby-checkbox" />
-                        <span>Enable Popular TV rail</span>
-                    </label>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="EnableUpcoming" name="EnableUpcoming" type="checkbox" is="emby-checkbox" />
-                        <span>Enable Upcoming Movies rail</span>
-                    </label>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="EnableUpcomingTv" name="EnableUpcomingTv" type="checkbox" is="emby-checkbox" />
-                        <span>Enable Upcoming TV rail</span>
-                    </label>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="EnableRecentlyRequested" name="EnableRecentlyRequested" type="checkbox" is="emby-checkbox" />
-                        <span>Enable Recently Requested rail</span>
-                    </label>
-                    <div class="fieldDescription">Shows request media only. Requester details are stripped server-side.</div>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="EnablePopularWithServer" name="EnablePopularWithServer" type="checkbox" is="emby-checkbox" />
-                        <span>Enable Popular With This Server rail</span>
-                    </label>
-                    <div class="fieldDescription">Groups recent server requests by title and shows media cards only.</div>
-                </div>
-                <h2 class="sectionTitle">Detail page rails</h2>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="EnableDetailSimilar" name="EnableDetailSimilar" type="checkbox" is="emby-checkbox" />
-                        <span>Show Similar titles on detail pages</span>
-                    </label>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="EnableDetailRecommended" name="EnableDetailRecommended" type="checkbox" is="emby-checkbox" />
-                        <span>Show Recommended titles on detail pages</span>
-                    </label>
-                </div>
-                <h2 class="sectionTitle">Optional rail catalog</h2>
-                <div class="selectContainer">
-                    <label class="selectLabel" for="ExtraRailKind">Rail type</label>
-                    <select id="ExtraRailKind" is="emby-select">
-                        <option value="genre">Genre</option>
-                        <option value="studio">Movie studio</option>
-                        <option value="network">TV network</option>
-                        <option value="language">Original language</option>
-                        <option value="keyword">Keyword</option>
-                    </select>
-                </div>
-                <div class="selectContainer">
-                    <label class="selectLabel" for="ExtraRailMediaType">Media type</label>
-                    <select id="ExtraRailMediaType" is="emby-select">
-                        <option value="movie">Movies</option>
-                        <option value="tv">TV</option>
-                    </select>
-                </div>
-                <div class="inputContainer">
-                    <label class="inputLabel inputLabelUnfocused" for="ExtraRailQuery">Search or filter</label>
-                    <input id="ExtraRailQuery" type="text" is="emby-input" />
-                    <div class="fieldDescription">Genres, languages, and networks can be listed without a query. Studios and keywords use search.</div>
-                </div>
-                <button is="emby-button" type="button" id="SearchExtraRailOptions" class="raised emby-button">
-                    <span>Find rail options</span>
-                </button>
-                <div id="ExtraRailOptions" class="seerr-config-options"></div>
-                <div id="ExtraRailList" class="seerr-config-extra-rails"></div>
-                <button is="emby-button" type="submit" class="raised button-submit block emby-button">
-                    <span>Save</span>
-                </button>
+                    <form id="SeerrDiscoverConfigForm">
+                        <section class="seerr-config-section">
+                            <h2 class="sectionTitle">Connection</h2>
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="SeerrBaseUrl">Seerr base URL</label>
+                                <input id="SeerrBaseUrl" name="SeerrBaseUrl" type="text" is="emby-input" />
+                                <div class="fieldDescription">Internal URL used by Jellyfin, usually http://seerr:5055.</div>
+                            </div>
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="SeerrPublicUrl">Seerr public URL</label>
+                                <input id="SeerrPublicUrl" name="SeerrPublicUrl" type="text" is="emby-input" />
+                                <div class="fieldDescription">External URL used for browser Open in Seerr links, for example https://seerr.example.com.</div>
+                            </div>
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="SeerrApiKey">Seerr API key</label>
+                                <input id="SeerrApiKey" name="SeerrApiKey" type="password" is="emby-input" autocomplete="off" />
+                                <div id="SeerrApiKeyStatus" class="fieldDescription">Leave blank to keep the stored key.</div>
+                            </div>
+                            <div class="checkboxContainer checkboxContainer-withDescription">
+                                <label class="emby-checkbox-label">
+                                    <input id="ClearSeerrApiKey" name="ClearSeerrApiKey" type="checkbox" is="emby-checkbox" />
+                                    <span>Clear stored Seerr API key</span>
+                                </label>
+                                <div class="fieldDescription">Only enable this when intentionally disconnecting Seerr Discover from Seerr.</div>
+                            </div>
+                        </section>
+                        <section class="seerr-config-section">
+                            <h2 class="sectionTitle">Behavior</h2>
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="Language">Language</label>
+                                <input id="Language" name="Language" type="text" is="emby-input" />
+                            </div>
+                            <div class="checkboxContainer checkboxContainer-withDescription">
+                                <label class="emby-checkbox-label">
+                                    <input id="RequireMappedUser" name="RequireMappedUser" type="checkbox" is="emby-checkbox" />
+                                    <span>Require mapped Seerr users for requests</span>
+                                </label>
+                                <div class="fieldDescription">Recommended. Prevents requests from silently falling back to an admin/service account.</div>
+                            </div>
+                            <div class="checkboxContainer checkboxContainer-withDescription">
+                                <label class="emby-checkbox-label">
+                                    <input id="EnableNativeSearchIntegration" name="EnableNativeSearchIntegration" type="checkbox" is="emby-checkbox" />
+                                    <span>Show Seerr results in Jellyfin search</span>
+                                </label>
+                                <div class="fieldDescription">Recommended. Adds requestable Seerr movies and shows to Jellyfin's native search page.</div>
+                            </div>
+                            <div class="checkboxContainer checkboxContainer-withDescription">
+                                <label class="emby-checkbox-label">
+                                    <input id="DefaultRequest4K" name="DefaultRequest4K" type="checkbox" is="emby-checkbox" />
+                                    <span>Default to 4K requests</span>
+                                </label>
+                            </div>
+                        </section>
+                        <section class="seerr-config-section">
+                            <h2 class="sectionTitle">Discover rails</h2>
+                            <div id="DiscoverRailList" class="seerr-config-rail-list"></div>
+                        </section>
+                        <section class="seerr-config-section">
+                            <h2 class="sectionTitle">Detail page rails</h2>
+                            <div id="DetailRailList" class="seerr-config-rail-list"></div>
+                        </section>
+                        <section class="seerr-config-section">
+                            <h2 class="sectionTitle">Optional rail catalog</h2>
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="ExtraRailKind">Rail type</label>
+                                <select id="ExtraRailKind" is="emby-select">
+                                    <option value="genre">Genre</option>
+                                    <option value="studio">Movie studio</option>
+                                    <option value="network">TV network</option>
+                                    <option value="language">Original language</option>
+                                    <option value="keyword">Keyword</option>
+                                </select>
+                            </div>
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="ExtraRailMediaType">Media type</label>
+                                <select id="ExtraRailMediaType" is="emby-select">
+                                    <option value="movie">Movies</option>
+                                    <option value="tv">TV</option>
+                                </select>
+                            </div>
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="ExtraRailQuery">Search or filter</label>
+                                <input id="ExtraRailQuery" type="text" is="emby-input" />
+                                <div class="fieldDescription">Genres, languages, and networks can be listed without a query. Studios and keywords use search.</div>
+                            </div>
+                            <button is="emby-button" type="button" id="SearchExtraRailOptions" class="raised emby-button">
+                                <span>Find rail options</span>
+                            </button>
+                            <div id="ExtraRailOptions" class="seerr-config-options"></div>
+                        </section>
+                        <section class="seerr-config-section">
+                            <h2 class="sectionTitle">Advanced cache</h2>
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="DiscoverCacheSeconds">Discover cache seconds</label>
+                                <input id="DiscoverCacheSeconds" name="DiscoverCacheSeconds" type="number" min="5" max="3600" is="emby-input" />
+                            </div>
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="DetailsCacheSeconds">Details cache seconds</label>
+                                <input id="DetailsCacheSeconds" name="DetailsCacheSeconds" type="number" min="5" max="3600" is="emby-input" />
+                            </div>
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="SearchCacheSeconds">Search cache seconds</label>
+                                <input id="SearchCacheSeconds" name="SearchCacheSeconds" type="number" min="5" max="3600" is="emby-input" />
+                            </div>
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="UserCacheSeconds">User cache seconds</label>
+                                <input id="UserCacheSeconds" name="UserCacheSeconds" type="number" min="5" max="3600" is="emby-input" />
+                            </div>
+                        </section>
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+                            <span>Save</span>
+                        </button>
             </form>
         </div>
     </div>
@@ -307,454 +281,22 @@
         (function () {
             const page = document.querySelector('#SeerrDiscoverConfigPage');
             if (!page || page.dataset.seerrConfigInlineLoaded === 'true') return;
-            page.dataset.seerrConfigInlineLoaded = 'true';
 
-            const form = document.querySelector('#SeerrDiscoverConfigForm');
-            const fields = [
-                'SeerrBaseUrl',
-                'SeerrPublicUrl',
-                'Language',
-                'DiscoverCacheSeconds',
-                'DetailsCacheSeconds',
-                'SearchCacheSeconds',
-                'UserCacheSeconds',
-                'RequireMappedUser',
-                'EnableNativeSearchIntegration',
-                'DefaultRequest4K',
-                'EnableTrendingMovies',
-                'EnableTrendingTv',
-                'EnableMovies',
-                'EnableTv',
-                'EnableUpcoming',
-                'EnableUpcomingTv',
-                'EnableRecentlyRequested',
-                'EnablePopularWithServer',
-                'EnableDetailSimilar',
-                'EnableDetailRecommended'
-            ];
-            let extraRails = [];
-            let configLoadStarted = false;
-            let configLoadAttempts = 0;
-
-            function currentApiClient() {
-                if (window.ApiClient) return window.ApiClient;
-                if (typeof ApiClient !== 'undefined') return ApiClient;
-                if (window.connectionManager && typeof window.connectionManager.currentApiClient === 'function') {
-                    return window.connectionManager.currentApiClient();
-                }
-                if (typeof connectionManager !== 'undefined' && typeof connectionManager.currentApiClient === 'function') {
-                    return connectionManager.currentApiClient();
-                }
-                return null;
+            function initializeWhenReady() {
+                if (typeof window.SeerrDiscoverInitializeConfigPage !== 'function') return false;
+                window.SeerrDiscoverInitializeConfigPage(page);
+                return true;
             }
 
-            function currentDashboard() {
-                if (window.Dashboard) return window.Dashboard;
-                if (typeof Dashboard !== 'undefined') return Dashboard;
-                return null;
-            }
+            if (initializeWhenReady()) return;
+            if (document.querySelector('script[data-seerr-config-loader="true"]')) return;
 
-            function canRequest() {
-                const client = currentApiClient();
-                return !!(client && (typeof client.fetch === 'function' || typeof client.ajax === 'function')) || typeof fetch === 'function';
-            }
-
-            function showLoading() {
-                const dashboard = currentDashboard();
-                if (dashboard && typeof dashboard.showLoadingMsg === 'function') {
-                    dashboard.showLoadingMsg();
-                }
-            }
-
-            function hideLoading() {
-                const dashboard = currentDashboard();
-                if (dashboard && typeof dashboard.hideLoadingMsg === 'function') {
-                    dashboard.hideLoadingMsg();
-                }
-            }
-
-            function showAlert(message) {
-                const dashboard = currentDashboard();
-                if (dashboard && typeof dashboard.alert === 'function') {
-                    dashboard.alert({ message });
-                }
-            }
-
-            function processUpdateResult(result) {
-                const dashboard = currentDashboard();
-                if (dashboard && typeof dashboard.processPluginConfigurationUpdateResult === 'function') {
-                    dashboard.processPluginConfigurationUpdateResult(result);
-                }
-            }
-
-            function configValue(config, field) {
-                if (!config) return undefined;
-                if (Object.prototype.hasOwnProperty.call(config, field)) return config[field];
-                const camelField = `${field.charAt(0).toLowerCase()}${field.slice(1)}`;
-                return config[camelField];
-            }
-
-            function assignConfigValue(config, field, value) {
-                config[field] = value;
-                const camelField = `${field.charAt(0).toLowerCase()}${field.slice(1)}`;
-                if (Object.prototype.hasOwnProperty.call(config, camelField)) {
-                    config[camelField] = value;
-                }
-            }
-
-            function apiUrl(path, query) {
-                const client = currentApiClient();
-                const cleanPath = path.replace(/^\//, '');
-                const route = `/${cleanPath}`;
-                if (client && typeof client.getUrl === 'function') {
-                    return client.getUrl(route, query);
-                }
-
-                const params = query ? new URLSearchParams(query).toString() : '';
-                return `${route}${params ? `?${params}` : ''}`;
-            }
-
-            function apiFetch(path, options) {
-                const client = currentApiClient();
-                const url = apiUrl(path, options?.query);
-                if (client && typeof client.fetch === 'function') {
-                    return client.fetch({
-                        url,
-                        type: options?.method || 'GET',
-                        data: options?.body,
-                        contentType: options?.body ? 'application/json' : undefined,
-                        dataType: 'json',
-                        headers: { accept: 'application/json' }
-                    });
-                }
-
-                if (client && typeof client.ajax === 'function') {
-                    return client.ajax({
-                        url,
-                        type: options?.method || 'GET',
-                        data: options?.body,
-                        contentType: options?.body ? 'application/json' : undefined,
-                        dataType: 'json',
-                        headers: { accept: 'application/json' }
-                    });
-                }
-
-                if (typeof fetch === 'function') {
-                    return fetch(url, {
-                        method: options?.method || 'GET',
-                        credentials: 'same-origin',
-                        headers: {
-                            accept: 'application/json',
-                            'content-type': 'application/json'
-                        },
-                        body: options?.body
-                    }).then((response) => {
-                        if (!response.ok) {
-                            return response.text().then((text) => {
-                                throw new Error(text || `Request failed with HTTP ${response.status}`);
-                            });
-                        }
-                        return response.json();
-                    });
-                }
-
-                return Promise.reject(new Error('Jellyfin API client is not available.'));
-            }
-
-            function errorMessage(error, fallback) {
-                if (error?.message) return error.message;
-                if (typeof error?.responseText === 'string' && error.responseText.trim()) return error.responseText;
-                if (error?.status) return `Request failed with HTTP ${error.status}`;
-                if (typeof error === 'string' && error.trim()) return error;
-                return fallback;
-            }
-
-            function normalizeToken(value) {
-                return String(value || '').trim().toLowerCase();
-            }
-
-            function escapeHtml(value) {
-                return String(value || '').replace(/[&<>"']/g, (char) => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#39;'
-                }[char]));
-            }
-
-            function mediaLabel(mediaType) {
-                return mediaType === 'tv' ? 'TV' : 'Movies';
-            }
-
-            function railId(kind, mediaType, value) {
-                const normalizedKind = normalizeToken(kind);
-                const normalizedMediaType = normalizeToken(mediaType);
-                const normalizedValue = normalizedKind === 'language'
-                    ? normalizeToken(value).replace(/[^a-z0-9-]/g, '')
-                    : normalizeToken(value).replace(/\D/g, '');
-                return `${normalizedKind}-${normalizedMediaType}-${normalizedValue}`;
-            }
-
-            function normalizeRail(rail) {
-                const kind = normalizeToken(rail.Kind || rail.kind);
-                const mediaType = normalizeToken(rail.MediaType || rail.mediaType);
-                const value = String(rail.Value || rail.value || '').trim();
-                const id = railId(kind, mediaType, value);
-                return {
-                    Id: id,
-                    Kind: kind,
-                    MediaType: mediaType,
-                    Value: kind === 'language' ? normalizeToken(value) : value.replace(/\D/g, ''),
-                    Title: String(rail.Title || rail.title || '').trim(),
-                    Enabled: !!(rail.Enabled ?? rail.enabled)
-                };
-            }
-
-            function optionItems(payload) {
-                if (Array.isArray(payload)) return payload;
-                return Array.isArray(payload?.results) ? payload.results : [];
-            }
-
-            function optionValue(option) {
-                return String(option.id ?? option.iso_639_1 ?? option.value ?? '');
-            }
-
-            function optionName(option) {
-                return String(option.name || option.english_name || option.englishName || optionValue(option));
-            }
-
-            function optionTitle(kind, mediaType, option) {
-                return `${optionName(option)} ${mediaLabel(mediaType)}`;
-            }
-
-            function enforceRailMediaType() {
-                const kindInput = document.querySelector('#ExtraRailKind');
-                const mediaTypeInput = document.querySelector('#ExtraRailMediaType');
-                if (!kindInput || !mediaTypeInput) return;
-
-                if (kindInput.value === 'studio') {
-                    mediaTypeInput.value = 'movie';
-                    mediaTypeInput.disabled = true;
-                } else if (kindInput.value === 'network') {
-                    mediaTypeInput.value = 'tv';
-                    mediaTypeInput.disabled = true;
-                } else {
-                    mediaTypeInput.disabled = false;
-                }
-            }
-
-            function renderExtraRails() {
-                const list = document.querySelector('#ExtraRailList');
-                if (!list) return;
-
-                if (!extraRails.length) {
-                    list.innerHTML = '<p>No optional rails configured.</p>';
-                    return;
-                }
-
-                list.innerHTML = extraRails.map((rail) => `
-                    <div class="seerr-config-extra-rail" data-extra-rail="${rail.Id}">
-                        <label class="emby-checkbox-label">
-                            <input type="checkbox" is="emby-checkbox" data-extra-rail-enabled="${rail.Id}" ${rail.Enabled ? 'checked' : ''} />
-                            <span class="seerr-config-extra-rail-title">${escapeHtml(rail.Title)}</span>
-                        </label>
-                        <button is="emby-button" type="button" class="emby-button seerr-config-remove-button" data-extra-rail-remove="${rail.Id}">
-                            <span>Remove</span>
-                        </button>
-                    </div>
-                `).join('');
-
-                list.querySelectorAll('[data-extra-rail-enabled]').forEach((input) => {
-                    input.addEventListener('change', () => {
-                        const rail = extraRails.find((item) => item.Id === input.getAttribute('data-extra-rail-enabled'));
-                        if (rail) rail.Enabled = input.checked;
-                    });
-                });
-
-                list.querySelectorAll('[data-extra-rail-remove]').forEach((button) => {
-                    button.addEventListener('click', () => {
-                        const id = button.getAttribute('data-extra-rail-remove');
-                        extraRails = extraRails.filter((rail) => rail.Id !== id);
-                        renderExtraRails();
-                    });
-                });
-            }
-
-            function addExtraRail(kind, mediaType, option) {
-                const value = optionValue(option);
-                const id = railId(kind, mediaType, value);
-                if (!id || extraRails.some((rail) => rail.Id === id)) return;
-
-                extraRails.push({
-                    Id: id,
-                    Kind: normalizeToken(kind),
-                    MediaType: normalizeToken(mediaType),
-                    Value: normalizeToken(kind) === 'language' ? normalizeToken(value) : value.replace(/\D/g, ''),
-                    Title: optionTitle(kind, mediaType, option),
-                    Enabled: true
-                });
-                renderExtraRails();
-            }
-
-            function renderRailOptions(kind, mediaType, payload, query) {
-                const options = document.querySelector('#ExtraRailOptions');
-                if (!options) return;
-
-                const needle = normalizeToken(query);
-                const items = optionItems(payload)
-                    .filter((item) => optionValue(item))
-                    .filter((item) => !needle || normalizeToken(optionName(item)).includes(needle))
-                    .slice(0, 12);
-
-                if (!items.length) {
-                    options.innerHTML = '<p>No matching rail options.</p>';
-                    return;
-                }
-
-                options.innerHTML = items.map((item, index) => `
-                    <button is="emby-button" type="button" class="emby-button seerr-config-option-button" data-rail-option-index="${index}">
-                        <span>Add ${escapeHtml(optionTitle(kind, mediaType, item))}</span>
-                    </button>
-                `).join('');
-
-                options.querySelectorAll('[data-rail-option-index]').forEach((button) => {
-                    button.addEventListener('click', () => {
-                        const item = items[Number.parseInt(button.getAttribute('data-rail-option-index') || '0', 10)];
-                        addExtraRail(kind, mediaType, item);
-                    });
-                });
-            }
-
-            function searchRailOptions() {
-                enforceRailMediaType();
-                const kind = document.querySelector('#ExtraRailKind')?.value || 'genre';
-                const mediaType = document.querySelector('#ExtraRailMediaType')?.value || 'movie';
-                const query = document.querySelector('#ExtraRailQuery')?.value || '';
-                const options = document.querySelector('#ExtraRailOptions');
-                if (options) options.textContent = 'Loading...';
-
-                const requiresQuery = kind === 'studio' || kind === 'keyword';
-                if (requiresQuery && !query.trim()) {
-                    if (options) options.innerHTML = '<p>Enter a search term first.</p>';
-                    return;
-                }
-
-                const params = { kind, mediaType };
-                if (query.trim()) params.query = query.trim();
-                apiFetch('SeerrDiscover/rail-options', { query: params })
-                    .then((payload) => renderRailOptions(kind, mediaType, payload, query))
-                    .catch((error) => {
-                        if (options) options.textContent = errorMessage(error, 'Failed to load rail options.');
-                    });
-            }
-
-            function setForm(config) {
-                fields.forEach((field) => {
-                    const input = document.querySelector(`#${field}`);
-                    if (!input) return;
-                    const value = configValue(config, field);
-                    if (input.type === 'checkbox') {
-                        input.checked = !!value;
-                    } else {
-                        input.value = value ?? '';
-                    }
-                });
-
-                const apiKeyInput = document.querySelector('#SeerrApiKey');
-                const clearApiKeyInput = document.querySelector('#ClearSeerrApiKey');
-                const apiKeyStatus = document.querySelector('#SeerrApiKeyStatus');
-                if (apiKeyInput) {
-                    apiKeyInput.value = '';
-                    apiKeyInput.placeholder = config.SeerrApiKeyConfigured ? 'Stored key configured' : 'Paste Seerr API key';
-                }
-
-                if (clearApiKeyInput) {
-                    clearApiKeyInput.checked = false;
-                }
-
-                if (apiKeyStatus) {
-                    apiKeyStatus.textContent = config.SeerrApiKeyConfigured
-                        ? 'A Seerr API key is configured. Leave blank to keep it, or paste a new key to replace it.'
-                        : 'No Seerr API key is configured. Paste a key before using Discover.';
-                }
-
-                extraRails = (configValue(config, 'ExtraRails') || []).map(normalizeRail).filter((rail) => rail.Id && rail.Title);
-                renderExtraRails();
-                enforceRailMediaType();
-            }
-
-            function applyForm(config) {
-                fields.forEach((field) => {
-                    const input = document.querySelector(`#${field}`);
-                    if (!input) return;
-                    if (input.type === 'checkbox') {
-                        assignConfigValue(config, field, input.checked);
-                    } else if (input.type === 'number') {
-                        assignConfigValue(config, field, Number.parseInt(input.value || '0', 10));
-                    } else {
-                        assignConfigValue(config, field, input.value);
-                    }
-                });
-
-                const apiKeyInput = document.querySelector('#SeerrApiKey');
-                const clearApiKeyInput = document.querySelector('#ClearSeerrApiKey');
-                assignConfigValue(config, 'SeerrApiKey', apiKeyInput?.value || '');
-                assignConfigValue(config, 'ClearSeerrApiKey', !!clearApiKeyInput?.checked);
-                assignConfigValue(config, 'ExtraRails', extraRails.map((rail) => ({
-                    Id: rail.Id,
-                    Kind: rail.Kind,
-                    MediaType: rail.MediaType,
-                    Value: rail.Value,
-                    Title: rail.Title,
-                    Enabled: rail.Enabled
-                })));
-                return config;
-            }
-
-            document.querySelector('#ExtraRailKind')?.addEventListener('change', enforceRailMediaType);
-            document.querySelector('#SearchExtraRailOptions')?.addEventListener('click', searchRailOptions);
-
-            function loadConfiguration() {
-                if (configLoadStarted) return;
-                if (!canRequest() && configLoadAttempts < 50) {
-                    configLoadAttempts += 1;
-                    setTimeout(loadConfiguration, 100);
-                    return;
-                }
-
-                configLoadStarted = true;
-                showLoading();
-                apiFetch('SeerrDiscover/config').then((config) => {
-                    setForm(config);
-                    hideLoading();
-                }).catch((error) => {
-                    configLoadStarted = false;
-                    hideLoading();
-                    showAlert(errorMessage(error, 'Failed to load Seerr Discover configuration.'));
-                });
-            }
-
-            page.addEventListener('pageshow', loadConfiguration);
-            setTimeout(loadConfiguration, 100);
-
-            form.addEventListener('submit', function (event) {
-                event.preventDefault();
-                showLoading();
-                apiFetch('SeerrDiscover/config').then((config) => {
-                    return apiFetch('SeerrDiscover/config', {
-                        method: 'POST',
-                        body: JSON.stringify(applyForm(config))
-                    });
-                }).then((config) => {
-                    setForm(config);
-                    processUpdateResult(config);
-                }).catch((error) => {
-                    hideLoading();
-                    showAlert(errorMessage(error, 'Failed to save Seerr Discover configuration.'));
-                });
-                return false;
-            });
+            const script = document.createElement('script');
+            script.src = '/SeerrDiscover/assets/discover.js';
+            script.async = true;
+            script.dataset.seerrConfigLoader = 'true';
+            script.addEventListener('load', initializeWhenReady);
+            document.head.appendChild(script);
         })();
     </script>
 </div>

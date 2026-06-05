@@ -170,6 +170,16 @@ public sealed class SeerrDiscoverConfigurationDto
     public bool EnableDetailRecommended { get; set; }
 
     /// <summary>
+    /// Gets Discover page rail ordering and artwork layout.
+    /// </summary>
+    public List<SeerrRailPresentationDto> DiscoverRailPresentation { get; } = new();
+
+    /// <summary>
+    /// Gets detail page rail ordering and artwork layout.
+    /// </summary>
+    public List<SeerrRailPresentationDto> DetailRailPresentation { get; } = new();
+
+    /// <summary>
     /// Gets optional configured Discover rails.
     /// </summary>
     public List<SeerrExtraRailDto> ExtraRails { get; } = new();
@@ -296,9 +306,35 @@ public sealed class SeerrDiscoverConfigurationUpdate
     public bool EnableDetailRecommended { get; set; }
 
     /// <summary>
+    /// Gets or sets Discover page rail ordering and artwork layout.
+    /// </summary>
+    public List<SeerrRailPresentationDto>? DiscoverRailPresentation { get; set; }
+
+    /// <summary>
+    /// Gets or sets detail page rail ordering and artwork layout.
+    /// </summary>
+    public List<SeerrRailPresentationDto>? DetailRailPresentation { get; set; }
+
+    /// <summary>
     /// Gets or sets optional configured Discover rails.
     /// </summary>
     public List<SeerrExtraRailDto> ExtraRails { get; set; } = new();
+}
+
+/// <summary>
+/// Rail ordering and artwork layout DTO.
+/// </summary>
+public sealed class SeerrRailPresentationDto
+{
+    /// <summary>
+    /// Gets or sets the rail id.
+    /// </summary>
+    public string Id { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the artwork layout, vertical or horizontal.
+    /// </summary>
+    public string ArtworkLayout { get; set; } = "vertical";
 }
 
 /// <summary>

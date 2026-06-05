@@ -198,8 +198,11 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("verticalSection emby-scroller-container seerr-discover__rail", source, StringComparison.Ordinal);
         Assert.Contains("sectionTitle sectionTitle-cards padded-left seerr-discover__rail-title", source, StringComparison.Ordinal);
         Assert.Contains("seerr-discover__scroller padded-left padded-right", source, StringComparison.Ordinal);
-        Assert.Contains("const layoutClass = isBackdropFallback ? 'overflowBackdropCard' : 'overflowPortraitCard';", source, StringComparison.Ordinal);
-        Assert.Contains("const padderClass = isBackdropFallback ? 'cardPadder-overflowBackdrop' : 'cardPadder-overflowPortrait';", source, StringComparison.Ordinal);
+        Assert.Contains("function card(item, artworkLayout = artworkLayoutVertical)", source, StringComparison.Ordinal);
+        Assert.Contains("const layoutClass = isHorizontal ? 'overflowBackdropCard' : 'overflowPortraitCard';", source, StringComparison.Ordinal);
+        Assert.Contains("const padderClass = isHorizontal ? 'cardPadder-overflowBackdrop' : 'cardPadder-overflowPortrait';", source, StringComparison.Ordinal);
+        Assert.Contains("data-seerr-artwork-layout", source, StringComparison.Ordinal);
+        Assert.Contains("results.map((item) => card(item, artworkLayout)).join('')", source, StringComparison.Ordinal);
         Assert.Contains("card-hoverable card-withuserdata seerr-card", source, StringComparison.Ordinal);
         Assert.Contains("role=\"button\" tabindex=\"0\"", source, StringComparison.Ordinal);
         Assert.Contains("cardBox cardBox-bottompadded seerr-card__box", source, StringComparison.Ordinal);
@@ -260,7 +263,8 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("native-detail-${rail.id}", source, StringComparison.Ordinal);
         Assert.Contains("verticalSection emby-scroller-container seerr-discover__rail", source, StringComparison.Ordinal);
         Assert.Contains("sectionTitle sectionTitle-cards padded-left seerr-discover__rail-title", source, StringComparison.Ordinal);
-        Assert.Contains("const layoutClass = isBackdropFallback ? 'overflowBackdropCard' : 'overflowPortraitCard';", source, StringComparison.Ordinal);
+        Assert.Contains("artworkLayout: normalizeArtworkLayout(rail.artworkLayout)", source, StringComparison.Ordinal);
+        Assert.Contains("const layoutClass = isHorizontal ? 'overflowBackdropCard' : 'overflowPortraitCard';", source, StringComparison.Ordinal);
         Assert.Contains("card ${layoutClass} card-hoverable card-withuserdata seerr-card", source, StringComparison.Ordinal);
         Assert.Contains("cardBox cardBox-bottompadded", source, StringComparison.Ordinal);
         Assert.Contains("cardScalable", source, StringComparison.Ordinal);
@@ -280,6 +284,23 @@ public sealed class SeerrDiscoverControllerTests
         Assert.DoesNotContain("EnableDetailCollections", configPage, StringComparison.Ordinal);
         Assert.DoesNotContain("Show movie collection entries", configPage, StringComparison.Ordinal);
         Assert.DoesNotContain("detailRails.collections", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DiscoverAsset_AddsRailPresentationControlsToConfigPage()
+    {
+        var source = ReadBrowserAsset("discover.js");
+        var configPage = ReadConfigurationPage();
+
+        Assert.Contains("DiscoverRailPresentation", source, StringComparison.Ordinal);
+        Assert.Contains("DetailRailPresentation", source, StringComparison.Ordinal);
+        Assert.Contains("data-config-rail-move", source, StringComparison.Ordinal);
+        Assert.Contains("Vertical poster", source, StringComparison.Ordinal);
+        Assert.Contains("Horizontal thumbnail", source, StringComparison.Ordinal);
+        Assert.Contains("id=\"DiscoverRailList\"", configPage, StringComparison.Ordinal);
+        Assert.Contains("id=\"DetailRailList\"", configPage, StringComparison.Ordinal);
+        Assert.Contains("data-seerr-config-loader", configPage, StringComparison.Ordinal);
+        Assert.DoesNotContain("id=\"ExtraRailList\"", configPage, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -701,6 +722,126 @@ public sealed class SeerrDiscoverControllerTests
     }
 
     [Fact]
+    public void ToConfigurationDto_DefaultsRailPresentationToCurrentOrderAndVerticalLayout()
+    {
+        var dto = ToConfigurationDto(new PluginConfiguration());
+
+        Assert.Equal(
+            ["trending-movies", "trending-tv", "movies", "tv", "upcoming", "upcoming-tv", "recently-requested", "server-popular"],
+            dto.DiscoverRailPresentation.Select(rail => rail.Id).ToArray());
+        Assert.All(dto.DiscoverRailPresentation, rail => Assert.Equal("vertical", rail.ArtworkLayout));
+        Assert.Equal(["similar", "recommended"], dto.DetailRailPresentation.Select(rail => rail.Id).ToArray());
+        Assert.All(dto.DetailRailPresentation, rail => Assert.Equal("vertical", rail.ArtworkLayout));
+    }
+
+    [Fact]
+    public void ApplyConfigurationUpdate_NormalizesRailPresentationOrderAndLayout()
+    {
+        var config = new PluginConfiguration();
+        var update = new SeerrDiscoverConfigurationUpdate
+        {
+            SeerrBaseUrl = "http://seerr:5055",
+            Language = "en",
+            EnableTrending = true,
+            EnableTrendingMovies = true,
+            EnableTrendingTv = true,
+            EnableMovies = true,
+            EnableTv = true,
+            EnableUpcoming = true,
+            EnableUpcomingTv = true,
+            EnableRecentlyRequested = true,
+            EnablePopularWithServer = true,
+            EnableDetailSimilar = true,
+            EnableDetailRecommended = true,
+            ExtraRails =
+            [
+                new SeerrExtraRailDto
+                {
+                    Kind = "genre",
+                    MediaType = "movie",
+                    Value = "27",
+                    Title = "Horror Movies",
+                    Enabled = true
+                }
+            ],
+            DiscoverRailPresentation =
+            [
+                new SeerrRailPresentationDto { Id = "server-popular", ArtworkLayout = "horizontal" },
+                new SeerrRailPresentationDto { Id = "invalid", ArtworkLayout = "horizontal" },
+                new SeerrRailPresentationDto { Id = "movies", ArtworkLayout = "sideways" },
+                new SeerrRailPresentationDto { Id = "server-popular", ArtworkLayout = "vertical" },
+                new SeerrRailPresentationDto { Id = "genre-movie-27", ArtworkLayout = "horizontal" }
+            ],
+            DetailRailPresentation =
+            [
+                new SeerrRailPresentationDto { Id = "recommended", ArtworkLayout = "horizontal" },
+                new SeerrRailPresentationDto { Id = "collections", ArtworkLayout = "horizontal" },
+                new SeerrRailPresentationDto { Id = "similar", ArtworkLayout = "wide" },
+                new SeerrRailPresentationDto { Id = "recommended", ArtworkLayout = "vertical" }
+            ]
+        };
+
+        ApplyConfigurationUpdate(config, update);
+
+        Assert.Equal(
+            ["server-popular", "movies", "genre-movie-27", "trending-movies", "trending-tv", "tv", "upcoming", "upcoming-tv", "recently-requested"],
+            config.DiscoverRailPresentation.Select(rail => rail.Id).ToArray());
+        Assert.Equal("horizontal", config.DiscoverRailPresentation[0].ArtworkLayout);
+        Assert.Equal("vertical", config.DiscoverRailPresentation[1].ArtworkLayout);
+        Assert.Equal("horizontal", config.DiscoverRailPresentation[2].ArtworkLayout);
+        Assert.Equal(["recommended", "similar"], config.DetailRailPresentation.Select(rail => rail.Id).ToArray());
+        Assert.Equal("horizontal", config.DetailRailPresentation[0].ArtworkLayout);
+        Assert.Equal("vertical", config.DetailRailPresentation[1].ArtworkLayout);
+    }
+
+    [Fact]
+    public void BuildDiscoverRails_UsesConfiguredOrderAndSkipsDisabledRails()
+    {
+        var config = new PluginConfiguration
+        {
+            UseSplitTrendingRailSettings = true,
+            EnableTrendingMovies = false,
+            EnableTrendingTv = true,
+            EnableMovies = true,
+            EnableTv = false,
+            EnableUpcoming = true,
+            EnableUpcomingTv = false,
+            EnableRecentlyRequested = true,
+            EnablePopularWithServer = false,
+            DiscoverRailPresentation =
+            [
+                new SeerrRailPresentation { Id = "server-popular", ArtworkLayout = "horizontal" },
+                new SeerrRailPresentation { Id = "recently-requested", ArtworkLayout = "horizontal" },
+                new SeerrRailPresentation { Id = "movies", ArtworkLayout = "vertical" },
+                new SeerrRailPresentation { Id = "trending-tv", ArtworkLayout = "horizontal" }
+            ]
+        };
+
+        var rails = BuildDiscoverRails(config);
+
+        Assert.Equal(["recently-requested", "movies", "trending-tv", "upcoming"], rails.Select(rail => rail.Id).ToArray());
+        Assert.Equal(["horizontal", "vertical", "horizontal", "vertical"], rails.Select(rail => rail.ArtworkLayout).ToArray());
+    }
+
+    [Fact]
+    public void BuildDetailRails_UsesConfiguredOrderAndLayout()
+    {
+        var config = new PluginConfiguration
+        {
+            DetailRailPresentation =
+            [
+                new SeerrRailPresentation { Id = "recommended", ArtworkLayout = "horizontal" },
+                new SeerrRailPresentation { Id = "similar", ArtworkLayout = "vertical" }
+            ]
+        };
+
+        var rails = BuildDetailRails(config);
+
+        Assert.Equal(["recommended", "similar"], rails.Select(rail => rail.Id).ToArray());
+        Assert.Equal(["horizontal", "vertical"], rails.Select(rail => rail.ArtworkLayout).ToArray());
+    }
+
+    [Fact]
     public void IsFeedEnabled_RejectsUnconfiguredExpandedRails()
     {
         var config = new PluginConfiguration
@@ -791,6 +932,38 @@ public sealed class SeerrDiscoverControllerTests
 
         Assert.NotNull(method);
         return Assert.IsType<bool>(method!.Invoke(null, [config, feed, mediaType]));
+    }
+
+    private static IReadOnlyList<(string Id, string ArtworkLayout)> BuildDiscoverRails(PluginConfiguration config)
+    {
+        var method = typeof(SeerrDiscoverController)
+            .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+            .Single(method => method.Name == "BuildDiscoverRails" && method.GetParameters().Length == 1);
+
+        return ReflectRailPresentation(method.Invoke(null, [config]));
+    }
+
+    private static IReadOnlyList<(string Id, string ArtworkLayout)> BuildDetailRails(PluginConfiguration config)
+    {
+        var method = typeof(SeerrDiscoverController).GetMethod("BuildDetailRails", BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.NotNull(method);
+        return ReflectRailPresentation(method!.Invoke(null, [config]));
+    }
+
+    private static IReadOnlyList<(string Id, string ArtworkLayout)> ReflectRailPresentation(object? rails)
+    {
+        Assert.NotNull(rails);
+        return ((System.Collections.IEnumerable)rails!)
+            .Cast<object>()
+            .Select(rail =>
+            {
+                var type = rail.GetType();
+                return (
+                    Id: Assert.IsType<string>(type.GetProperty("Id")?.GetValue(rail)),
+                    ArtworkLayout: Assert.IsType<string>(type.GetProperty("ArtworkLayout")?.GetValue(rail)));
+            })
+            .ToList();
     }
 
     private static MethodInfo ControllerAction(string methodName)

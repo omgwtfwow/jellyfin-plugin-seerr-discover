@@ -28,4 +28,29 @@ public sealed class PluginConfigurationTests
         Assert.NotNull(restored);
         Assert.Equal("https://seerr.example.com", restored!.SeerrPublicUrl);
     }
+
+    [Fact]
+    public void RailPresentation_RoundTripsThroughJson()
+    {
+        var configuration = new PluginConfiguration
+        {
+            DiscoverRailPresentation =
+            [
+                new SeerrRailPresentation { Id = "movies", ArtworkLayout = "horizontal" }
+            ],
+            DetailRailPresentation =
+            [
+                new SeerrRailPresentation { Id = "recommended", ArtworkLayout = "horizontal" }
+            ]
+        };
+
+        var json = JsonSerializer.Serialize(configuration);
+        var restored = JsonSerializer.Deserialize<PluginConfiguration>(json);
+
+        Assert.NotNull(restored);
+        Assert.Equal("movies", restored!.DiscoverRailPresentation[0].Id);
+        Assert.Equal("horizontal", restored.DiscoverRailPresentation[0].ArtworkLayout);
+        Assert.Equal("recommended", restored.DetailRailPresentation[0].Id);
+        Assert.Equal("horizontal", restored.DetailRailPresentation[0].ArtworkLayout);
+    }
 }

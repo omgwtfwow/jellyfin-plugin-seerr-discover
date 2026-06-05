@@ -27,6 +27,9 @@ namespace Jellyfin.Plugin.SeerrDiscover.Controllers;
 public sealed class SeerrDiscoverController : ControllerBase
 {
     private const string JellyfinUserIdClaim = "Jellyfin-UserId";
+    private const string ArtworkLayoutVertical = "vertical";
+    private const string ArtworkLayoutHorizontal = "horizontal";
+
     private static readonly (string Id, string Title, string Feed)[] DiscoverRailDefinitions =
     {
         ("trending-movies", "Trending Movies", "trending-movies"),
@@ -35,6 +38,18 @@ public sealed class SeerrDiscoverController : ControllerBase
         ("tv", "Popular TV", "tv"),
         ("upcoming", "Upcoming Movies", "upcoming"),
         ("upcoming-tv", "Upcoming TV", "upcoming-tv")
+    };
+
+    private static readonly (string Id, string Title, string Feed)[] RequestRailDefinitions =
+    {
+        ("recently-requested", "Recently Requested", "recently-requested"),
+        ("server-popular", "Popular With This Server", "server-popular")
+    };
+
+    private static readonly (string Id, string Title)[] DetailRailDefinitions =
+    {
+        ("similar", "Similar"),
+        ("recommended", "Recommended")
     };
 
     private static readonly (string Id, string Name)[] CuratedNetworks =
@@ -57,7 +72,9 @@ public sealed class SeerrDiscoverController : ControllerBase
         ("318", "Starz")
     };
 
-    private sealed record DiscoverRail(string Id, string Title, string Feed);
+    private sealed record DiscoverRail(string Id, string Title, string Feed, string ArtworkLayout);
+
+    private sealed record DetailRail(string Id, string Title, string ArtworkLayout);
 
     private sealed record RequestRailSeed(string MediaType, int TmdbId, int Count, int Position);
 
@@ -180,10 +197,18 @@ public sealed class SeerrDiscoverController : ControllerBase
             detailRails = new
             {
                 similar = config.EnableDetailSimilar,
-                recommended = config.EnableDetailRecommended
+                recommended = config.EnableDetailRecommended,
+                rails = BuildDetailRails(config)
+                    .Select(rail => new
+                    {
+                        id = rail.Id,
+                        title = rail.Title,
+                        enabled = IsDetailRailEnabled(config, rail.Id),
+                        artworkLayout = rail.ArtworkLayout
+                    })
             },
             discoverRails = BuildDiscoverRails(config)
-                .Select(rail => new { id = rail.Id, title = rail.Title, feed = rail.Feed }),
+                .Select(rail => new { id = rail.Id, title = rail.Title, feed = rail.Feed, artworkLayout = rail.ArtworkLayout }),
             seerrPublicUrl = NormalizedSeerrPublicUrl()
         });
     }
@@ -410,26 +435,51 @@ public sealed class SeerrDiscoverController : ControllerBase
 
     private static IReadOnlyList<DiscoverRail> BuildDiscoverRails(PluginConfiguration config)
     {
+        return BuildDiscoverRails(config, includeDisabled: false);
+    }
+
+    private static IReadOnlyList<DiscoverRail> BuildDiscoverRails(PluginConfiguration config, bool includeDisabled)
+    {
+        var catalog = BuildDiscoverRailCatalog(config).ToDictionary(rail => rail.Id, StringComparer.OrdinalIgnoreCase);
+        return NormalizeRailPresentation(config.DiscoverRailPresentation, catalog.Keys)
+            .Select(presentation => catalog[presentation.Id] with { ArtworkLayout = presentation.ArtworkLayout })
+            .Where(rail => includeDisabled || IsFeedEnabled(config, rail.Feed, null))
+            .ToList();
+    }
+
+    private static IReadOnlyList<DiscoverRail> BuildDiscoverRailCatalog(PluginConfiguration config)
+    {
         var rails = DiscoverRailDefinitions
-            .Where(rail => IsFeedEnabled(config, rail.Feed, null))
-            .Select(rail => new DiscoverRail(rail.Id, rail.Title, rail.Feed))
+            .Select(rail => new DiscoverRail(rail.Id, rail.Title, rail.Feed, ArtworkLayoutVertical))
             .ToList();
 
-        if (config.EnableRecentlyRequested)
-        {
-            rails.Add(new DiscoverRail("recently-requested", "Recently Requested", "recently-requested"));
-        }
-
-        if (config.EnablePopularWithServer)
-        {
-            rails.Add(new DiscoverRail("server-popular", "Popular With This Server", "server-popular"));
-        }
+        rails.AddRange(RequestRailDefinitions
+            .Select(rail => new DiscoverRail(rail.Id, rail.Title, rail.Feed, ArtworkLayoutVertical)));
 
         rails.AddRange(NormalizeExtraRails(config.ExtraRails)
-            .Where(static rail => rail.Enabled)
-            .Select(static rail => new DiscoverRail(rail.Id, rail.Title, rail.Id)));
+            .Select(static rail => new DiscoverRail(rail.Id, rail.Title, rail.Id, ArtworkLayoutVertical)));
         return rails;
     }
+
+    private static IReadOnlyList<DetailRail> BuildDetailRails(PluginConfiguration config)
+    {
+        var catalog = DetailRailDefinitions.ToDictionary(rail => rail.Id, StringComparer.OrdinalIgnoreCase);
+        return NormalizeRailPresentation(config.DetailRailPresentation, catalog.Keys)
+            .Select(presentation =>
+            {
+                var rail = catalog[presentation.Id];
+                return new DetailRail(rail.Id, rail.Title, presentation.ArtworkLayout);
+            })
+            .ToList();
+    }
+
+    private static bool IsDetailRailEnabled(PluginConfiguration config, string id)
+        => NormalizeToken(id) switch
+        {
+            "similar" => config.EnableDetailSimilar,
+            "recommended" => config.EnableDetailRecommended,
+            _ => false
+        };
 
     private static bool IsFeedEnabled(PluginConfiguration? config, string feed, string? mediaType)
     {
@@ -588,28 +638,24 @@ public sealed class SeerrDiscoverController : ControllerBase
         var config = Plugin.Instance?.Configuration ?? new PluginConfiguration();
         var rails = new JsonArray();
 
-        if (config.EnableDetailSimilar)
+        foreach (var rail in BuildDetailRails(config))
         {
-            var similar = await BuildRelatedRailAsync(mediaType, tmdbId, "similar", "Similar", cancellationToken).ConfigureAwait(false);
-            if (similar is not null)
+            if (!IsDetailRailEnabled(config, rail.Id))
             {
-                rails.Add(similar);
+                continue;
             }
-        }
 
-        if (config.EnableDetailRecommended)
-        {
-            var recommended = await BuildRelatedRailAsync(mediaType, tmdbId, "recommended", "Recommended", cancellationToken).ConfigureAwait(false);
-            if (recommended is not null)
+            var related = await BuildRelatedRailAsync(mediaType, tmdbId, rail.Id, rail.Title, rail.ArtworkLayout, cancellationToken).ConfigureAwait(false);
+            if (related is not null)
             {
-                rails.Add(recommended);
+                rails.Add(related);
             }
         }
 
         return JsonSerializer.Serialize(new JsonObject { ["rails"] = rails });
     }
 
-    private async Task<JsonObject?> BuildRelatedRailAsync(string mediaType, int tmdbId, string relation, string title, CancellationToken cancellationToken)
+    private async Task<JsonObject?> BuildRelatedRailAsync(string mediaType, int tmdbId, string relation, string title, string artworkLayout, CancellationToken cancellationToken)
     {
         try
         {
@@ -626,6 +672,7 @@ public sealed class SeerrDiscoverController : ControllerBase
             {
                 ["id"] = relation,
                 ["title"] = title,
+                ["artworkLayout"] = artworkLayout,
                 ["results"] = results.DeepClone()
             };
         }
@@ -768,6 +815,12 @@ public sealed class SeerrDiscoverController : ControllerBase
         };
 
         dto.ExtraRails.AddRange(NormalizeExtraRails(config.ExtraRails).Select(ToExtraRailDto));
+        dto.DiscoverRailPresentation.AddRange(NormalizeRailPresentation(
+            config.DiscoverRailPresentation,
+            BuildDiscoverRailCatalog(config).Select(rail => rail.Id)).Select(ToRailPresentationDto));
+        dto.DetailRailPresentation.AddRange(NormalizeRailPresentation(
+            config.DetailRailPresentation,
+            DetailRailDefinitions.Select(rail => rail.Id)).Select(ToRailPresentationDto));
         return dto;
     }
 
@@ -796,6 +849,19 @@ public sealed class SeerrDiscoverController : ControllerBase
         config.EnableDetailSimilar = update.EnableDetailSimilar;
         config.EnableDetailRecommended = update.EnableDetailRecommended;
         config.ExtraRails = NormalizeExtraRails(update.ExtraRails?.Select(FromExtraRailDto)).ToList();
+        if (update.DiscoverRailPresentation is not null)
+        {
+            config.DiscoverRailPresentation = NormalizeRailPresentation(
+                update.DiscoverRailPresentation.Select(FromRailPresentationDto),
+                BuildDiscoverRailCatalog(config).Select(rail => rail.Id)).ToList();
+        }
+
+        if (update.DetailRailPresentation is not null)
+        {
+            config.DetailRailPresentation = NormalizeRailPresentation(
+                update.DetailRailPresentation.Select(FromRailPresentationDto),
+                DetailRailDefinitions.Select(rail => rail.Id)).ToList();
+        }
 
         if (update.ClearSeerrApiKey)
         {
@@ -828,6 +894,69 @@ public sealed class SeerrDiscoverController : ControllerBase
             Title = rail.Title,
             Enabled = rail.Enabled
         };
+
+    private static SeerrRailPresentationDto ToRailPresentationDto(SeerrRailPresentation presentation)
+        => new()
+        {
+            Id = presentation.Id,
+            ArtworkLayout = presentation.ArtworkLayout
+        };
+
+    private static SeerrRailPresentation FromRailPresentationDto(SeerrRailPresentationDto presentation)
+        => new()
+        {
+            Id = presentation.Id,
+            ArtworkLayout = presentation.ArtworkLayout
+        };
+
+    private static IReadOnlyList<SeerrRailPresentation> NormalizeRailPresentation(IEnumerable<SeerrRailPresentation>? presentation, IEnumerable<string> knownIds)
+    {
+        var orderedIds = knownIds
+            .Select(id => NormalizeToken(id))
+            .Where(static id => !string.IsNullOrWhiteSpace(id))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        var known = orderedIds.ToDictionary(id => id, StringComparer.OrdinalIgnoreCase);
+        var normalized = new List<SeerrRailPresentation>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        if (presentation is not null)
+        {
+            foreach (var item in presentation)
+            {
+                var id = NormalizeToken(item.Id);
+                if (!known.TryGetValue(id, out var canonicalId) || !seen.Add(canonicalId))
+                {
+                    continue;
+                }
+
+                normalized.Add(new SeerrRailPresentation
+                {
+                    Id = canonicalId,
+                    ArtworkLayout = NormalizeArtworkLayout(item.ArtworkLayout)
+                });
+            }
+        }
+
+        foreach (var id in orderedIds)
+        {
+            if (!seen.Add(id))
+            {
+                continue;
+            }
+
+            normalized.Add(new SeerrRailPresentation
+            {
+                Id = id,
+                ArtworkLayout = ArtworkLayoutVertical
+            });
+        }
+
+        return normalized;
+    }
+
+    private static string NormalizeArtworkLayout(string? value)
+        => NormalizeToken(value ?? string.Empty) == ArtworkLayoutHorizontal ? ArtworkLayoutHorizontal : ArtworkLayoutVertical;
 
     private static IReadOnlyList<SeerrExtraRail> NormalizeExtraRails(IEnumerable<SeerrExtraRail>? rails)
     {

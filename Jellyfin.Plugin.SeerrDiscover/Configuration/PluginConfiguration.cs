@@ -124,9 +124,35 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool EnableDetailRecommended { get; set; }
 
     /// <summary>
+    /// Gets or sets Discover page rail ordering and artwork layout.
+    /// </summary>
+    public List<SeerrRailPresentation> DiscoverRailPresentation { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets detail page rail ordering and artwork layout.
+    /// </summary>
+    public List<SeerrRailPresentation> DetailRailPresentation { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets optional admin-configured Discover rails.
     /// </summary>
     public List<SeerrExtraRail> ExtraRails { get; set; } = new();
+}
+
+/// <summary>
+/// Persistent rail ordering and artwork layout selection.
+/// </summary>
+public sealed class SeerrRailPresentation
+{
+    /// <summary>
+    /// Gets or sets the rail id.
+    /// </summary>
+    public string Id { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the artwork layout, vertical or horizontal.
+    /// </summary>
+    public string ArtworkLayout { get; set; } = "vertical";
 }
 
 /// <summary>

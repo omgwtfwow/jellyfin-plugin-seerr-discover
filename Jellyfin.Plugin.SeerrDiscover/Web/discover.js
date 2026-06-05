@@ -5,13 +5,15 @@
   const styleId = 'seerr-discover-style';
   const discoverLoadingKey = 'discover';
   const discoverTopCushionPx = 8;
+  const artworkLayoutVertical = 'vertical';
+  const artworkLayoutHorizontal = 'horizontal';
   const defaultRails = [
-    { id: 'trending-movies', title: 'Trending Movies', feed: 'trending-movies' },
-    { id: 'trending-tv', title: 'Trending TV', feed: 'trending-tv' },
-    { id: 'movies', title: 'Popular Movies', feed: 'movies' },
-    { id: 'tv', title: 'Popular TV', feed: 'tv' },
-    { id: 'upcoming', title: 'Upcoming Movies', feed: 'upcoming' },
-    { id: 'upcoming-tv', title: 'Upcoming TV', feed: 'upcoming-tv' },
+    { id: 'trending-movies', title: 'Trending Movies', feed: 'trending-movies', artworkLayout: artworkLayoutVertical },
+    { id: 'trending-tv', title: 'Trending TV', feed: 'trending-tv', artworkLayout: artworkLayoutVertical },
+    { id: 'movies', title: 'Popular Movies', feed: 'movies', artworkLayout: artworkLayoutVertical },
+    { id: 'tv', title: 'Popular TV', feed: 'tv', artworkLayout: artworkLayoutVertical },
+    { id: 'upcoming', title: 'Upcoming Movies', feed: 'upcoming', artworkLayout: artworkLayoutVertical },
+    { id: 'upcoming-tv', title: 'Upcoming TV', feed: 'upcoming-tv', artworkLayout: artworkLayoutVertical },
   ];
   const state = {
     mountedRoot: null,
@@ -200,6 +202,12 @@
 
   function supportedResults(items) {
     return (items || []).filter(isSupportedMedia);
+  }
+
+  function normalizeArtworkLayout(value) {
+    return String(value || '').trim().toLowerCase() === artworkLayoutHorizontal
+      ? artworkLayoutHorizontal
+      : artworkLayoutVertical;
   }
 
   function discoverDedupeKey(item) {
@@ -1390,19 +1398,24 @@
     return true;
   }
 
-  function card(item) {
-    const image = item.posterPath ? tmdbImage(item.posterPath, 'w500') : tmdbImage(item.backdropPath, 'w780');
-    const srcSet = item.posterPath ? tmdbSrcSet(item.posterPath, ['w342', 'w500', 'w780']) : tmdbSrcSet(item.backdropPath, ['w780', 'w1280']);
-    const isBackdropFallback = !item.posterPath && Boolean(item.backdropPath);
-    const layoutClass = isBackdropFallback ? 'overflowBackdropCard' : 'overflowPortraitCard';
-    const padderClass = isBackdropFallback ? 'cardPadder-overflowBackdrop' : 'cardPadder-overflowPortrait';
+  function card(item, artworkLayout = artworkLayoutVertical) {
+    const layout = normalizeArtworkLayout(artworkLayout);
+    const isHorizontal = layout === artworkLayoutHorizontal;
+    const preferredImagePath = isHorizontal ? (item.backdropPath || item.posterPath) : (item.posterPath || item.backdropPath);
+    const selectedImageIsBackdrop = preferredImagePath && preferredImagePath === item.backdropPath;
+    const image = preferredImagePath ? tmdbImage(preferredImagePath, selectedImageIsBackdrop ? 'w780' : 'w500') : '';
+    const srcSet = preferredImagePath
+      ? tmdbSrcSet(preferredImagePath, selectedImageIsBackdrop ? ['w780', 'w1280'] : ['w342', 'w500', 'w780'])
+      : '';
+    const layoutClass = isHorizontal ? 'overflowBackdropCard' : 'overflowPortraitCard';
+    const padderClass = isHorizontal ? 'cardPadder-overflowBackdrop' : 'cardPadder-overflowPortrait';
     const typeLabel = mediaType(item) === 'tv' ? 'Series' : 'Movie';
     const status = cardStatusLabel(item);
     const year = (mediaDate(item) || '').slice(0, 4);
     const badgeClass = cardBadgeClass(status);
-    const imageClass = isBackdropFallback ? ' seerr-card__image--backdrop' : '';
+    const imageClass = isHorizontal ? ' seerr-card__image--backdrop' : '';
     const imageStyle = image ? ` style="--seerr-artwork:url('${escapeHtml(image)}')"` : '';
-    const srcSetAttribute = srcSet ? ` srcset="${escapeHtml(srcSet)}" sizes="(max-width: 720px) 42vw, 13.5rem"` : '';
+    const srcSetAttribute = srcSet ? ` srcset="${escapeHtml(srcSet)}" sizes="${isHorizontal ? '(max-width: 720px) 76vw, 20rem' : '(max-width: 720px) 42vw, 13.5rem'}"` : '';
     const title = mediaTitle(item);
     return `
       <div class="card ${layoutClass} card-hoverable card-withuserdata seerr-card" role="button" tabindex="0" aria-label="Open details for ${escapeHtml(title)}" data-seerr-type="${escapeHtml(mediaType(item))}" data-seerr-id="${escapeHtml(item.id)}">
@@ -1440,11 +1453,12 @@
 
   function railTemplate(rail, items) {
     const results = supportedResults(items);
+    const artworkLayout = normalizeArtworkLayout(rail.artworkLayout);
     return `
-      <section class="verticalSection emby-scroller-container seerr-discover__rail" data-seerr-rail="${escapeHtml(rail.id)}">
+      <section class="verticalSection emby-scroller-container seerr-discover__rail" data-seerr-rail="${escapeHtml(rail.id)}" data-seerr-artwork-layout="${escapeHtml(artworkLayout)}">
         <h2 class="sectionTitle sectionTitle-cards padded-left seerr-discover__rail-title">${escapeHtml(rail.title)}</h2>
         <div class="seerr-discover__scroller padded-left padded-right">
-          ${results.length ? results.map(card).join('') : '<div class="seerr-discover__notice">No results</div>'}
+          ${results.length ? results.map((item) => card(item, artworkLayout)).join('') : '<div class="seerr-discover__notice">No results</div>'}
         </div>
       </section>
     `;
@@ -1656,6 +1670,7 @@
           .then((items) => ({
             id: String(rail.id || ''),
             title: String(rail.title || ''),
+            artworkLayout: normalizeArtworkLayout(rail.artworkLayout),
             items,
           }))));
       })
@@ -1668,7 +1683,7 @@
         }
 
         target.innerHTML = activeRails
-          .map((rail) => railTemplate({ id: `related-${rail.id}`, title: rail.title }, rail.items))
+          .map((rail) => railTemplate({ id: `related-${rail.id}`, title: rail.title, artworkLayout: rail.artworkLayout }, rail.items))
           .join('');
         bindCards(target);
       })
@@ -1799,6 +1814,7 @@
           .then((items) => ({
             id: String(rail.id || ''),
             title: String(rail.title || ''),
+            artworkLayout: normalizeArtworkLayout(rail.artworkLayout),
             items,
           }))));
       })
@@ -1820,7 +1836,7 @@
         container.setAttribute('data-seerr-native-detail-related', 'true');
         container.setAttribute('data-seerr-item-id', itemId);
         container.innerHTML = activeRails
-          .map((rail) => railTemplate({ id: `native-detail-${rail.id}`, title: rail.title }, rail.items))
+          .map((rail) => railTemplate({ id: `native-detail-${rail.id}`, title: rail.title, artworkLayout: rail.artworkLayout }, rail.items))
           .join('');
 
         placeNativeDetailRails(detailContent, container);
@@ -2388,6 +2404,7 @@
         id: String(rail.id),
         title: String(rail.title),
         feed: String(rail.feed),
+        artworkLayout: normalizeArtworkLayout(rail.artworkLayout),
       }));
   }
 
@@ -2919,6 +2936,10 @@
     if (!page || page.dataset.seerrConfigInlineLoaded === 'true') return;
     page.dataset.seerrConfigInlineLoaded = 'true';
     page.__seerrExtraRails = [];
+    page.__seerrDiscoverRailEnabled = {};
+    page.__seerrDetailRailEnabled = {};
+    page.__seerrDiscoverRailPresentation = [];
+    page.__seerrDetailRailPresentation = [];
 
     page.querySelector('#ExtraRailKind')?.addEventListener('change', () => enforceConfigRailMediaType(page));
     page.querySelector('#SearchExtraRailOptions')?.addEventListener('click', () => searchConfigRailOptions(page));
@@ -2942,16 +2963,22 @@
     'RequireMappedUser',
     'EnableNativeSearchIntegration',
     'DefaultRequest4K',
-    'EnableTrendingMovies',
-    'EnableTrendingTv',
-    'EnableMovies',
-    'EnableTv',
-    'EnableUpcoming',
-    'EnableUpcomingTv',
-    'EnableRecentlyRequested',
-    'EnablePopularWithServer',
-    'EnableDetailSimilar',
-    'EnableDetailRecommended',
+  ];
+
+  const configDiscoverRailDefinitions = [
+    { Id: 'trending-movies', Title: 'Trending Movies', EnableField: 'EnableTrendingMovies' },
+    { Id: 'trending-tv', Title: 'Trending TV', EnableField: 'EnableTrendingTv' },
+    { Id: 'movies', Title: 'Popular Movies', EnableField: 'EnableMovies' },
+    { Id: 'tv', Title: 'Popular TV', EnableField: 'EnableTv' },
+    { Id: 'upcoming', Title: 'Upcoming Movies', EnableField: 'EnableUpcoming' },
+    { Id: 'upcoming-tv', Title: 'Upcoming TV', EnableField: 'EnableUpcomingTv' },
+    { Id: 'recently-requested', Title: 'Recently Requested', EnableField: 'EnableRecentlyRequested' },
+    { Id: 'server-popular', Title: 'Popular With This Server', EnableField: 'EnablePopularWithServer' },
+  ];
+
+  const configDetailRailDefinitions = [
+    { Id: 'similar', Title: 'Similar', EnableField: 'EnableDetailSimilar' },
+    { Id: 'recommended', Title: 'Recommended', EnableField: 'EnableDetailRecommended' },
   ];
 
   function configValue(config, field) {
@@ -3002,7 +3029,23 @@
     }
 
     page.__seerrExtraRails = (configValue(config, 'ExtraRails') || []).map(normalizeConfigRail).filter((rail) => rail.Id && rail.Title);
-    renderConfigExtraRails(page);
+    page.__seerrDiscoverRailEnabled = configDiscoverRailDefinitions.reduce((enabled, rail) => ({
+      ...enabled,
+      [rail.Id]: !!configValue(config, rail.EnableField),
+    }), {});
+    page.__seerrDetailRailEnabled = configDetailRailDefinitions.reduce((enabled, rail) => ({
+      ...enabled,
+      [rail.Id]: !!configValue(config, rail.EnableField),
+    }), {});
+    page.__seerrDiscoverRailPresentation = normalizeConfigRailPresentation(
+      configValue(config, 'DiscoverRailPresentation') || [],
+      configDiscoverRows(page).map((rail) => rail.Id)
+    );
+    page.__seerrDetailRailPresentation = normalizeConfigRailPresentation(
+      configValue(config, 'DetailRailPresentation') || [],
+      configDetailRailDefinitions.map((rail) => rail.Id)
+    );
+    renderConfigRailLists(page);
     enforceConfigRailMediaType(page);
   }
 
@@ -3021,6 +3064,20 @@
 
     assignConfigValue(config, 'SeerrApiKey', page.querySelector('#SeerrApiKey')?.value || '');
     assignConfigValue(config, 'ClearSeerrApiKey', !!page.querySelector('#ClearSeerrApiKey')?.checked);
+    configDiscoverRailDefinitions.forEach((rail) => {
+      assignConfigValue(config, rail.EnableField, !!(page.__seerrDiscoverRailEnabled || {})[rail.Id]);
+    });
+    configDetailRailDefinitions.forEach((rail) => {
+      assignConfigValue(config, rail.EnableField, !!(page.__seerrDetailRailEnabled || {})[rail.Id]);
+    });
+    assignConfigValue(config, 'DiscoverRailPresentation', (page.__seerrDiscoverRailPresentation || []).map((rail) => ({
+      Id: rail.Id,
+      ArtworkLayout: normalizeConfigArtworkLayout(rail.ArtworkLayout),
+    })));
+    assignConfigValue(config, 'DetailRailPresentation', (page.__seerrDetailRailPresentation || []).map((rail) => ({
+      Id: rail.Id,
+      ArtworkLayout: normalizeConfigArtworkLayout(rail.ArtworkLayout),
+    })));
     assignConfigValue(config, 'ExtraRails', (page.__seerrExtraRails || []).map((rail) => ({
       Id: rail.Id,
       Kind: rail.Kind,
@@ -3121,6 +3178,160 @@
     };
   }
 
+  function normalizeConfigArtworkLayout(value) {
+    return normalizeArtworkLayout(value);
+  }
+
+  function normalizeConfigRailPresentation(presentation, knownIds) {
+    const ids = (knownIds || []).map(normalizeConfigToken).filter(Boolean);
+    const normalized = [];
+    const seen = new Set();
+    (Array.isArray(presentation) ? presentation : []).forEach((item) => {
+      const id = normalizeConfigToken(item.Id || item.id);
+      if (!ids.includes(id) || seen.has(id)) return;
+      seen.add(id);
+      normalized.push({
+        Id: id,
+        ArtworkLayout: normalizeConfigArtworkLayout(item.ArtworkLayout || item.artworkLayout),
+      });
+    });
+
+    ids.forEach((id) => {
+      if (seen.has(id)) return;
+      seen.add(id);
+      normalized.push({ Id: id, ArtworkLayout: artworkLayoutVertical });
+    });
+    return normalized;
+  }
+
+  function configDiscoverRows(page) {
+    return [
+      ...configDiscoverRailDefinitions.map((rail) => ({ ...rail, IsExtra: false })),
+      ...((page.__seerrExtraRails || []).map((rail) => ({
+        Id: rail.Id,
+        Title: rail.Title,
+        IsExtra: true,
+        ExtraRail: rail,
+      }))),
+    ];
+  }
+
+  function configRailPresentationItem(page, property, id) {
+    return (page[property] || []).find((item) => item.Id === id);
+  }
+
+  function setConfigRailLayout(page, property, id, value) {
+    const item = configRailPresentationItem(page, property, id);
+    if (item) item.ArtworkLayout = normalizeConfigArtworkLayout(value);
+  }
+
+  function moveConfigRail(page, property, id, direction) {
+    const presentation = page[property] || [];
+    const index = presentation.findIndex((item) => item.Id === id);
+    const nextIndex = index + direction;
+    if (index < 0 || nextIndex < 0 || nextIndex >= presentation.length) return;
+    const next = [...presentation];
+    [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+    page[property] = next;
+    renderConfigRailLists(page);
+  }
+
+  function renderConfigRailLists(page) {
+    renderConfigRailList(
+      page,
+      '#DiscoverRailList',
+      configDiscoverRows(page),
+      '__seerrDiscoverRailPresentation',
+      '__seerrDiscoverRailEnabled'
+    );
+    renderConfigRailList(
+      page,
+      '#DetailRailList',
+      configDetailRailDefinitions.map((rail) => ({ ...rail, IsExtra: false })),
+      '__seerrDetailRailPresentation',
+      '__seerrDetailRailEnabled'
+    );
+  }
+
+  function renderConfigRailList(page, selector, rows, presentationProperty, enabledProperty) {
+    const list = page.querySelector(selector);
+    if (!list) return;
+    const byId = new Map(rows.map((row) => [row.Id, row]));
+    page[presentationProperty] = normalizeConfigRailPresentation(page[presentationProperty], rows.map((row) => row.Id));
+    const orderedRows = page[presentationProperty]
+      .map((presentation) => ({ ...byId.get(presentation.Id), ArtworkLayout: presentation.ArtworkLayout }))
+      .filter((row) => row.Id);
+
+    if (!orderedRows.length) {
+      list.innerHTML = '<p>No rails configured.</p>';
+      return;
+    }
+
+    list.innerHTML = orderedRows.map((row, index) => {
+      const enabled = row.IsExtra ? !!row.ExtraRail.Enabled : !!(page[enabledProperty] || {})[row.Id];
+      return `
+        <div class="seerr-config-rail-row" data-config-rail-id="${escapeHtml(row.Id)}">
+          <label class="emby-checkbox-label">
+            <input type="checkbox" is="emby-checkbox" data-config-rail-enabled="${escapeHtml(row.Id)}" ${enabled ? 'checked' : ''} />
+            <span class="seerr-config-rail-title">${escapeHtml(row.Title)}</span>
+          </label>
+          <div class="selectContainer seerr-config-rail-layout">
+            <label class="selectLabel" for="RailLayout-${escapeHtml(row.Id)}">Artwork layout</label>
+            <select id="RailLayout-${escapeHtml(row.Id)}" is="emby-select" data-config-rail-layout="${escapeHtml(row.Id)}" aria-label="${escapeHtml(row.Title)} artwork layout">
+              <option value="vertical" ${row.ArtworkLayout === artworkLayoutHorizontal ? '' : 'selected'}>Vertical poster</option>
+              <option value="horizontal" ${row.ArtworkLayout === artworkLayoutHorizontal ? 'selected' : ''}>Horizontal thumbnail</option>
+            </select>
+          </div>
+          <button is="emby-button" type="button" class="emby-button seerr-config-row-button" data-config-rail-move="${escapeHtml(row.Id)}" data-config-rail-direction="-1" ${index === 0 ? 'disabled' : ''}>
+            <span>Move up</span>
+          </button>
+          <button is="emby-button" type="button" class="emby-button seerr-config-row-button" data-config-rail-move="${escapeHtml(row.Id)}" data-config-rail-direction="1" ${index === orderedRows.length - 1 ? 'disabled' : ''}>
+            <span>Move down</span>
+          </button>
+          ${row.IsExtra ? `<button is="emby-button" type="button" class="emby-button seerr-config-row-button" data-extra-rail-remove="${escapeHtml(row.Id)}"><span>Remove</span></button>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    list.querySelectorAll('[data-config-rail-enabled]').forEach((input) => {
+      input.addEventListener('change', () => {
+        const id = input.getAttribute('data-config-rail-enabled') || '';
+        const row = byId.get(id);
+        if (row?.IsExtra) {
+          row.ExtraRail.Enabled = input.checked;
+        } else {
+          page[enabledProperty] = { ...(page[enabledProperty] || {}), [id]: input.checked };
+        }
+      });
+    });
+
+    list.querySelectorAll('[data-config-rail-layout]').forEach((select) => {
+      select.addEventListener('change', () => {
+        setConfigRailLayout(page, presentationProperty, select.getAttribute('data-config-rail-layout') || '', select.value);
+      });
+    });
+
+    list.querySelectorAll('[data-config-rail-move]').forEach((button) => {
+      button.addEventListener('click', () => {
+        moveConfigRail(
+          page,
+          presentationProperty,
+          button.getAttribute('data-config-rail-move') || '',
+          Number.parseInt(button.getAttribute('data-config-rail-direction') || '0', 10)
+        );
+      });
+    });
+
+    list.querySelectorAll('[data-extra-rail-remove]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const id = button.getAttribute('data-extra-rail-remove') || '';
+        page.__seerrExtraRails = (page.__seerrExtraRails || []).filter((rail) => rail.Id !== id);
+        page.__seerrDiscoverRailPresentation = (page.__seerrDiscoverRailPresentation || []).filter((rail) => rail.Id !== id);
+        renderConfigRailLists(page);
+      });
+    });
+  }
+
   function configOptionItems(payload) {
     if (Array.isArray(payload)) return payload;
     return Array.isArray(payload?.results) ? payload.results : [];
@@ -3154,44 +3365,6 @@
     }
   }
 
-  function renderConfigExtraRails(page) {
-    const list = page.querySelector('#ExtraRailList');
-    if (!list) return;
-
-    const extraRails = page.__seerrExtraRails || [];
-    if (!extraRails.length) {
-      list.innerHTML = '<p>No optional rails configured.</p>';
-      return;
-    }
-
-    list.innerHTML = extraRails.map((rail) => `
-      <div class="seerr-config-extra-rail" data-extra-rail="${escapeHtml(rail.Id)}">
-        <label class="emby-checkbox-label">
-          <input type="checkbox" is="emby-checkbox" data-extra-rail-enabled="${escapeHtml(rail.Id)}" ${rail.Enabled ? 'checked' : ''} />
-          <span class="seerr-config-extra-rail-title">${escapeHtml(rail.Title)}</span>
-        </label>
-        <button is="emby-button" type="button" class="emby-button seerr-config-remove-button" data-extra-rail-remove="${escapeHtml(rail.Id)}">
-          <span>Remove</span>
-        </button>
-      </div>
-    `).join('');
-
-    list.querySelectorAll('[data-extra-rail-enabled]').forEach((input) => {
-      input.addEventListener('change', () => {
-        const rail = extraRails.find((item) => item.Id === input.getAttribute('data-extra-rail-enabled'));
-        if (rail) rail.Enabled = input.checked;
-      });
-    });
-
-    list.querySelectorAll('[data-extra-rail-remove]').forEach((button) => {
-      button.addEventListener('click', () => {
-        const id = button.getAttribute('data-extra-rail-remove');
-        page.__seerrExtraRails = extraRails.filter((rail) => rail.Id !== id);
-        renderConfigExtraRails(page);
-      });
-    });
-  }
-
   function addConfigExtraRail(page, kind, mediaType, option) {
     const value = configOptionValue(option);
     const id = configRailId(kind, mediaType, value);
@@ -3207,7 +3380,11 @@
       Enabled: true,
     });
     page.__seerrExtraRails = extraRails;
-    renderConfigExtraRails(page);
+    page.__seerrDiscoverRailPresentation = normalizeConfigRailPresentation(
+      page.__seerrDiscoverRailPresentation,
+      configDiscoverRows(page).map((rail) => rail.Id)
+    );
+    renderConfigRailLists(page);
   }
 
   function renderConfigRailOptions(page, kind, mediaType, payload, query) {
