@@ -190,14 +190,26 @@
   }
 
   function dedupeRailData(activeRails, railData) {
-    const seen = new Set();
+    const dedupeSourceByRail = {
+      movies: 'trending-movies',
+      tv: 'trending-tv',
+    };
+    const activeRailIds = new Set(activeRails.map((rail) => rail.id));
+    const sourceKeys = new Map();
+
+    Object.values(dedupeSourceByRail).forEach((sourceRailId) => {
+      if (!activeRailIds.has(sourceRailId) || sourceKeys.has(sourceRailId)) return;
+      sourceKeys.set(sourceRailId, new Set(supportedResults(railData?.[sourceRailId] || [])
+        .map(discoverDedupeKey)
+        .filter(Boolean)));
+    });
+
     return activeRails.reduce((deduped, rail) => {
+      const sourceRailId = dedupeSourceByRail[rail.id];
+      const blockedKeys = sourceRailId ? sourceKeys.get(sourceRailId) : null;
       deduped[rail.id] = supportedResults(railData?.[rail.id] || []).filter((item) => {
         const key = discoverDedupeKey(item);
-        if (!key) return true;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
+        return !key || !blockedKeys?.has(key);
       });
       return deduped;
     }, {});
