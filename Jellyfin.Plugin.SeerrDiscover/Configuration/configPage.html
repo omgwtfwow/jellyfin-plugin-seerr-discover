@@ -5,7 +5,7 @@
     <title>Seerr Discover</title>
 </head>
 <body>
-<div id="SeerrDiscoverConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-checkbox">
+<div id="SeerrDiscoverConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-checkbox,emby-select">
     <div data-role="content">
         <div class="content-primary">
             <form id="SeerrDiscoverConfigForm">
@@ -101,6 +101,73 @@
                         <span>Enable Upcoming Movies rail</span>
                     </label>
                 </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="EnableUpcomingTv" name="EnableUpcomingTv" type="checkbox" is="emby-checkbox" />
+                        <span>Enable Upcoming TV rail</span>
+                    </label>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="EnableRecentlyRequested" name="EnableRecentlyRequested" type="checkbox" is="emby-checkbox" />
+                        <span>Enable Recently Requested rail</span>
+                    </label>
+                    <div class="fieldDescription">Shows request media only. Requester details are stripped server-side.</div>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="EnablePopularWithServer" name="EnablePopularWithServer" type="checkbox" is="emby-checkbox" />
+                        <span>Enable Popular With This Server rail</span>
+                    </label>
+                    <div class="fieldDescription">Groups recent server requests by title and shows media cards only.</div>
+                </div>
+                <h2 class="sectionTitle">Detail modal rails</h2>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="EnableDetailSimilar" name="EnableDetailSimilar" type="checkbox" is="emby-checkbox" />
+                        <span>Show Similar titles in detail modals</span>
+                    </label>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="EnableDetailRecommended" name="EnableDetailRecommended" type="checkbox" is="emby-checkbox" />
+                        <span>Show Recommended titles in detail modals</span>
+                    </label>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="EnableDetailCollections" name="EnableDetailCollections" type="checkbox" is="emby-checkbox" />
+                        <span>Show movie collection entries in detail modals</span>
+                    </label>
+                </div>
+                <h2 class="sectionTitle">Optional rail catalog</h2>
+                <div class="selectContainer">
+                    <label class="selectLabel" for="ExtraRailKind">Rail type</label>
+                    <select id="ExtraRailKind" is="emby-select">
+                        <option value="genre">Genre</option>
+                        <option value="studio">Movie studio</option>
+                        <option value="network">TV network</option>
+                        <option value="language">Original language</option>
+                        <option value="keyword">Keyword</option>
+                    </select>
+                </div>
+                <div class="selectContainer">
+                    <label class="selectLabel" for="ExtraRailMediaType">Media type</label>
+                    <select id="ExtraRailMediaType" is="emby-select">
+                        <option value="movie">Movies</option>
+                        <option value="tv">TV</option>
+                    </select>
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="ExtraRailQuery">Search or filter</label>
+                    <input id="ExtraRailQuery" type="text" is="emby-input" />
+                    <div class="fieldDescription">Genres, languages, and networks can be listed without a query. Studios and keywords use search.</div>
+                </div>
+                <button is="emby-button" type="button" id="SearchExtraRailOptions" class="raised emby-button">
+                    <span>Find rail options</span>
+                </button>
+                <div id="ExtraRailOptions" class="fieldDescription"></div>
+                <div id="ExtraRailList" class="fieldDescription"></div>
                 <button is="emby-button" type="submit" class="raised button-submit block emby-button">
                     <span>Save</span>
                 </button>
@@ -126,8 +193,15 @@
                 'EnableTrendingTv',
                 'EnableMovies',
                 'EnableTv',
-                'EnableUpcoming'
+                'EnableUpcoming',
+                'EnableUpcomingTv',
+                'EnableRecentlyRequested',
+                'EnablePopularWithServer',
+                'EnableDetailSimilar',
+                'EnableDetailRecommended',
+                'EnableDetailCollections'
             ];
+            let extraRails = [];
 
             function apiUrl(path) {
                 if (window.ApiClient && typeof window.ApiClient.getUrl === 'function') {
@@ -146,6 +220,186 @@
                     dataType: 'json',
                     headers: { accept: 'application/json' }
                 });
+            }
+
+            function normalizeToken(value) {
+                return String(value || '').trim().toLowerCase();
+            }
+
+            function escapeHtml(value) {
+                return String(value || '').replace(/[&<>"']/g, (char) => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                }[char]));
+            }
+
+            function mediaLabel(mediaType) {
+                return mediaType === 'tv' ? 'TV' : 'Movies';
+            }
+
+            function railId(kind, mediaType, value) {
+                const normalizedKind = normalizeToken(kind);
+                const normalizedMediaType = normalizeToken(mediaType);
+                const normalizedValue = normalizedKind === 'language'
+                    ? normalizeToken(value).replace(/[^a-z0-9-]/g, '')
+                    : normalizeToken(value).replace(/\D/g, '');
+                return `${normalizedKind}-${normalizedMediaType}-${normalizedValue}`;
+            }
+
+            function normalizeRail(rail) {
+                const kind = normalizeToken(rail.Kind || rail.kind);
+                const mediaType = normalizeToken(rail.MediaType || rail.mediaType);
+                const value = String(rail.Value || rail.value || '').trim();
+                const id = railId(kind, mediaType, value);
+                return {
+                    Id: id,
+                    Kind: kind,
+                    MediaType: mediaType,
+                    Value: kind === 'language' ? normalizeToken(value) : value.replace(/\D/g, ''),
+                    Title: String(rail.Title || rail.title || '').trim(),
+                    Enabled: !!(rail.Enabled ?? rail.enabled)
+                };
+            }
+
+            function optionItems(payload) {
+                if (Array.isArray(payload)) return payload;
+                return Array.isArray(payload?.results) ? payload.results : [];
+            }
+
+            function optionValue(option) {
+                return String(option.id ?? option.iso_639_1 ?? option.value ?? '');
+            }
+
+            function optionName(option) {
+                return String(option.name || option.english_name || option.englishName || optionValue(option));
+            }
+
+            function optionTitle(kind, mediaType, option) {
+                return `${optionName(option)} ${mediaLabel(mediaType)}`;
+            }
+
+            function enforceRailMediaType() {
+                const kindInput = document.querySelector('#ExtraRailKind');
+                const mediaTypeInput = document.querySelector('#ExtraRailMediaType');
+                if (!kindInput || !mediaTypeInput) return;
+
+                if (kindInput.value === 'studio') {
+                    mediaTypeInput.value = 'movie';
+                    mediaTypeInput.disabled = true;
+                } else if (kindInput.value === 'network') {
+                    mediaTypeInput.value = 'tv';
+                    mediaTypeInput.disabled = true;
+                } else {
+                    mediaTypeInput.disabled = false;
+                }
+            }
+
+            function renderExtraRails() {
+                const list = document.querySelector('#ExtraRailList');
+                if (!list) return;
+
+                if (!extraRails.length) {
+                    list.innerHTML = '<p>No optional rails configured.</p>';
+                    return;
+                }
+
+                list.innerHTML = extraRails.map((rail) => `
+                    <div class="checkboxContainer checkboxContainer-withDescription" data-extra-rail="${rail.Id}">
+                        <label class="emby-checkbox-label">
+                            <input type="checkbox" is="emby-checkbox" data-extra-rail-enabled="${rail.Id}" ${rail.Enabled ? 'checked' : ''} />
+                            <span>${escapeHtml(rail.Title)}</span>
+                        </label>
+                        <button is="emby-button" type="button" class="emby-button" data-extra-rail-remove="${rail.Id}">
+                            <span>Remove</span>
+                        </button>
+                    </div>
+                `).join('');
+
+                list.querySelectorAll('[data-extra-rail-enabled]').forEach((input) => {
+                    input.addEventListener('change', () => {
+                        const rail = extraRails.find((item) => item.Id === input.getAttribute('data-extra-rail-enabled'));
+                        if (rail) rail.Enabled = input.checked;
+                    });
+                });
+
+                list.querySelectorAll('[data-extra-rail-remove]').forEach((button) => {
+                    button.addEventListener('click', () => {
+                        const id = button.getAttribute('data-extra-rail-remove');
+                        extraRails = extraRails.filter((rail) => rail.Id !== id);
+                        renderExtraRails();
+                    });
+                });
+            }
+
+            function addExtraRail(kind, mediaType, option) {
+                const value = optionValue(option);
+                const id = railId(kind, mediaType, value);
+                if (!id || extraRails.some((rail) => rail.Id === id)) return;
+
+                extraRails.push({
+                    Id: id,
+                    Kind: normalizeToken(kind),
+                    MediaType: normalizeToken(mediaType),
+                    Value: normalizeToken(kind) === 'language' ? normalizeToken(value) : value.replace(/\D/g, ''),
+                    Title: optionTitle(kind, mediaType, option),
+                    Enabled: true
+                });
+                renderExtraRails();
+            }
+
+            function renderRailOptions(kind, mediaType, payload, query) {
+                const options = document.querySelector('#ExtraRailOptions');
+                if (!options) return;
+
+                const needle = normalizeToken(query);
+                const items = optionItems(payload)
+                    .filter((item) => optionValue(item))
+                    .filter((item) => !needle || normalizeToken(optionName(item)).includes(needle))
+                    .slice(0, 12);
+
+                if (!items.length) {
+                    options.innerHTML = '<p>No matching rail options.</p>';
+                    return;
+                }
+
+                options.innerHTML = items.map((item, index) => `
+                    <button is="emby-button" type="button" class="emby-button" data-rail-option-index="${index}">
+                        <span>Add ${escapeHtml(optionTitle(kind, mediaType, item))}</span>
+                    </button>
+                `).join('');
+
+                options.querySelectorAll('[data-rail-option-index]').forEach((button) => {
+                    button.addEventListener('click', () => {
+                        const item = items[Number.parseInt(button.getAttribute('data-rail-option-index') || '0', 10)];
+                        addExtraRail(kind, mediaType, item);
+                    });
+                });
+            }
+
+            function searchRailOptions() {
+                enforceRailMediaType();
+                const kind = document.querySelector('#ExtraRailKind')?.value || 'genre';
+                const mediaType = document.querySelector('#ExtraRailMediaType')?.value || 'movie';
+                const query = document.querySelector('#ExtraRailQuery')?.value || '';
+                const options = document.querySelector('#ExtraRailOptions');
+                if (options) options.textContent = 'Loading...';
+
+                const requiresQuery = kind === 'studio' || kind === 'keyword';
+                if (requiresQuery && !query.trim()) {
+                    if (options) options.innerHTML = '<p>Enter a search term first.</p>';
+                    return;
+                }
+
+                const params = new URLSearchParams({ kind, mediaType });
+                if (query.trim()) params.set('query', query.trim());
+                apiFetch(`SeerrDiscover/rail-options?${params.toString()}`)
+                    .then((payload) => renderRailOptions(kind, mediaType, payload, query))
+                    .catch((error) => {
+                        if (options) options.textContent = error?.message || 'Failed to load rail options.';
+                    });
             }
 
             function setForm(config) {
@@ -176,6 +430,10 @@
                         ? 'A Seerr API key is configured. Leave blank to keep it, or paste a new key to replace it.'
                         : 'No Seerr API key is configured. Paste a key before using Discover.';
                 }
+
+                extraRails = (config.ExtraRails || []).map(normalizeRail).filter((rail) => rail.Id && rail.Title);
+                renderExtraRails();
+                enforceRailMediaType();
             }
 
             function applyForm(config) {
@@ -195,8 +453,19 @@
                 const clearApiKeyInput = document.querySelector('#ClearSeerrApiKey');
                 config.SeerrApiKey = apiKeyInput?.value || '';
                 config.ClearSeerrApiKey = !!clearApiKeyInput?.checked;
+                config.ExtraRails = extraRails.map((rail) => ({
+                    Id: rail.Id,
+                    Kind: rail.Kind,
+                    MediaType: rail.MediaType,
+                    Value: rail.Value,
+                    Title: rail.Title,
+                    Enabled: rail.Enabled
+                }));
                 return config;
             }
+
+            document.querySelector('#ExtraRailKind')?.addEventListener('change', enforceRailMediaType);
+            document.querySelector('#SearchExtraRailOptions')?.addEventListener('click', searchRailOptions);
 
             page.addEventListener('pageshow', function () {
                 Dashboard.showLoadingMsg();

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Jellyfin.Plugin.SeerrDiscover.Models;
@@ -142,6 +143,41 @@ public sealed class SeerrDiscoverConfigurationDto
     /// Gets or sets a value indicating whether the upcoming feed is enabled.
     /// </summary>
     public bool EnableUpcoming { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the upcoming TV feed is enabled.
+    /// </summary>
+    public bool EnableUpcomingTv { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether recent server requests are shown.
+    /// </summary>
+    public bool EnableRecentlyRequested { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether deduped popular server requests are shown.
+    /// </summary>
+    public bool EnablePopularWithServer { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether similar titles are shown in detail modals.
+    /// </summary>
+    public bool EnableDetailSimilar { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether recommended titles are shown in detail modals.
+    /// </summary>
+    public bool EnableDetailRecommended { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether collection entries are shown in detail modals.
+    /// </summary>
+    public bool EnableDetailCollections { get; set; }
+
+    /// <summary>
+    /// Gets optional configured Discover rails.
+    /// </summary>
+    public List<SeerrExtraRailDto> ExtraRails { get; } = new();
 }
 
 /// <summary>
@@ -238,6 +274,77 @@ public sealed class SeerrDiscoverConfigurationUpdate
     /// Gets or sets a value indicating whether the upcoming feed is enabled.
     /// </summary>
     public bool EnableUpcoming { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the upcoming TV feed is enabled.
+    /// </summary>
+    public bool EnableUpcomingTv { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether recent server requests are shown.
+    /// </summary>
+    public bool EnableRecentlyRequested { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether deduped popular server requests are shown.
+    /// </summary>
+    public bool EnablePopularWithServer { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether similar titles are shown in detail modals.
+    /// </summary>
+    public bool EnableDetailSimilar { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether recommended titles are shown in detail modals.
+    /// </summary>
+    public bool EnableDetailRecommended { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether collection entries are shown in detail modals.
+    /// </summary>
+    public bool EnableDetailCollections { get; set; }
+
+    /// <summary>
+    /// Gets or sets optional configured Discover rails.
+    /// </summary>
+    public List<SeerrExtraRailDto> ExtraRails { get; set; } = new();
+}
+
+/// <summary>
+/// Configured optional Discover rail DTO.
+/// </summary>
+public sealed class SeerrExtraRailDto
+{
+    /// <summary>
+    /// Gets or sets the stable generated rail id.
+    /// </summary>
+    public string Id { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the rail kind.
+    /// </summary>
+    public string Kind { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the media type.
+    /// </summary>
+    public string MediaType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the kind-specific id or code.
+    /// </summary>
+    public string Value { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the display title.
+    /// </summary>
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the rail is enabled.
+    /// </summary>
+    public bool Enabled { get; set; }
 }
 
 /// <summary>

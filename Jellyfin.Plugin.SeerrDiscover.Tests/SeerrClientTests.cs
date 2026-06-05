@@ -20,6 +20,36 @@ public sealed class SeerrClientTests
         Assert.Contains("timeWindow=day", path);
     }
 
+    [Theory]
+    [InlineData("upcoming-tv", "/api/v1/discover/tv/upcoming?")]
+    [InlineData("genre-movie-27", "/api/v1/discover/movies/genre/27?")]
+    [InlineData("genre-tv-35", "/api/v1/discover/tv/genre/35?")]
+    [InlineData("studio-movie-41077", "/api/v1/discover/movies/studio/41077?")]
+    [InlineData("network-tv-49", "/api/v1/discover/tv/network/49?")]
+    [InlineData("language-movie-ko", "/api/v1/discover/movies/language/ko?")]
+    [InlineData("language-tv-ja", "/api/v1/discover/tv/language/ja?")]
+    [InlineData("keyword-movie-9663", "/api/v1/discover/keyword/9663/movies?")]
+    public void BuildDiscoverPath_MapsExpandedDiscoverFeeds(string feed, string expectedPrefix)
+    {
+        var path = BuildDiscoverPath(feed);
+
+        Assert.StartsWith(expectedPrefix, path);
+        Assert.Contains("page=1", path);
+        Assert.Contains("language=en", path);
+    }
+
+    [Fact]
+    public void BuildDiscoverPath_MapsTvKeywordFeedsThroughTvDiscoverKeywords()
+    {
+        var path = BuildDiscoverPath("keyword-tv-9663");
+
+        Assert.StartsWith("/api/v1/discover/tv?", path);
+        Assert.Contains("keywords=9663", path);
+        Assert.Contains("sortBy=popularity.desc", path);
+        Assert.Contains("page=1", path);
+        Assert.Contains("language=en", path);
+    }
+
     [Fact]
     public void BuildRequestPayload_OmitsNullOptionalMovieFields()
     {

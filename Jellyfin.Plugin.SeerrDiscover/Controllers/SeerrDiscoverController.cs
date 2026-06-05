@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Plugin.SeerrDiscover.Configuration;
@@ -31,8 +33,33 @@ public sealed class SeerrDiscoverController : ControllerBase
         ("trending-tv", "Trending TV", "trending-tv"),
         ("movies", "Popular Movies", "movies"),
         ("tv", "Popular TV", "tv"),
-        ("upcoming", "Upcoming Movies", "upcoming")
+        ("upcoming", "Upcoming Movies", "upcoming"),
+        ("upcoming-tv", "Upcoming TV", "upcoming-tv")
     };
+
+    private static readonly (string Id, string Name)[] CuratedNetworks =
+    {
+        ("49", "HBO"),
+        ("213", "Netflix"),
+        ("1024", "Amazon"),
+        ("2739", "Disney+"),
+        ("453", "Hulu"),
+        ("2552", "Apple TV+"),
+        ("4330", "Paramount+"),
+        ("3353", "Peacock"),
+        ("3186", "Max"),
+        ("174", "AMC"),
+        ("16", "CBS"),
+        ("19", "FOX"),
+        ("2", "ABC"),
+        ("6", "NBC"),
+        ("67", "Showtime"),
+        ("318", "Starz")
+    };
+
+    private sealed record DiscoverRail(string Id, string Title, string Feed);
+
+    private sealed record RequestRailSeed(string MediaType, int TmdbId, int Count, int Position);
 
     private readonly ISeerrClient _seerrClient;
     private readonly ISeerrDiscoverCache _cache;
@@ -138,11 +165,55 @@ public sealed class SeerrDiscoverController : ControllerBase
         return new JsonResult(new
         {
             enableNativeSearchIntegration = config.EnableNativeSearchIntegration,
-            discoverRails = DiscoverRailDefinitions
-                .Where(rail => IsFeedEnabled(config, rail.Feed, null))
+            detailRails = new
+            {
+                similar = config.EnableDetailSimilar,
+                recommended = config.EnableDetailRecommended,
+                collections = config.EnableDetailCollections
+            },
+            discoverRails = BuildDiscoverRails(config)
                 .Select(rail => new { id = rail.Id, title = rail.Title, feed = rail.Feed }),
             seerrPublicUrl = NormalizedSeerrPublicUrl()
         });
+    }
+
+    /// <summary>
+    /// Gets admin-only rail picker options.
+    /// </summary>
+    [HttpGet("rail-options")]
+    [Authorize(Policy = "RequiresElevation")]
+    [Produces("application/json")]
+    public async Task<ActionResult> GetRailOptions(
+        [FromQuery] string kind,
+        [FromQuery] string mediaType = "movie",
+        [FromQuery] string? query = null,
+        [FromQuery] int page = 1,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedKind = NormalizeToken(kind);
+        var normalizedMediaType = NormalizeMediaType(mediaType);
+        try
+        {
+            return normalizedKind switch
+            {
+                "genre" when normalizedMediaType is not null => Content(await _seerrClient.GetGenresAsync(normalizedMediaType, cancellationToken).ConfigureAwait(false), "application/json"),
+                "language" => Content(await _seerrClient.GetLanguagesAsync(cancellationToken).ConfigureAwait(false), "application/json"),
+                "studio" when IsPositiveInt(query ?? string.Empty) => Content(BuildSingleResultJson(await _seerrClient.GetStudioAsync(int.Parse(query!, CultureInfo.InvariantCulture), cancellationToken).ConfigureAwait(false)), "application/json"),
+                "studio" when !string.IsNullOrWhiteSpace(query) => Content(await _seerrClient.SearchCompaniesAsync(query.Trim(), page, cancellationToken).ConfigureAwait(false), "application/json"),
+                "keyword" when !string.IsNullOrWhiteSpace(query) => Content(await _seerrClient.SearchKeywordsAsync(query.Trim(), page, cancellationToken).ConfigureAwait(false), "application/json"),
+                "network" when IsPositiveInt(query ?? string.Empty) => Content(BuildSingleResultJson(await _seerrClient.GetNetworkAsync(int.Parse(query!, CultureInfo.InvariantCulture), cancellationToken).ConfigureAwait(false)), "application/json"),
+                "network" => new JsonResult(new { results = CuratedNetworks.Select(network => new { id = network.Id, name = network.Name }) }),
+                _ => BadRequest(new { error = "invalid_rail_options", message = "Unsupported rail option request." })
+            };
+        }
+        catch (SeerrHttpException ex)
+        {
+            return BuildSeerrErrorResponse(ex);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BuildConfigurationErrorResponse(ex);
+        }
     }
 
     /// <summary>
@@ -162,11 +233,45 @@ public sealed class SeerrDiscoverController : ControllerBase
         }
 
         var key = string.Join(':', "discover", feed, Math.Max(page, 1), mediaType ?? string.Empty);
+        var normalizedFeed = NormalizeFeed(feed);
+        if (normalizedFeed is "recently-requested" or "server-popular")
+        {
+            return await BuildJsonResponseAsync(
+                () => _cache.GetOrCreateAsync(
+                    key,
+                    Seconds(Plugin.Instance?.Configuration.DiscoverCacheSeconds ?? 600),
+                    () => BuildRequestRailJsonAsync(normalizedFeed, page, cancellationToken))).ConfigureAwait(false);
+        }
+
         return await BuildJsonResponseAsync(
             () => _cache.GetOrCreateAsync(
                 key,
                 Seconds(Plugin.Instance?.Configuration.DiscoverCacheSeconds ?? 600),
-                () => _seerrClient.GetDiscoverAsync(feed, page, mediaType, cancellationToken))).ConfigureAwait(false);
+                () => _seerrClient.GetDiscoverAsync(normalizedFeed, page, mediaType, cancellationToken))).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets optional detail modal related rails.
+    /// </summary>
+    [HttpGet("related/{mediaType}/{tmdbId:int}")]
+    [Produces("application/json")]
+    public async Task<ActionResult> GetRelated(
+        [FromRoute] string mediaType,
+        [FromRoute] int tmdbId,
+        CancellationToken cancellationToken)
+    {
+        var normalized = NormalizeMediaType(mediaType);
+        if (normalized is null || tmdbId <= 0)
+        {
+            return BadRequest(new { error = "invalid_media", message = "mediaType and tmdbId are required." });
+        }
+
+        var key = string.Join(':', "related", normalized, tmdbId.ToString(CultureInfo.InvariantCulture), _cache.Generation.ToString(CultureInfo.InvariantCulture));
+        return await BuildJsonResponseAsync(
+            () => _cache.GetOrCreateAsync(
+                key,
+                Seconds(Plugin.Instance?.Configuration.DetailsCacheSeconds ?? 300),
+                () => BuildRelatedJsonAsync(normalized, tmdbId, cancellationToken))).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -292,10 +397,34 @@ public sealed class SeerrDiscoverController : ControllerBase
     private static TimeSpan Seconds(int seconds)
         => TimeSpan.FromSeconds(Math.Clamp(seconds, 5, 3600));
 
+    private static IReadOnlyList<DiscoverRail> BuildDiscoverRails(PluginConfiguration config)
+    {
+        var rails = DiscoverRailDefinitions
+            .Where(rail => IsFeedEnabled(config, rail.Feed, null))
+            .Select(rail => new DiscoverRail(rail.Id, rail.Title, rail.Feed))
+            .ToList();
+
+        if (config.EnableRecentlyRequested)
+        {
+            rails.Add(new DiscoverRail("recently-requested", "Recently Requested", "recently-requested"));
+        }
+
+        if (config.EnablePopularWithServer)
+        {
+            rails.Add(new DiscoverRail("server-popular", "Popular With This Server", "server-popular"));
+        }
+
+        rails.AddRange(NormalizeExtraRails(config.ExtraRails)
+            .Where(static rail => rail.Enabled)
+            .Select(static rail => new DiscoverRail(rail.Id, rail.Title, rail.Id)));
+        return rails;
+    }
+
     private static bool IsFeedEnabled(PluginConfiguration? config, string feed, string? mediaType)
     {
         config ??= new PluginConfiguration();
-        return feed.Trim().ToLowerInvariant() switch
+        var normalizedFeed = NormalizeFeed(feed);
+        return normalizedFeed switch
         {
             "trending" => IsLegacyTrendingEnabled(config, mediaType),
             "trending-movies" => IsTrendingMoviesEnabled(config),
@@ -303,7 +432,10 @@ public sealed class SeerrDiscoverController : ControllerBase
             "movies" => config.EnableMovies,
             "tv" => config.EnableTv,
             "upcoming" => config.EnableUpcoming,
-            _ => false
+            "upcoming-tv" => config.EnableUpcomingTv,
+            "recently-requested" => config.EnableRecentlyRequested,
+            "server-popular" => config.EnablePopularWithServer,
+            _ => NormalizeExtraRails(config.ExtraRails).Any(rail => rail.Enabled && rail.Id.Equals(normalizedFeed, StringComparison.OrdinalIgnoreCase))
         };
     }
 
@@ -324,6 +456,284 @@ public sealed class SeerrDiscoverController : ControllerBase
 
     private static bool IsTrendingTvEnabled(PluginConfiguration config)
         => config.UseSplitTrendingRailSettings ? config.EnableTrendingTv : config.EnableTrending && config.EnableTrendingTv;
+
+    private async Task<string> BuildRequestRailJsonAsync(string feed, int page, CancellationToken cancellationToken)
+    {
+        var normalizedPage = Math.Max(page, 1);
+        var take = feed == "server-popular" ? 80 : 40;
+        var skip = feed == "server-popular" ? 0 : (normalizedPage - 1) * 20;
+        var requestsJson = await _seerrClient.GetRequestsAsync(take, skip, "added", cancellationToken).ConfigureAwait(false);
+        using var requestDocument = JsonDocument.Parse(requestsJson);
+        var seeds = ExtractRequestSeeds(requestDocument.RootElement, feed == "server-popular");
+        var results = new JsonArray();
+
+        foreach (var seed in seeds.Take(20))
+        {
+            var detail = await TryBuildMediaNodeAsync(seed.MediaType, seed.TmdbId, cancellationToken).ConfigureAwait(false);
+            if (detail is not null)
+            {
+                results.Add(detail);
+            }
+        }
+
+        return BuildResultsEnvelope(normalizedPage, results);
+    }
+
+    private async Task<JsonObject?> TryBuildMediaNodeAsync(string mediaType, int tmdbId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var detailJson = await _seerrClient.GetMediaAsync(mediaType, tmdbId, cancellationToken).ConfigureAwait(false);
+            var node = JsonNode.Parse(detailJson) as JsonObject;
+            if (node is null)
+            {
+                return null;
+            }
+
+            RemoveRequestUserData(node);
+            return node;
+        }
+        catch (SeerrHttpException)
+        {
+            return null;
+        }
+    }
+
+    private static IReadOnlyList<RequestRailSeed> ExtractRequestSeeds(JsonElement root, bool aggregate)
+    {
+        if (!root.TryGetProperty("results", out var results) || results.ValueKind != JsonValueKind.Array)
+        {
+            return Array.Empty<RequestRailSeed>();
+        }
+
+        var seeds = new List<RequestRailSeed>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var groups = new Dictionary<string, RequestRailSeed>(StringComparer.OrdinalIgnoreCase);
+        var position = 0;
+        foreach (var request in results.EnumerateArray())
+        {
+            position++;
+            if (!TryReadRequestMedia(request, out var mediaType, out var tmdbId))
+            {
+                continue;
+            }
+
+            var key = $"{mediaType}:{tmdbId.ToString(CultureInfo.InvariantCulture)}";
+            if (aggregate)
+            {
+                groups[key] = groups.TryGetValue(key, out var existing)
+                    ? existing with { Count = existing.Count + 1 }
+                    : new RequestRailSeed(mediaType, tmdbId, 1, position);
+                continue;
+            }
+
+            if (seen.Add(key))
+            {
+                seeds.Add(new RequestRailSeed(mediaType, tmdbId, 1, position));
+            }
+        }
+
+        if (!aggregate)
+        {
+            return seeds;
+        }
+
+        return groups.Values
+            .OrderByDescending(seed => seed.Count)
+            .ThenBy(seed => seed.Position)
+            .ToList();
+    }
+
+    private static bool TryReadRequestMedia(JsonElement request, out string mediaType, out int tmdbId)
+    {
+        mediaType = string.Empty;
+        tmdbId = 0;
+        if (!request.TryGetProperty("media", out var media) || media.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (media.TryGetProperty("mediaType", out var mediaTypeElement) && mediaTypeElement.ValueKind == JsonValueKind.String)
+        {
+            mediaType = mediaTypeElement.GetString() ?? string.Empty;
+        }
+
+        mediaType = NormalizeMediaType(mediaType) ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(mediaType))
+        {
+            return false;
+        }
+
+        if (media.TryGetProperty("tmdbId", out var tmdbIdElement) && tmdbIdElement.TryGetInt32(out var parsedTmdbId))
+        {
+            tmdbId = parsedTmdbId;
+        }
+
+        return tmdbId > 0;
+    }
+
+    private async Task<string> BuildRelatedJsonAsync(string mediaType, int tmdbId, CancellationToken cancellationToken)
+    {
+        var config = Plugin.Instance?.Configuration ?? new PluginConfiguration();
+        var rails = new JsonArray();
+
+        if (config.EnableDetailSimilar)
+        {
+            var similar = await BuildRelatedRailAsync(mediaType, tmdbId, "similar", "Similar", cancellationToken).ConfigureAwait(false);
+            if (similar is not null)
+            {
+                rails.Add(similar);
+            }
+        }
+
+        if (config.EnableDetailRecommended)
+        {
+            var recommended = await BuildRelatedRailAsync(mediaType, tmdbId, "recommended", "Recommended", cancellationToken).ConfigureAwait(false);
+            if (recommended is not null)
+            {
+                rails.Add(recommended);
+            }
+        }
+
+        if (mediaType == "movie" && config.EnableDetailCollections)
+        {
+            var collection = await BuildCollectionRailAsync(tmdbId, cancellationToken).ConfigureAwait(false);
+            if (collection is not null)
+            {
+                rails.Add(collection);
+            }
+        }
+
+        return JsonSerializer.Serialize(new JsonObject { ["rails"] = rails });
+    }
+
+    private async Task<JsonObject?> BuildRelatedRailAsync(string mediaType, int tmdbId, string relation, string title, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var json = await _seerrClient.GetRelatedAsync(mediaType, tmdbId, relation, 1, cancellationToken).ConfigureAwait(false);
+            var root = JsonNode.Parse(json) as JsonObject;
+            var results = root?["results"] as JsonArray;
+            if (results is null || results.Count == 0)
+            {
+                return null;
+            }
+
+            RemoveRequestUserData(results);
+            return new JsonObject
+            {
+                ["id"] = relation,
+                ["title"] = title,
+                ["results"] = results.DeepClone()
+            };
+        }
+        catch (SeerrHttpException)
+        {
+            return null;
+        }
+    }
+
+    private async Task<JsonObject?> BuildCollectionRailAsync(int tmdbId, CancellationToken cancellationToken)
+    {
+        JsonObject? detail;
+        try
+        {
+            detail = JsonNode.Parse(await _seerrClient.GetMediaAsync("movie", tmdbId, cancellationToken).ConfigureAwait(false)) as JsonObject;
+        }
+        catch (SeerrHttpException)
+        {
+            return null;
+        }
+
+        var collectionId = detail?["collection"]?["id"]?.GetValue<int>() ?? 0;
+        if (collectionId <= 0)
+        {
+            return null;
+        }
+
+        try
+        {
+            var collection = JsonNode.Parse(await _seerrClient.GetCollectionAsync(collectionId, cancellationToken).ConfigureAwait(false)) as JsonObject;
+            var parts = collection?["parts"] as JsonArray;
+            if (parts is null || parts.Count == 0)
+            {
+                return null;
+            }
+
+            var results = new JsonArray();
+            foreach (var part in parts)
+            {
+                if (part is not JsonObject partObject)
+                {
+                    continue;
+                }
+
+                var id = partObject["id"]?.GetValue<int>() ?? 0;
+                if (id > 0 && id != tmdbId)
+                {
+                    results.Add(partObject.DeepClone());
+                }
+            }
+
+            if (results.Count == 0)
+            {
+                return null;
+            }
+
+            RemoveRequestUserData(results);
+            return new JsonObject
+            {
+                ["id"] = "collection",
+                ["title"] = collection?["name"]?.GetValue<string>() ?? "From This Collection",
+                ["results"] = results
+            };
+        }
+        catch (SeerrHttpException)
+        {
+            return null;
+        }
+    }
+
+    private static string BuildResultsEnvelope(int page, JsonArray results)
+        => JsonSerializer.Serialize(new JsonObject
+        {
+            ["page"] = Math.Max(page, 1),
+            ["totalPages"] = 1,
+            ["totalResults"] = results.Count,
+            ["results"] = results
+        });
+
+    private static string BuildSingleResultJson(string json)
+    {
+        var node = JsonNode.Parse(json);
+        return JsonSerializer.Serialize(new JsonObject
+        {
+            ["results"] = new JsonArray(node)
+        });
+    }
+
+    private static void RemoveRequestUserData(JsonNode? node)
+    {
+        switch (node)
+        {
+            case JsonObject obj:
+                obj.Remove("requestedBy");
+                obj.Remove("modifiedBy");
+                foreach (var child in obj.Select(static pair => pair.Value).ToList())
+                {
+                    RemoveRequestUserData(child);
+                }
+
+                break;
+            case JsonArray array:
+                foreach (var child in array)
+                {
+                    RemoveRequestUserData(child);
+                }
+
+                break;
+        }
+    }
 
     private Guid GetJellyfinUserId()
     {
@@ -389,7 +799,8 @@ public sealed class SeerrDiscoverController : ControllerBase
     }
 
     private static SeerrDiscoverConfigurationDto ToConfigurationDto(PluginConfiguration config)
-        => new()
+    {
+        var dto = new SeerrDiscoverConfigurationDto
         {
             SeerrBaseUrl = config.SeerrBaseUrl,
             SeerrPublicUrl = config.SeerrPublicUrl,
@@ -407,8 +818,18 @@ public sealed class SeerrDiscoverController : ControllerBase
             EnableTrendingTv = IsTrendingTvEnabled(config),
             EnableMovies = config.EnableMovies,
             EnableTv = config.EnableTv,
-            EnableUpcoming = config.EnableUpcoming
+            EnableUpcoming = config.EnableUpcoming,
+            EnableUpcomingTv = config.EnableUpcomingTv,
+            EnableRecentlyRequested = config.EnableRecentlyRequested,
+            EnablePopularWithServer = config.EnablePopularWithServer,
+            EnableDetailSimilar = config.EnableDetailSimilar,
+            EnableDetailRecommended = config.EnableDetailRecommended,
+            EnableDetailCollections = config.EnableDetailCollections
         };
+
+        dto.ExtraRails.AddRange(NormalizeExtraRails(config.ExtraRails).Select(ToExtraRailDto));
+        return dto;
+    }
 
     private static void ApplyConfigurationUpdate(PluginConfiguration config, SeerrDiscoverConfigurationUpdate update)
     {
@@ -429,6 +850,13 @@ public sealed class SeerrDiscoverController : ControllerBase
         config.EnableMovies = update.EnableMovies;
         config.EnableTv = update.EnableTv;
         config.EnableUpcoming = update.EnableUpcoming;
+        config.EnableUpcomingTv = update.EnableUpcomingTv;
+        config.EnableRecentlyRequested = update.EnableRecentlyRequested;
+        config.EnablePopularWithServer = update.EnablePopularWithServer;
+        config.EnableDetailSimilar = update.EnableDetailSimilar;
+        config.EnableDetailRecommended = update.EnableDetailRecommended;
+        config.EnableDetailCollections = update.EnableDetailCollections;
+        config.ExtraRails = NormalizeExtraRails(update.ExtraRails?.Select(FromExtraRailDto)).ToList();
 
         if (update.ClearSeerrApiKey)
         {
@@ -438,6 +866,126 @@ public sealed class SeerrDiscoverController : ControllerBase
         {
             config.SeerrApiKey = update.SeerrApiKey.Trim();
         }
+    }
+
+    private static SeerrExtraRailDto ToExtraRailDto(SeerrExtraRail rail)
+        => new()
+        {
+            Id = rail.Id,
+            Kind = rail.Kind,
+            MediaType = rail.MediaType,
+            Value = rail.Value,
+            Title = rail.Title,
+            Enabled = rail.Enabled
+        };
+
+    private static SeerrExtraRail FromExtraRailDto(SeerrExtraRailDto rail)
+        => new()
+        {
+            Id = rail.Id,
+            Kind = rail.Kind,
+            MediaType = rail.MediaType,
+            Value = rail.Value,
+            Title = rail.Title,
+            Enabled = rail.Enabled
+        };
+
+    private static IReadOnlyList<SeerrExtraRail> NormalizeExtraRails(IEnumerable<SeerrExtraRail>? rails)
+    {
+        if (rails is null)
+        {
+            return Array.Empty<SeerrExtraRail>();
+        }
+
+        var normalized = new List<SeerrExtraRail>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var rail in rails)
+        {
+            var kind = NormalizeToken(rail.Kind);
+            var mediaType = NormalizeMediaType(rail.MediaType);
+            var value = NormalizeRailValue(kind, rail.Value);
+            if (!IsValidExtraRail(kind, mediaType, value))
+            {
+                continue;
+            }
+
+            var id = BuildExtraRailId(kind, mediaType!, value);
+            if (!seen.Add(id))
+            {
+                continue;
+            }
+
+            normalized.Add(new SeerrExtraRail
+            {
+                Id = id,
+                Kind = kind,
+                MediaType = mediaType!,
+                Value = value,
+                Title = string.IsNullOrWhiteSpace(rail.Title) ? DefaultExtraRailTitle(kind, mediaType!, value) : rail.Title.Trim(),
+                Enabled = rail.Enabled
+            });
+
+            if (normalized.Count >= 30)
+            {
+                break;
+            }
+        }
+
+        return normalized;
+    }
+
+    private static bool IsValidExtraRail(string kind, string? mediaType, string value)
+    {
+        if (string.IsNullOrWhiteSpace(mediaType) || string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        return kind switch
+        {
+            "genre" => IsPositiveInt(value) && mediaType is "movie" or "tv",
+            "studio" => IsPositiveInt(value) && mediaType == "movie",
+            "network" => IsPositiveInt(value) && mediaType == "tv",
+            "language" => mediaType is "movie" or "tv",
+            "keyword" => IsPositiveInt(value) && mediaType is "movie" or "tv",
+            _ => false
+        };
+    }
+
+    private static bool IsPositiveInt(string value)
+        => int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) && parsed > 0;
+
+    private static string BuildExtraRailId(string kind, string mediaType, string value)
+        => $"{kind}-{mediaType}-{value}";
+
+    private static string DefaultExtraRailTitle(string kind, string mediaType, string value)
+    {
+        var mediaLabel = mediaType == "tv" ? "TV" : "Movies";
+        var kindLabel = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(kind);
+        return $"{kindLabel} {value} {mediaLabel}";
+    }
+
+    private static string NormalizeFeed(string value)
+        => NormalizeToken(value);
+
+    private static string NormalizeToken(string value)
+        => (value ?? string.Empty).Trim().ToLowerInvariant();
+
+    private static string? NormalizeMediaType(string value)
+    {
+        var normalized = NormalizeToken(value);
+        return normalized is "movie" or "tv" ? normalized : null;
+    }
+
+    private static string NormalizeRailValue(string kind, string value)
+    {
+        var trimmed = (value ?? string.Empty).Trim().ToLowerInvariant();
+        if (kind == "language")
+        {
+            return new string(trimmed.Where(static c => char.IsLetterOrDigit(c) || c == '-').ToArray());
+        }
+
+        return new string(trimmed.Where(char.IsDigit).ToArray());
     }
 
     private static int ClampSeconds(int value, int fallback)
