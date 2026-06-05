@@ -8,6 +8,8 @@
   responsive desktop/mobile details layout.
 - Keep Jellyfin's native no-results message visible and place requestable Seerr
   search results underneath it.
+- Smooth the Discover tab first-load experience with a native Jellyfin loading
+  mode plus a staging override for comparing inline skeleton placeholders.
 - Refresh README screenshots around the core Discover rails, native search,
   detail modal, and mobile layout flows.
 - Remove redundant request-state screenshots from the release docs.
