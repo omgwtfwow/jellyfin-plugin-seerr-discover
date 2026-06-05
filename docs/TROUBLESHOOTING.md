@@ -42,7 +42,7 @@
 ## Seerr Results Do Not Appear in Jellyfin Search
 
 - Confirm `Show Seerr results in Jellyfin search` is enabled in Dashboard > Plugins > Seerr Discover.
-- Confirm the JavaScript Injector loader is authenticated, enabled, and points to the installed plugin version.
+- Confirm the JavaScript Injector loader is authenticated, enabled, and points to `/SeerrDiscover/assets/discover.js`.
 - Search from Jellyfin's native search page, not from the Discover tab.
 - Check the browser network panel for successful `/SeerrDiscover/client-config` and `/SeerrDiscover/search` responses.
 - If Jellyfin already has the matching movie or series by TMDB id, Seerr Discover hides that duplicate from the Seerr row.
@@ -66,7 +66,7 @@ Seerr, Radarr/Sonarr, and Jellyfin can update at different times. Seerr Discover
 The Discover page is injected into Jellyfin Web through Custom Tabs. Browser, desktop, and mobile clients can host Jellyfin Web with different layout classes, header behavior, and theme CSS. Seerr Discover computes its top spacing from Jellyfin Web's active page/header CSS at runtime instead of relying only on fixed breakpoints.
 
 - Confirm the installed asset includes the latest spacing fix.
-- Update the JavaScript Injector query string after upgrading.
+- Confirm `/SeerrDiscover/assets/discover.js` is served from the upgraded plugin, then hard-refresh Jellyfin Web.
 - Hard-refresh or restart the client app.
 - Test the actual affected client. A resized desktop browser does not fully emulate Jellyfin Desktop or mobile app webviews.
 - If the issue remains, report the client type, viewport size, Jellyfin version, active theme or custom CSS, whether the client is desktop or mobile app, and a screenshot.

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.0.0-pre
+
+- Prepare the 1.0 pre-release documentation set for staging review.
+- Add native Jellyfin movie and series detail-page Similar and Recommended rails.
+- Add Discover and detail rail presentation controls for enablement, ordering,
+  custom headings, and vertical poster or horizontal landscape artwork.
+- Add optional Discover rails for genres, movie studios, TV networks, original
+  languages, and keywords.
+- Add Recently Requested and Popular With This Server Discover rails.
+- Preserve Jellyfin-native theme hooks for section, card, modal, and detail rail
+  rendering so custom themes can style Seerr Discover like native Jellyfin UI.
+- Keep the JavaScript Injector loader versionless at
+  `/SeerrDiscover/assets/discover.js`.
+- Refresh README screenshots for native detail page rails and current rail
+  settings without the removed Collections control.
+
 ## 0.3.0.0
 
 - Promote Seerr Discover as the stable third-party Jellyfin plugin release line.

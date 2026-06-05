@@ -2,6 +2,8 @@
 
 ## Jellyfin Repository Install
 
+The public repository currently serves the stable release line unless a 1.0 pre-release manifest has been explicitly selected for testing.
+
 Add the self-hosted repository URL in:
 
 ```text
@@ -24,11 +26,13 @@ Restart Jellyfin after installation. Open Dashboard > Plugins > Seerr Discover a
 
 ## Release-Asset Fallback
 
-If GitHub Pages is temporarily unavailable, use the `manifest.json` attached to the latest GitHub release:
+If GitHub Pages is temporarily unavailable, stable installs can use the `manifest.json` attached to the latest GitHub release:
 
 ```text
 https://github.com/omgwtfwow/jellyfin-plugin-seerr-discover/releases/latest/download/manifest.json
 ```
+
+For 1.0 pre-release testing, use the `manifest.json` attached to the selected GitHub pre-release instead of `releases/latest`, because GitHub's latest release URL normally resolves to the stable release line.
 
 ## Manual Zip Install
 
@@ -104,5 +108,5 @@ Restart Jellyfin.
 
 - Existing plugin settings should survive a version upgrade.
 - The API key field is write-only in the config page. Leave it blank to preserve the current key.
-- Update the JavaScript Injector loader query string to the installed plugin version after upgrading.
+- No JavaScript Injector query string update is required after upgrading. Keep the loader pointed at `/SeerrDiscover/assets/discover.js`, then hard-refresh Jellyfin Web or restart the client app.
 - The Discover tab no longer has a separate search bar; use Jellyfin's native search page for Seerr search.

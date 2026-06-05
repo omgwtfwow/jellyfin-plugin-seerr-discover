@@ -4,7 +4,9 @@ Seerr Discover is a Jellyfin server plugin that adds Seerr-backed Discover rails
 
 ## Status
 
-Seerr Discover is distributed as a stable third-party Jellyfin plugin through a self-hosted Jellyfin plugin repository. The `0.3.x` line is the supported release line for repository installs.
+Seerr Discover is distributed as a stable third-party Jellyfin plugin through a self-hosted Jellyfin plugin repository. The `0.3.x` line remains the supported public release line for repository installs while `staging` prepares the `1.0.0.0` pre-release.
+
+For 1.0 pre-release testing, install from the selected GitHub pre-release manifest or zip once published. The public repository URL below continues to track the stable line until the 1.0 release is promoted.
 
 Repository URL:
 
@@ -52,19 +54,19 @@ See [Companion Plugins](docs/COMPANION-PLUGINS.md) for repository sources, compa
 
 ## Screenshots
 
-These screenshots were captured from a live Jellyfin Web session and show the plugin UI without configuration pages or API secrets.
+These screenshots were captured from live Jellyfin Web sessions and show the plugin UI without API secrets. Media grid captures are index-style UI views; the detail modal capture uses public-domain media.
 
 | Discover rails | Native search integration |
 | --- | --- |
 | ![Screenshot of Seerr Discover browse rails in Jellyfin Web](docs/assets/screenshots/discover-rails.jpg) | ![Screenshot of requestable Seerr results in Jellyfin native search](docs/assets/screenshots/native-search.jpg) |
 
-| Detail modal | Mobile layout |
+| Detail modal | Native detail page rails |
 | --- | --- |
-| ![Screenshot of the Seerr Discover detail modal](docs/assets/screenshots/detail-modal.jpg) | ![Screenshot of Seerr Discover on a narrow mobile layout](docs/assets/screenshots/mobile-layout.jpg) |
+| ![Screenshot of the Seerr Discover detail modal](docs/assets/screenshots/detail-modal.jpg) | ![Screenshot of Seerr Discover native Jellyfin detail page rails](docs/assets/screenshots/native-detail-rails.jpg) |
 
-| Optional rail catalog |
-| --- |
-| ![Screenshot of the Seerr Discover optional rail catalog in Jellyfin plugin settings](docs/assets/screenshots/optional-rails-catalog.jpg) |
+| Mobile layout | Rail settings and optional catalog |
+| --- | --- |
+| ![Screenshot of Seerr Discover on a narrow mobile layout](docs/assets/screenshots/mobile-layout.jpg) | ![Screenshot of Seerr Discover rail settings and optional catalog in Jellyfin plugin settings](docs/assets/screenshots/optional-rails-catalog.jpg) |
 
 ## Requirements
 
@@ -80,11 +82,12 @@ Custom Tabs and JavaScript Injector are intentional dependencies for the v1 UI s
 
 ## Features
 
-- Rails-only Discover tab for configurable Trending Movies, Trending TV, Popular Movies, Popular TV, Upcoming Movies, and Upcoming TV rows
+- Rails-only Discover tab for configurable Trending Movies, Popular Movies, Trending TV, Popular TV, Upcoming Movies, Upcoming TV, Recently Requested, and Popular With This Server rows
+- Native Jellyfin movie and series detail pages can show Seerr-backed Similar and Recommended rails
 - Per-rail vertical poster or horizontal landscape artwork layouts, custom rail headings, and saved rail ordering for Discover and detail page rails
 - Optional admin-selected rails for genres, movie studios, TV networks, original languages, and keywords
 - Requestable Seerr movie and series results inside Jellyfin's native search page
-- Detail modal with poster/backdrop, metadata, cast/crew, trailers, and Seerr links
+- Detail modal with poster/backdrop, metadata, cast/crew, trailers, Seerr links, and related rails
 - Request creation as the mapped Seerr user
 - Available/requested/requestable state badges
 - Watch Now and Open Details handoff for available Jellyfin items
