@@ -277,6 +277,14 @@ public sealed class SeerrDiscoverControllerTests
         var nativeScrollerRule = Regex.Matches(source, @"\.seerr-native-detail-related\s+\.seerr-discover__scroller\s*\{(?<body>.*?)\}", RegexOptions.Singleline)
             .Cast<Match>()
             .SingleOrDefault(match => match.Groups["body"].Value.Contains("display:", StringComparison.Ordinal));
+        var nativeBackdropWidths = Regex.Matches(source, @"\.seerr-native-detail-related\s+\.overflowBackdropCard\s*\{(?<body>.*?)\}", RegexOptions.Singleline)
+            .Cast<Match>()
+            .Select(match => match.Groups["body"].Value)
+            .ToArray();
+        var nativePortraitWidths = Regex.Matches(source, @"\.seerr-native-detail-related\s+\.overflowPortraitCard\s*\{(?<body>.*?)\}", RegexOptions.Singleline)
+            .Cast<Match>()
+            .Select(match => match.Groups["body"].Value)
+            .ToArray();
 
         Assert.Contains("document.querySelector('.libraryPage:not(.hide)')", source, StringComparison.Ordinal);
         Assert.Contains("querySelector('.detailPageContent')", source, StringComparison.Ordinal);
@@ -294,9 +302,23 @@ public sealed class SeerrDiscoverControllerTests
         Assert.NotNull(nativeScrollerRule);
         Assert.Contains("display: flex;", nativeScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
         Assert.Contains("flex-wrap: nowrap;", nativeScrollerRule.Groups["body"].Value, StringComparison.Ordinal);
+        Assert.Contains(nativeBackdropWidths, body => body.Contains("width: 72vw;", StringComparison.Ordinal));
+        Assert.Contains(nativeBackdropWidths, body => body.Contains("width: 45.5vw;", StringComparison.Ordinal));
+        Assert.Contains(nativeBackdropWidths, body => body.Contains("width: 30vw;", StringComparison.Ordinal));
+        Assert.Contains(nativeBackdropWidths, body => body.Contains("width: 23.1vw;", StringComparison.Ordinal));
+        Assert.Contains(nativeBackdropWidths, body => body.Contains("width: 18.7vw;", StringComparison.Ordinal));
+        Assert.Contains(nativePortraitWidths, body => body.Contains("width: 40vw;", StringComparison.Ordinal));
+        Assert.Contains(nativePortraitWidths, body => body.Contains("width: 31.2vw;", StringComparison.Ordinal));
+        Assert.Contains(nativePortraitWidths, body => body.Contains("width: 23.1vw;", StringComparison.Ordinal));
+        Assert.Contains(nativePortraitWidths, body => body.Contains("width: 18.5vw;", StringComparison.Ordinal));
+        Assert.Contains(nativePortraitWidths, body => body.Contains("width: 15.5vw;", StringComparison.Ordinal));
+        Assert.Contains(nativePortraitWidths, body => body.Contains("width: 13.3vw;", StringComparison.Ordinal));
+        Assert.Contains(nativePortraitWidths, body => body.Contains("width: 11.6vw;", StringComparison.Ordinal));
+        Assert.Contains(nativePortraitWidths, body => body.Contains("width: 10.41vw;", StringComparison.Ordinal));
         Assert.DoesNotContain(".seerr-native-detail-related .seerr-discover__rail[data-seerr-artwork-layout=\"horizontal\"] .seerr-card", source, StringComparison.Ordinal);
         Assert.DoesNotContain(".seerr-native-detail-related .seerr-discover__rail[data-seerr-artwork-layout=\"vertical\"] .seerr-card", source, StringComparison.Ordinal);
         Assert.DoesNotContain(".seerr-native-detail-related .seerr-card", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("width: clamp(30rem, 40vw, 44rem);", source, StringComparison.Ordinal);
         Assert.Contains("padding-left: 0 !important;", source, StringComparison.Ordinal);
         Assert.Contains("padding-right: 0 !important;", source, StringComparison.Ordinal);
         Assert.Contains("artworkLayout: normalizeArtworkLayout(rail.artworkLayout)", source, StringComparison.Ordinal);
