@@ -202,24 +202,82 @@
                 'EnableDetailCollections'
             ];
             let extraRails = [];
+            let configLoadStarted = false;
+
+            function currentApiClient() {
+                if (window.ApiClient) return window.ApiClient;
+                if (typeof ApiClient !== 'undefined') return ApiClient;
+                if (window.connectionManager && typeof window.connectionManager.currentApiClient === 'function') {
+                    return window.connectionManager.currentApiClient();
+                }
+                if (typeof connectionManager !== 'undefined' && typeof connectionManager.currentApiClient === 'function') {
+                    return connectionManager.currentApiClient();
+                }
+                return null;
+            }
+
+            function configValue(config, field) {
+                if (!config) return undefined;
+                if (Object.prototype.hasOwnProperty.call(config, field)) return config[field];
+                const camelField = `${field.charAt(0).toLowerCase()}${field.slice(1)}`;
+                return config[camelField];
+            }
+
+            function assignConfigValue(config, field, value) {
+                config[field] = value;
+                const camelField = `${field.charAt(0).toLowerCase()}${field.slice(1)}`;
+                if (Object.prototype.hasOwnProperty.call(config, camelField)) {
+                    config[camelField] = value;
+                }
+            }
 
             function apiUrl(path) {
-                if (window.ApiClient && typeof window.ApiClient.getUrl === 'function') {
-                    return window.ApiClient.getUrl(path.replace(/^\//, ''));
+                const client = currentApiClient();
+                const cleanPath = path.replace(/^\//, '');
+                const queryIndex = cleanPath.indexOf('?');
+                const route = queryIndex === -1 ? cleanPath : cleanPath.slice(0, queryIndex);
+                const query = queryIndex === -1 ? '' : cleanPath.slice(queryIndex + 1);
+                if (client && typeof client.getUrl === 'function') {
+                    const url = client.getUrl(route);
+                    return query ? `${url}${url.includes('?') ? '&' : '?'}${query}` : url;
                 }
 
-                return `/${path.replace(/^\//, '')}`;
+                return `/${cleanPath}`;
             }
 
             function apiFetch(path, options) {
-                return ApiClient.fetch({
-                    url: apiUrl(path),
-                    type: options?.method || 'GET',
-                    data: options?.body,
-                    contentType: options?.body ? 'application/json' : undefined,
-                    dataType: 'json',
-                    headers: { accept: 'application/json' }
-                });
+                const client = currentApiClient();
+                if (client && typeof client.fetch === 'function') {
+                    return client.fetch({
+                        url: apiUrl(path),
+                        type: options?.method || 'GET',
+                        data: options?.body,
+                        contentType: options?.body ? 'application/json' : undefined,
+                        dataType: 'json',
+                        headers: { accept: 'application/json' }
+                    });
+                }
+
+                if (typeof fetch === 'function') {
+                    return fetch(apiUrl(path), {
+                        method: options?.method || 'GET',
+                        credentials: 'same-origin',
+                        headers: {
+                            accept: 'application/json',
+                            'content-type': 'application/json'
+                        },
+                        body: options?.body
+                    }).then((response) => {
+                        if (!response.ok) {
+                            return response.text().then((text) => {
+                                throw new Error(text || `Request failed with HTTP ${response.status}`);
+                            });
+                        }
+                        return response.json();
+                    });
+                }
+
+                return Promise.reject(new Error('Jellyfin API client is not available.'));
             }
 
             function normalizeToken(value) {
@@ -406,10 +464,11 @@
                 fields.forEach((field) => {
                     const input = document.querySelector(`#${field}`);
                     if (!input) return;
+                    const value = configValue(config, field);
                     if (input.type === 'checkbox') {
-                        input.checked = !!config[field];
+                        input.checked = !!value;
                     } else {
-                        input.value = config[field] ?? '';
+                        input.value = value ?? '';
                     }
                 });
 
@@ -431,7 +490,7 @@
                         : 'No Seerr API key is configured. Paste a key before using Discover.';
                 }
 
-                extraRails = (config.ExtraRails || []).map(normalizeRail).filter((rail) => rail.Id && rail.Title);
+                extraRails = (configValue(config, 'ExtraRails') || []).map(normalizeRail).filter((rail) => rail.Id && rail.Title);
                 renderExtraRails();
                 enforceRailMediaType();
             }
@@ -441,44 +500,50 @@
                     const input = document.querySelector(`#${field}`);
                     if (!input) return;
                     if (input.type === 'checkbox') {
-                        config[field] = input.checked;
+                        assignConfigValue(config, field, input.checked);
                     } else if (input.type === 'number') {
-                        config[field] = Number.parseInt(input.value || '0', 10);
+                        assignConfigValue(config, field, Number.parseInt(input.value || '0', 10));
                     } else {
-                        config[field] = input.value;
+                        assignConfigValue(config, field, input.value);
                     }
                 });
 
                 const apiKeyInput = document.querySelector('#SeerrApiKey');
                 const clearApiKeyInput = document.querySelector('#ClearSeerrApiKey');
-                config.SeerrApiKey = apiKeyInput?.value || '';
-                config.ClearSeerrApiKey = !!clearApiKeyInput?.checked;
-                config.ExtraRails = extraRails.map((rail) => ({
+                assignConfigValue(config, 'SeerrApiKey', apiKeyInput?.value || '');
+                assignConfigValue(config, 'ClearSeerrApiKey', !!clearApiKeyInput?.checked);
+                assignConfigValue(config, 'ExtraRails', extraRails.map((rail) => ({
                     Id: rail.Id,
                     Kind: rail.Kind,
                     MediaType: rail.MediaType,
                     Value: rail.Value,
                     Title: rail.Title,
                     Enabled: rail.Enabled
-                }));
+                })));
                 return config;
             }
 
             document.querySelector('#ExtraRailKind')?.addEventListener('change', enforceRailMediaType);
             document.querySelector('#SearchExtraRailOptions')?.addEventListener('click', searchRailOptions);
 
-            page.addEventListener('pageshow', function () {
+            function loadConfiguration() {
+                if (configLoadStarted) return;
+                configLoadStarted = true;
                 Dashboard.showLoadingMsg();
                 apiFetch('SeerrDiscover/config').then((config) => {
                     setForm(config);
                     Dashboard.hideLoadingMsg();
                 }).catch((error) => {
+                    configLoadStarted = false;
                     Dashboard.hideLoadingMsg();
                     Dashboard.alert({
                         message: error?.message || 'Failed to load Seerr Discover configuration.'
                     });
                 });
-            });
+            }
+
+            page.addEventListener('pageshow', loadConfiguration);
+            setTimeout(loadConfiguration, 0);
 
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
