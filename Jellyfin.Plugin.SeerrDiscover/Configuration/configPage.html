@@ -256,23 +256,17 @@
                     </label>
                     <div class="fieldDescription">Groups recent server requests by title and shows media cards only.</div>
                 </div>
-                <h2 class="sectionTitle">Detail modal rails</h2>
+                <h2 class="sectionTitle">Detail page rails</h2>
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label class="emby-checkbox-label">
                         <input id="EnableDetailSimilar" name="EnableDetailSimilar" type="checkbox" is="emby-checkbox" />
-                        <span>Show Similar titles in detail modals</span>
+                        <span>Show Similar titles on detail pages</span>
                     </label>
                 </div>
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label class="emby-checkbox-label">
                         <input id="EnableDetailRecommended" name="EnableDetailRecommended" type="checkbox" is="emby-checkbox" />
-                        <span>Show Recommended titles in detail modals</span>
-                    </label>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label class="emby-checkbox-label">
-                        <input id="EnableDetailCollections" name="EnableDetailCollections" type="checkbox" is="emby-checkbox" />
-                        <span>Show movie collection entries in detail modals</span>
+                        <span>Show Recommended titles on detail pages</span>
                     </label>
                 </div>
                 <h2 class="sectionTitle">Optional rail catalog</h2>
@@ -336,8 +330,7 @@
                 'EnableRecentlyRequested',
                 'EnablePopularWithServer',
                 'EnableDetailSimilar',
-                'EnableDetailRecommended',
-                'EnableDetailCollections'
+                'EnableDetailRecommended'
             ];
             let extraRails = [];
             let configLoadStarted = false;

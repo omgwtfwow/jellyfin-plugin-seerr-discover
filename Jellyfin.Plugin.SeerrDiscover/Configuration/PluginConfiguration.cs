@@ -114,19 +114,14 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool EnablePopularWithServer { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether similar titles are shown in detail modals.
+    /// Gets or sets a value indicating whether similar titles are shown on detail pages.
     /// </summary>
     public bool EnableDetailSimilar { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether recommended titles are shown in detail modals.
+    /// Gets or sets a value indicating whether recommended titles are shown on detail pages.
     /// </summary>
     public bool EnableDetailRecommended { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether collection entries are shown in detail modals.
-    /// </summary>
-    public bool EnableDetailCollections { get; set; }
 
     /// <summary>
     /// Gets or sets optional admin-configured Discover rails.

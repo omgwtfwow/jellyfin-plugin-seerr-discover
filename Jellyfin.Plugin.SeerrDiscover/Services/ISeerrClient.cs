@@ -66,11 +66,6 @@ public interface ISeerrClient
     Task<string> GetRelatedAsync(string mediaType, int tmdbId, string relation, int page, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Gets movie collection details.
-    /// </summary>
-    Task<string> GetCollectionAsync(int collectionId, CancellationToken cancellationToken);
-
-    /// <summary>
     /// Gets movie or TV details.
     /// </summary>
     Task<string> GetMediaAsync(string mediaType, int tmdbId, CancellationToken cancellationToken);

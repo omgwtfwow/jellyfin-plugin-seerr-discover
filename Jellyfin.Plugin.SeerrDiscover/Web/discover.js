@@ -44,6 +44,14 @@
     repositionObserver: null,
     repositionTimeout: 0,
   };
+  const nativeDetails = {
+    debounceId: 0,
+    renderKey: '',
+    loadedKey: '',
+    emptyKey: '',
+    loadingKey: '',
+    abortController: null,
+  };
 
   let rails = defaultRails;
 
@@ -74,6 +82,7 @@
 
     return fetch(apiUrl(path), {
       method: options?.method || 'GET',
+      signal: options?.signal,
       headers: {
         accept: 'application/json',
         'content-type': 'application/json',
@@ -1668,6 +1677,199 @@
       });
   }
 
+  function scheduleNativeDetailRails() {
+    window.clearTimeout(nativeDetails.debounceId);
+    nativeDetails.debounceId = window.setTimeout(renderNativeDetailRails, 90);
+  }
+
+  function renderNativeDetailRails() {
+    const itemId = nativeDetailItemId();
+    if (!itemId) {
+      cleanupNativeDetailRails();
+      return;
+    }
+
+    const detailContent = nativeDetailContent();
+    if (!detailContent) return;
+
+    const key = `${itemId}:${window.location.hash}`;
+    if (nativeDetails.loadedKey === key
+      && (nativeDetails.emptyKey === key || document.querySelector('[data-seerr-native-detail-related]'))) return;
+    if (nativeDetails.loadingKey === key) return;
+
+    if (nativeDetails.renderKey !== key) {
+      abortNativeDetailRequest();
+      removeNativeDetailRails();
+      nativeDetails.loadedKey = '';
+      nativeDetails.emptyKey = '';
+      nativeDetails.renderKey = key;
+    }
+
+    nativeDetails.loadingKey = key;
+    loadClientConfig()
+      .then((config) => {
+        if (!nativeDetailRailsEnabled(config)) {
+          removeNativeDetailRails();
+          nativeDetails.loadedKey = key;
+          nativeDetails.emptyKey = key;
+          return null;
+        }
+
+        return nativeDetailItem(itemId);
+      })
+      .then((item) => {
+        if (!item || nativeDetails.renderKey !== key) return null;
+        const type = nativeDetailMediaType(item);
+        const tmdbId = nativeDetailTmdbId(item);
+        if (!type || !tmdbId) {
+          removeNativeDetailRails();
+          nativeDetails.loadedKey = key;
+          nativeDetails.emptyKey = key;
+          return null;
+        }
+
+        return loadNativeDetailRelatedRails(detailContent, key, type, tmdbId, itemId);
+      })
+      .catch((error) => {
+        if (error?.name === 'AbortError') return;
+        console.warn('Seerr Discover native detail rails failed', error);
+      })
+      .finally(() => {
+        if (nativeDetails.loadingKey === key) {
+          nativeDetails.loadingKey = '';
+        }
+      });
+  }
+
+  function nativeDetailRailsEnabled(config) {
+    const detailRails = config?.detailRails || {};
+    return detailRails.similar === true || detailRails.recommended === true;
+  }
+
+  function nativeDetailItemId() {
+    const hash = window.location.hash || '';
+    if (!hash.includes('/details')) return '';
+    return getHashParams().get('id') || '';
+  }
+
+  function nativeDetailContent() {
+    const activePage = document.querySelector('.libraryPage:not(.hide)');
+    const detailContent = activePage?.querySelector('.detailPageContent') || document.querySelector('.detailPageContent');
+    if (!detailContent || !document.documentElement.contains(detailContent)) return null;
+    return detailContent;
+  }
+
+  function nativeDetailItem(itemId) {
+    const apiClient = window.ApiClient;
+    const userId = typeof apiClient?.getCurrentUserId === 'function' ? apiClient.getCurrentUserId() : '';
+    if (apiClient && typeof apiClient.getItem === 'function' && userId) {
+      return Promise.resolve(apiClient.getItem(userId, itemId));
+    }
+
+    const params = new URLSearchParams({
+      Ids: itemId,
+      Fields: 'ProviderIds,UserData',
+      EnableUserData: 'true',
+      Limit: '1',
+    });
+    return jellyfinFetch(`/Items?${params.toString()}`)
+      .then((data) => (Array.isArray(data?.Items) ? data.Items[0] : null));
+  }
+
+  function nativeDetailMediaType(item) {
+    const type = String(item?.Type || '').toLowerCase();
+    if (type === 'movie') return 'movie';
+    if (type === 'series') return 'tv';
+    return '';
+  }
+
+  function nativeDetailTmdbId(item) {
+    return String(item?.ProviderIds?.Tmdb || item?.ProviderIds?.TMDB || '');
+  }
+
+  function loadNativeDetailRelatedRails(detailContent, key, type, tmdbId, itemId) {
+    abortNativeDetailRequest();
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    nativeDetails.abortController = controller;
+
+    return apiFetch(`/SeerrDiscover/related/${encodeURIComponent(type)}/${encodeURIComponent(tmdbId)}`, { signal: controller?.signal })
+      .then((data) => {
+        const relatedRails = Array.isArray(data?.rails) ? data.rails : [];
+        return Promise.all(relatedRails.map((rail) => filterAndEnrichItems(rail.results)
+          .then((items) => ({
+            id: String(rail.id || ''),
+            title: String(rail.title || ''),
+            items,
+          }))));
+      })
+      .then((relatedRails) => {
+        if (nativeDetails.renderKey !== key || controller?.signal.aborted) return;
+        const currentContent = nativeDetailContent();
+        if (!currentContent || currentContent !== detailContent) return;
+
+        const activeRails = relatedRails.filter((rail) => rail.id && rail.title && rail.items.length);
+        if (!activeRails.length) {
+          removeNativeDetailRails();
+          nativeDetails.loadedKey = key;
+          nativeDetails.emptyKey = key;
+          return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'seerr-native-detail-related';
+        container.setAttribute('data-seerr-native-detail-related', 'true');
+        container.setAttribute('data-seerr-item-id', itemId);
+        container.innerHTML = activeRails
+          .map((rail) => railTemplate({ id: `native-detail-${rail.id}`, title: rail.title }, rail.items))
+          .join('');
+
+        placeNativeDetailRails(detailContent, container);
+        bindCards(container);
+        nativeDetails.loadedKey = key;
+        nativeDetails.emptyKey = '';
+      });
+  }
+
+  function placeNativeDetailRails(detailContent, container) {
+    removeNativeDetailRails();
+    const anchor = nativeDetailAnchor(detailContent);
+    if (anchor) {
+      anchor.after(container);
+      return;
+    }
+
+    detailContent.appendChild(container);
+  }
+
+  function nativeDetailAnchor(detailContent) {
+    const similarSection = detailContent.querySelector('#similarCollapsible');
+    if (similarSection) return similarSection;
+
+    const nativeSections = Array.from(detailContent.querySelectorAll('.verticalSection:not([data-seerr-native-detail-related])'));
+    return nativeSections[nativeSections.length - 1] || null;
+  }
+
+  function cleanupNativeDetailRails() {
+    window.clearTimeout(nativeDetails.debounceId);
+    abortNativeDetailRequest();
+    removeNativeDetailRails();
+    nativeDetails.renderKey = '';
+    nativeDetails.loadedKey = '';
+    nativeDetails.emptyKey = '';
+    nativeDetails.loadingKey = '';
+  }
+
+  function abortNativeDetailRequest() {
+    if (nativeDetails.abortController) {
+      nativeDetails.abortController.abort();
+      nativeDetails.abortController = null;
+    }
+  }
+
+  function removeNativeDetailRails() {
+    document.querySelectorAll('[data-seerr-native-detail-related]').forEach((section) => section.remove());
+  }
+
   function requestActions(requestDisabled, mapped) {
     return `<button class="seerr-discover__button emby-button" type="button" data-seerr-request ${requestDisabled ? 'disabled' : ''}>${escapeHtml(mapped ? 'Request' : 'Not linked')}</button>`;
   }
@@ -2750,7 +2952,6 @@
     'EnablePopularWithServer',
     'EnableDetailSimilar',
     'EnableDetailRecommended',
-    'EnableDetailCollections',
   ];
 
   function configValue(config, field) {
@@ -3071,6 +3272,7 @@
     window.setTimeout(scheduleDiscoverSpacing, 1100);
     window.setTimeout(() => maybeStartJellyfinPlayback(), 350);
     window.setTimeout(() => maybeStartJellyfinPlayback(), 1200);
+    scheduleNativeDetailRails();
   }
 
   if (document.readyState === 'loading') {
@@ -3082,12 +3284,15 @@
   window.addEventListener('hashchange', () => {
     closeModal();
     removeNativeSearchSection();
+    cleanupNativeDetailRails();
     scheduleMount();
   });
   window.addEventListener('popstate', () => {
     removeNativeSearchSection();
+    cleanupNativeDetailRails();
     scheduleMount();
   });
+  document.addEventListener('viewshow', scheduleMount);
   window.addEventListener('resize', scheduleDiscoverSpacing);
   window.addEventListener('orientationchange', scheduleDiscoverSpacing);
   window.visualViewport?.addEventListener('resize', scheduleDiscoverSpacing);

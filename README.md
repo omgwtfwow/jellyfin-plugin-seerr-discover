@@ -133,9 +133,8 @@ Most installs only need the Seerr URLs, Seerr API key, companion plugin setup, a
 | Upcoming TV rail | On | Shows upcoming series. |
 | Recently Requested rail | Off | Shows recent request media only; requester details are stripped server-side. |
 | Popular With This Server rail | Off | Dedupes recent server requests into media cards. |
-| Similar titles in detail modals | Off | Adds similar-title rows inside detail modals. |
-| Recommended titles in detail modals | Off | Adds recommended-title rows inside detail modals. |
-| Movie collection entries in detail modals | Off | Adds franchise/collection entries inside movie detail modals. |
+| Similar titles on detail pages | Off | Adds similar-title rows inside Discover modals and native Jellyfin movie/series detail pages. |
+| Recommended titles on detail pages | Off | Adds recommended-title rows inside Discover modals and native Jellyfin movie/series detail pages. |
 | Optional rail catalog | none configured | Adds admin-selected genre, studio, network, language, or keyword rails. |
 
 ## Security
