@@ -49,11 +49,11 @@
 
 ## Release Posture
 
-- `staging` is preparing the `1.0.0.0` pre-release documentation and feature surface.
-- `0.3.x` remains the stable third-party release line distributed through the self-hosted Jellyfin plugin repository until 1.0 is promoted.
-- Stable releases use plain four-part tags such as `v0.3.0.0`.
+- `main` carries the stable third-party release line distributed through the self-hosted Jellyfin plugin repository.
+- `staging` is used for release-candidate validation before promotion to `main`.
+- Stable releases use plain four-part tags such as `v1.0.0.0`.
 - Pre-releases use tag markers such as `v1.0.0.0-rc.1`, `-beta`, or `-alpha`; only those tags are marked pre-release on GitHub.
-- Do not rely on `releases/latest/download/manifest.json` for 1.0 pre-release testing; use the manifest attached to the selected pre-release.
+- Do not rely on `releases/latest/download/manifest.json` for pre-release testing; use the manifest attached to the selected pre-release.
 - Keep release assets compatible with Jellyfin repository installs: plugin zip, SHA-256 checksum, and `manifest.json`.
 
 ## GitHub Markdown Hygiene

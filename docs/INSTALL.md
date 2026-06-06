@@ -2,7 +2,7 @@
 
 ## Jellyfin Repository Install
 
-The public repository currently serves the stable release line unless a 1.0 pre-release manifest has been explicitly selected for testing.
+The public repository serves the latest stable release.
 
 Add the self-hosted repository URL in:
 
@@ -31,8 +31,6 @@ If GitHub Pages is temporarily unavailable, stable installs can use the `manifes
 ```text
 https://github.com/omgwtfwow/jellyfin-plugin-seerr-discover/releases/latest/download/manifest.json
 ```
-
-For 1.0 pre-release testing, use the `manifest.json` attached to the selected GitHub pre-release instead of `releases/latest`, because GitHub's latest release URL normally resolves to the stable release line.
 
 ## Manual Zip Install
 

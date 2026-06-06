@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Only the latest release candidate is supported while the plugin is pre-1.0.
+Only the latest stable release is supported.
 
 ## Reporting a Vulnerability
 

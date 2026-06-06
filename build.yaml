@@ -1,7 +1,7 @@
 ---
 name: "Seerr Discover"
 guid: "2f0b9bb0-8d9d-4c6f-8ad7-6f23a3bb71b0"
-version: "0.3.0.0"
+version: "1.0.0.0"
 targetAbi: "10.11.10.0"
 framework: "net9.0"
 overview: "Native Seerr Discover rails and Jellyfin search"
@@ -13,6 +13,6 @@ owner: "omgwtfwow"
 artifacts:
 - "Jellyfin.Plugin.SeerrDiscover.dll"
 changelog: >
-  Stable third-party release with a redesigned cinematic detail modal,
-  requestable Seerr results below Jellyfin no-results search messages,
-  and refreshed README screenshots for release review.
+  Stable 1.0 release with configurable Discover rails, horizontal artwork
+  layouts, native Jellyfin detail-page recommendations, requestable Seerr
+  search results, and server-side Seerr credential handling.

@@ -4,9 +4,7 @@ Seerr Discover is a Jellyfin server plugin that adds Seerr-backed Discover rails
 
 ## Status
 
-Seerr Discover is distributed as a stable third-party Jellyfin plugin through a self-hosted Jellyfin plugin repository. The `0.3.x` line remains the supported public release line for repository installs while `staging` prepares the `1.0.0.0` pre-release.
-
-For 1.0 pre-release testing, install from the selected GitHub pre-release manifest or zip once published. The public repository URL below continues to track the stable line until the 1.0 release is promoted.
+Seerr Discover is distributed as a stable third-party Jellyfin plugin through a self-hosted Jellyfin plugin repository. The public repository URL below tracks the latest stable release.
 
 Repository URL:
 

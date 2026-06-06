@@ -1,8 +1,8 @@
 # Changelog
 
-## 1.0.0.0-pre
+## 1.0.0.0
 
-- Prepare the 1.0 pre-release documentation set for staging review.
+- Promote Seerr Discover 1.0 as the stable third-party release line.
 - Add native Jellyfin movie and series detail-page Similar and Recommended rails.
 - Add Discover and detail rail presentation controls for enablement, ordering,
   custom headings, and vertical poster or horizontal landscape artwork.
@@ -15,6 +15,7 @@
   `/SeerrDiscover/assets/discover.js`.
 - Refresh README screenshots for current rail settings without the removed
   Collections control.
+- Keep default rail labels visible in settings before custom headings are saved.
 
 ## 0.3.0.0
 
