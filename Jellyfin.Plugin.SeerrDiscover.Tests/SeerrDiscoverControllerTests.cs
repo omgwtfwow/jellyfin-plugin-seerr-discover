@@ -335,6 +335,10 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("DetailRailPresentation", source, StringComparison.Ordinal);
         Assert.Contains("data-config-rail-title", source, StringComparison.Ordinal);
         Assert.Contains("normalizeConfigRailTitle", source, StringComparison.Ordinal);
+        Assert.Contains("DisplayTitle: definition.Title", source, StringComparison.Ordinal);
+        Assert.Contains("label.textContent = row.Title", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("DisplayTitle: title || definition.Title", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("label.textContent = value || row.Title", source, StringComparison.Ordinal);
         Assert.Contains("data-config-rail-move", source, StringComparison.Ordinal);
         Assert.Contains("type=\"checkbox\" is=\"emby-checkbox\" data-config-rail-layout", source, StringComparison.Ordinal);
         Assert.Contains("input.checked ? artworkLayoutHorizontal : artworkLayoutVertical", source, StringComparison.Ordinal);

@@ -3312,7 +3312,7 @@
           ...definition,
           ArtworkLayout: presentation.ArtworkLayout,
           TitleOverride: title,
-          DisplayTitle: title || definition.Title,
+          DisplayTitle: definition.Title,
         };
       })
       .filter(Boolean)
@@ -3377,7 +3377,7 @@
         const label = Array.from(list.querySelectorAll('[data-config-rail-display-title]'))
           .find((element) => element.getAttribute('data-config-rail-display-title') === id);
         if (label && row) {
-          label.textContent = value || row.Title;
+          label.textContent = row.Title;
         }
       });
     });
