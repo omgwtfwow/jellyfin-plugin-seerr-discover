@@ -115,11 +115,6 @@ public sealed class SeerrDiscoverConfigurationDto
     public bool DefaultRequest4K { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the legacy mixed trending feed is enabled.
-    /// </summary>
-    public bool EnableTrending { get; set; }
-
-    /// <summary>
     /// Gets or sets a value indicating whether the trending movies feed is enabled.
     /// </summary>
     public bool EnableTrendingMovies { get; set; }
@@ -251,19 +246,14 @@ public sealed class SeerrDiscoverConfigurationUpdate
     public bool DefaultRequest4K { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the legacy mixed trending feed is enabled.
-    /// </summary>
-    public bool EnableTrending { get; set; }
-
-    /// <summary>
     /// Gets or sets a value indicating whether the trending movies feed is enabled.
     /// </summary>
-    public bool? EnableTrendingMovies { get; set; }
+    public bool EnableTrendingMovies { get; set; } = true;
 
     /// <summary>
     /// Gets or sets a value indicating whether the trending TV feed is enabled.
     /// </summary>
-    public bool? EnableTrendingTv { get; set; }
+    public bool EnableTrendingTv { get; set; } = true;
 
     /// <summary>
     /// Gets or sets a value indicating whether the popular movie feed is enabled.
