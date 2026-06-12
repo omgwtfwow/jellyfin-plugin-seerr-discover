@@ -59,14 +59,47 @@ public sealed class SeerrDiscoverControllerTests
         Assert.NotEmpty(paths);
         Assert.All(paths, path => Assert.StartsWith("/SeerrDiscover/", path, StringComparison.Ordinal));
         Assert.Contains(paths, path => path.StartsWith("/SeerrDiscover/client-config", StringComparison.Ordinal));
-        Assert.Contains(paths, path => path.StartsWith("/SeerrDiscover/config", StringComparison.Ordinal));
         Assert.Contains(paths, path => path.StartsWith("/SeerrDiscover/request", StringComparison.Ordinal));
+        Assert.DoesNotContain(paths, path => path.StartsWith("/SeerrDiscover/config", StringComparison.Ordinal));
     }
 
     [Fact]
-    public void BrowserAsset_ApiKeyMentionsAreLimitedToWriteOnlyConfigForm()
+    public void ConfigPageAsset_RoutesConfigApiCallsThroughSeerrDiscoverProxy()
+    {
+        var source = ReadBrowserAsset("configPage.js");
+        var matches = Regex.Matches(source, @"\bapiFetch\(\s*(?<quote>['""`])(?<path>[^'""`]+)");
+        var paths = matches
+            .Select(match => match.Groups["path"].Value)
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.NotEmpty(paths);
+        Assert.All(paths, path => Assert.StartsWith("/SeerrDiscover/", path, StringComparison.Ordinal));
+        Assert.Contains(paths, path => path.StartsWith("/SeerrDiscover/config", StringComparison.Ordinal));
+        Assert.Contains(paths, path => path.StartsWith("/SeerrDiscover/rail-options", StringComparison.Ordinal));
+        Assert.DoesNotContain(paths, path => path.StartsWith("/SeerrDiscover/client-config", StringComparison.Ordinal));
+        Assert.DoesNotContain(paths, path => path.StartsWith("/SeerrDiscover/request", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void DiscoverAsset_DoesNotContainConfigApiKeyFormHandling()
     {
         var source = ReadBrowserAsset("discover.js");
+        var lines = source
+            .Split('\n')
+            .Select((line, index) => new { Line = line.Trim(), Number = index + 1 })
+            .Where(item => item.Line.Contains("ApiKey", StringComparison.OrdinalIgnoreCase)
+                || item.Line.Contains("API key", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        Assert.Empty(lines);
+    }
+
+    [Fact]
+    public void ConfigPageAsset_ApiKeyMentionsAreLimitedToWriteOnlyConfigForm()
+    {
+        var source = ReadBrowserAsset("configPage.js");
         var lines = source
             .Split('\n')
             .Select((line, index) => new { Line = line.Trim(), Number = index + 1 })
@@ -98,7 +131,18 @@ public sealed class SeerrDiscoverControllerTests
 
         Assert.Contains("document.getElementById(styleId)", source, StringComparison.Ordinal);
         Assert.Contains("root.__seerrMounted", source, StringComparison.Ordinal);
-        Assert.Contains("window.SeerrDiscoverInitializeConfigPage", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("window.SeerrDiscoverInitializeConfigPage", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DiscoverAsset_DoesNotSynthesizeCustomTabsPane()
+    {
+        var source = ReadBrowserAsset("discover.js");
+
+        Assert.DoesNotContain("seerrPaneSource = 'fallback'", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("favoritesTab.insertAdjacentElement", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("document.querySelector('#indexPage')", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("pane.innerHTML", source, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -326,9 +370,9 @@ public sealed class SeerrDiscoverControllerTests
     }
 
     [Fact]
-    public void DiscoverAsset_AddsRailPresentationControlsToConfigPage()
+    public void ConfigPageAsset_AddsRailPresentationControlsToConfigPage()
     {
-        var source = ReadBrowserAsset("discover.js");
+        var source = ReadBrowserAsset("configPage.js");
         var configPage = ReadConfigurationPage();
 
         Assert.Contains("DiscoverRailPresentation", source, StringComparison.Ordinal);
@@ -350,8 +394,21 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("id=\"DetailRailList\"", configPage, StringComparison.Ordinal);
         Assert.Contains("seerr-config-rail-heading", configPage, StringComparison.Ordinal);
         Assert.Contains("grid-template-areas", configPage, StringComparison.Ordinal);
-        Assert.Contains("data-seerr-config-loader", configPage, StringComparison.Ordinal);
         Assert.DoesNotContain("id=\"ExtraRailList\"", configPage, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ConfigPage_UsesControllerAssetWithoutInlineDiscoverLoader()
+    {
+        var configPage = ReadConfigurationPage();
+
+        Assert.Contains("data-controller=\"../SeerrDiscover/assets/configPage.js\"", configPage, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-seerr-config-inline", configPage, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-seerr-config-loader", configPage, StringComparison.Ordinal);
+        Assert.DoesNotContain("window.SeerrDiscoverInitializeConfigPage", configPage, StringComparison.Ordinal);
+        Assert.DoesNotContain("/SeerrDiscover/assets/discover.js", configPage, StringComparison.Ordinal);
+        Assert.DoesNotContain("createElement('script')", configPage, StringComparison.Ordinal);
+        Assert.DoesNotContain("document.head.appendChild", configPage, StringComparison.Ordinal);
     }
 
     [Fact]
