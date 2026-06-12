@@ -327,10 +327,15 @@ public sealed class SeerrDiscoverControllerTests
         Assert.Contains("document.addEventListener('viewshow', scheduleMount);", source, StringComparison.Ordinal);
         Assert.Contains("typeof AbortController !== 'undefined' ? new AbortController() : null", source, StringComparison.Ordinal);
         Assert.Contains("function loadNativeDetailRelatedRails(detailContent, key, type, tmdbId, itemId) {\n    ensureStyle();", source, StringComparison.Ordinal);
+        Assert.Contains("function fetchActiveRelatedRails(type, id, options = {})", source, StringComparison.Ordinal);
+        Assert.Contains("function renderRelatedRailsHtml(activeRails, idPrefix)", source, StringComparison.Ordinal);
+        Assert.Contains("target.innerHTML = renderRelatedRailsHtml(activeRails, 'related');", source, StringComparison.Ordinal);
+        Assert.Contains("container.innerHTML = renderRelatedRailsHtml(activeRails, 'native-detail');", source, StringComparison.Ordinal);
         Assert.Contains("data-seerr-native-detail-related", source, StringComparison.Ordinal);
-        Assert.Contains("native-detail-${rail.id}", source, StringComparison.Ordinal);
         Assert.Contains("verticalSection emby-scroller-container seerr-discover__rail", source, StringComparison.Ordinal);
         Assert.Contains("sectionTitle sectionTitle-cards padded-left seerr-discover__rail-title", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("details: null", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-seerr-hidden-no-results", source, StringComparison.Ordinal);
         Assert.Contains(".seerr-native-detail-related .seerr-discover__rail-title,", source, StringComparison.Ordinal);
         Assert.Contains(".seerr-native-detail-related .seerr-discover__scroller", source, StringComparison.Ordinal);
         Assert.True(nativeScrollerRule?.Success, "Native detail related rails should explicitly keep a horizontal scroller.");
