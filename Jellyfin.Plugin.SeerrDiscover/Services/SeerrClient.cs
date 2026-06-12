@@ -49,7 +49,6 @@ public sealed class SeerrClient : ISeerrClient
         var normalizedFeed = feed.Trim().ToLowerInvariant();
         var path = normalizedFeed switch
         {
-            "trending" => "/api/v1/discover/trending",
             "trending-movies" => "/api/v1/discover/trending",
             "trending-tv" => "/api/v1/discover/trending",
             "movies" => "/api/v1/discover/movies",
@@ -65,13 +64,12 @@ public sealed class SeerrClient : ISeerrClient
             ["language"] = language
         };
 
-        if (normalizedFeed is "trending" or "trending-movies" or "trending-tv")
+        if (normalizedFeed is "trending-movies" or "trending-tv")
         {
             query["mediaType"] = normalizedFeed switch
             {
                 "trending-movies" => "movie",
-                "trending-tv" => "tv",
-                _ => string.IsNullOrWhiteSpace(mediaType) ? "all" : mediaType
+                _ => "tv"
             };
             query["timeWindow"] = "day";
         }

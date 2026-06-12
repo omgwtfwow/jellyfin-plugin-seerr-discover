@@ -258,7 +258,7 @@ public sealed class SeerrDiscoverController : ControllerBase
     [HttpGet("discover")]
     [Produces("application/json")]
     public async Task<ActionResult> GetDiscover(
-        [FromQuery] string feed = "trending",
+        [FromQuery] string feed = "trending-movies",
         [FromQuery] int page = 1,
         [FromQuery] string? mediaType = null,
         CancellationToken cancellationToken = default)
@@ -495,9 +495,8 @@ public sealed class SeerrDiscoverController : ControllerBase
         var normalizedFeed = NormalizeFeed(feed);
         return normalizedFeed switch
         {
-            "trending" => IsLegacyTrendingEnabled(config, mediaType),
-            "trending-movies" => IsTrendingMoviesEnabled(config),
-            "trending-tv" => IsTrendingTvEnabled(config),
+            "trending-movies" => config.EnableTrendingMovies,
+            "trending-tv" => config.EnableTrendingTv,
             "movies" => config.EnableMovies,
             "tv" => config.EnableTv,
             "upcoming" => config.EnableUpcoming,
@@ -507,24 +506,6 @@ public sealed class SeerrDiscoverController : ControllerBase
             _ => NormalizeExtraRails(config.ExtraRails).Any(rail => rail.Enabled && rail.Id.Equals(normalizedFeed, StringComparison.OrdinalIgnoreCase))
         };
     }
-
-    private static bool IsLegacyTrendingEnabled(PluginConfiguration config, string? mediaType)
-    {
-        var normalizedMediaType = (mediaType ?? string.Empty).Trim().ToLowerInvariant();
-        return normalizedMediaType switch
-        {
-            "movie" => IsTrendingMoviesEnabled(config),
-            "tv" => IsTrendingTvEnabled(config),
-            "" or "all" => IsTrendingMoviesEnabled(config) && IsTrendingTvEnabled(config),
-            _ => false
-        };
-    }
-
-    private static bool IsTrendingMoviesEnabled(PluginConfiguration config)
-        => config.UseSplitTrendingRailSettings ? config.EnableTrendingMovies : config.EnableTrending && config.EnableTrendingMovies;
-
-    private static bool IsTrendingTvEnabled(PluginConfiguration config)
-        => config.UseSplitTrendingRailSettings ? config.EnableTrendingTv : config.EnableTrending && config.EnableTrendingTv;
 
     private async Task<string> BuildRequestRailJsonAsync(string feed, int page, CancellationToken cancellationToken)
     {
@@ -809,9 +790,8 @@ public sealed class SeerrDiscoverController : ControllerBase
             RequireMappedUser = config.RequireMappedUser,
             EnableNativeSearchIntegration = config.EnableNativeSearchIntegration,
             DefaultRequest4K = config.DefaultRequest4K,
-            EnableTrending = IsTrendingMoviesEnabled(config) || IsTrendingTvEnabled(config),
-            EnableTrendingMovies = IsTrendingMoviesEnabled(config),
-            EnableTrendingTv = IsTrendingTvEnabled(config),
+            EnableTrendingMovies = config.EnableTrendingMovies,
+            EnableTrendingTv = config.EnableTrendingTv,
             EnableMovies = config.EnableMovies,
             EnableTv = config.EnableTv,
             EnableUpcoming = config.EnableUpcoming,
@@ -844,10 +824,8 @@ public sealed class SeerrDiscoverController : ControllerBase
         config.RequireMappedUser = update.RequireMappedUser;
         config.EnableNativeSearchIntegration = update.EnableNativeSearchIntegration;
         config.DefaultRequest4K = update.DefaultRequest4K;
-        config.UseSplitTrendingRailSettings = true;
-        config.EnableTrendingMovies = update.EnableTrendingMovies ?? update.EnableTrending;
-        config.EnableTrendingTv = update.EnableTrendingTv ?? update.EnableTrending;
-        config.EnableTrending = config.EnableTrendingMovies || config.EnableTrendingTv;
+        config.EnableTrendingMovies = update.EnableTrendingMovies;
+        config.EnableTrendingTv = update.EnableTrendingTv;
         config.EnableMovies = update.EnableMovies;
         config.EnableTv = update.EnableTv;
         config.EnableUpcoming = update.EnableUpcoming;

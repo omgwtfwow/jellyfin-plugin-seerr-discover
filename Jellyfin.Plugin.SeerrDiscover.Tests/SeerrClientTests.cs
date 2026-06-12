@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Jellyfin.Plugin.SeerrDiscover.Models;
@@ -18,6 +19,16 @@ public sealed class SeerrClientTests
         Assert.StartsWith("/api/v1/discover/trending?", path);
         Assert.Contains(expectedMediaType, path);
         Assert.Contains("timeWindow=day", path);
+    }
+
+    [Fact]
+    public void BuildDiscoverPath_RejectsLegacyMixedTrendingFeed()
+    {
+        var method = typeof(SeerrClient).GetMethod("BuildDiscoverPath", BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.NotNull(method);
+        var exception = Assert.Throws<TargetInvocationException>(() => method!.Invoke(null, ["trending", 1, null, "en"]));
+        Assert.IsType<ArgumentException>(exception.InnerException);
     }
 
     [Theory]
