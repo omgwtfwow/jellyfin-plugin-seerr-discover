@@ -20,7 +20,6 @@
     clientConfig: null,
     clientConfigPromise: null,
     me: null,
-    details: null,
     loading: new Set(),
     error: '',
     toasts: [],
@@ -1665,33 +1664,45 @@
     const target = modal.querySelector('[data-seerr-related]');
     if (!target || !type || !id) return;
 
-    apiFetch(`/SeerrDiscover/related/${encodeURIComponent(type)}/${encodeURIComponent(id)}`)
-      .then((data) => {
-        const relatedRails = Array.isArray(data?.rails) ? data.rails : [];
-        return Promise.all(relatedRails.map((rail) => filterAndEnrichItems(rail.results)
-          .then((items) => ({
-            id: String(rail.id || ''),
-            title: String(rail.title || ''),
-            artworkLayout: normalizeArtworkLayout(rail.artworkLayout),
-            items,
-          }))));
-      })
-      .then((relatedRails) => {
+    fetchActiveRelatedRails(type, id)
+      .then((activeRails) => {
         if (!document.body.contains(modal)) return;
-        const activeRails = relatedRails.filter((rail) => rail.id && rail.title && rail.items.length);
         if (!activeRails.length) {
           target.innerHTML = '';
           return;
         }
 
-        target.innerHTML = activeRails
-          .map((rail) => railTemplate({ id: `related-${rail.id}`, title: rail.title, artworkLayout: rail.artworkLayout }, rail.items))
-          .join('');
+        target.innerHTML = renderRelatedRailsHtml(activeRails, 'related');
         bindCards(target);
       })
       .catch((error) => {
         console.warn('Seerr Discover related rails failed', error);
       });
+  }
+
+  function fetchActiveRelatedRails(type, id, options = {}) {
+    return apiFetch(`/SeerrDiscover/related/${encodeURIComponent(type)}/${encodeURIComponent(id)}`, { signal: options.signal })
+      .then((data) => {
+        const relatedRails = Array.isArray(data?.rails) ? data.rails : [];
+        return Promise.all(relatedRails.map(normalizeRelatedRail));
+      })
+      .then((relatedRails) => relatedRails.filter((rail) => rail.id && rail.title && rail.items.length));
+  }
+
+  function normalizeRelatedRail(rail) {
+    return filterAndEnrichItems(rail.results)
+      .then((items) => ({
+        id: String(rail.id || ''),
+        title: String(rail.title || ''),
+        artworkLayout: normalizeArtworkLayout(rail.artworkLayout),
+        items,
+      }));
+  }
+
+  function renderRelatedRailsHtml(activeRails, idPrefix) {
+    return activeRails
+      .map((rail) => railTemplate({ id: `${idPrefix}-${rail.id}`, title: rail.title, artworkLayout: rail.artworkLayout }, rail.items))
+      .join('');
   }
 
   function scheduleNativeDetailRails() {
@@ -1810,23 +1821,12 @@
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     nativeDetails.abortController = controller;
 
-    return apiFetch(`/SeerrDiscover/related/${encodeURIComponent(type)}/${encodeURIComponent(tmdbId)}`, { signal: controller?.signal })
-      .then((data) => {
-        const relatedRails = Array.isArray(data?.rails) ? data.rails : [];
-        return Promise.all(relatedRails.map((rail) => filterAndEnrichItems(rail.results)
-          .then((items) => ({
-            id: String(rail.id || ''),
-            title: String(rail.title || ''),
-            artworkLayout: normalizeArtworkLayout(rail.artworkLayout),
-            items,
-          }))));
-      })
-      .then((relatedRails) => {
+    return fetchActiveRelatedRails(type, tmdbId, { signal: controller?.signal })
+      .then((activeRails) => {
         if (nativeDetails.renderKey !== key || controller?.signal.aborted) return;
         const currentContent = nativeDetailContent();
         if (!currentContent || currentContent !== detailContent) return;
 
-        const activeRails = relatedRails.filter((rail) => rail.id && rail.title && rail.items.length);
         if (!activeRails.length) {
           removeNativeDetailRails();
           nativeDetails.loadedKey = key;
@@ -1838,9 +1838,7 @@
         container.className = 'seerr-native-detail-related';
         container.setAttribute('data-seerr-native-detail-related', 'true');
         container.setAttribute('data-seerr-item-id', itemId);
-        container.innerHTML = activeRails
-          .map((rail) => railTemplate({ id: `native-detail-${rail.id}`, title: rail.title, artworkLayout: rail.artworkLayout }, rail.items))
-          .join('');
+        container.innerHTML = renderRelatedRailsHtml(activeRails, 'native-detail');
 
         placeNativeDetailRails(detailContent, container);
         bindCards(container);
@@ -2558,10 +2556,6 @@
     }
 
     document.querySelectorAll('[data-seerr-native-search]').forEach((section) => section.remove());
-    document.querySelectorAll('[data-seerr-hidden-no-results]').forEach((message) => {
-      message.classList.remove('hide');
-      message.removeAttribute('data-seerr-hidden-no-results');
-    });
   }
 
   function renderNativeSearchSection(items, query) {
