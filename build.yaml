@@ -10,6 +10,7 @@ description: >
   for Seerr-powered Discover rails and Jellyfin search integration.
 category: "General"
 owner: "omgwtfwow"
+imageUrl: "https://omgwtfwow.github.io/jellyfin-plugin-seerr-discover/assets/seerr-discover-icon.png"
 artifacts:
 - "Jellyfin.Plugin.SeerrDiscover.dll"
 changelog: >

@@ -39,6 +39,8 @@ jobs:
       - name: Prepare Pages artifact
         run: |
           touch dist/pages/.nojekyll
+          mkdir -p dist/pages/assets
+          install -m 0644 docs/assets/seerr-discover-icon.png dist/pages/assets/seerr-discover-icon.png
           cat >dist/pages/index.html <<'HTML'
           <!doctype html>
           <html lang="en">
