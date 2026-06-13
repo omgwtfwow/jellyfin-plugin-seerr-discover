@@ -789,7 +789,6 @@ public sealed class SeerrDiscoverController : ControllerBase
             UserCacheSeconds = config.UserCacheSeconds,
             RequireMappedUser = config.RequireMappedUser,
             EnableNativeSearchIntegration = config.EnableNativeSearchIntegration,
-            DefaultRequest4K = config.DefaultRequest4K,
             EnableTrendingMovies = config.EnableTrendingMovies,
             EnableTrendingTv = config.EnableTrendingTv,
             EnableMovies = config.EnableMovies,
@@ -823,7 +822,6 @@ public sealed class SeerrDiscoverController : ControllerBase
         config.UserCacheSeconds = ClampSeconds(update.UserCacheSeconds, 60);
         config.RequireMappedUser = update.RequireMappedUser;
         config.EnableNativeSearchIntegration = update.EnableNativeSearchIntegration;
-        config.DefaultRequest4K = update.DefaultRequest4K;
         config.EnableTrendingMovies = update.EnableTrendingMovies;
         config.EnableTrendingTv = update.EnableTrendingTv;
         config.EnableMovies = update.EnableMovies;

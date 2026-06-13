@@ -257,20 +257,20 @@ public sealed class SeerrClient : ISeerrClient
     /// <inheritdoc />
     public Task<string> CreateRequestAsync(SeerrDiscoverRequest request, int? seerrUserId, CancellationToken cancellationToken)
     {
-        var payload = BuildRequestPayload(request, seerrUserId, Config.DefaultRequest4K);
+        var payload = BuildRequestPayload(request, seerrUserId);
 
         return SendAsync(HttpMethod.Post, "/api/v1/request", payload, true, cancellationToken);
     }
 
     private static PluginConfiguration Config => Plugin.Instance?.Configuration ?? new PluginConfiguration();
 
-    private static Dictionary<string, object> BuildRequestPayload(SeerrDiscoverRequest request, int? seerrUserId, bool defaultRequest4K)
+    private static Dictionary<string, object> BuildRequestPayload(SeerrDiscoverRequest request, int? seerrUserId)
     {
         var payload = new Dictionary<string, object>
         {
             ["mediaType"] = request.MediaType,
             ["mediaId"] = request.MediaId,
-            ["is4k"] = request.Is4K ?? defaultRequest4K
+            ["is4k"] = request.Is4K ?? false
         };
 
         if (request.TvdbId.HasValue)

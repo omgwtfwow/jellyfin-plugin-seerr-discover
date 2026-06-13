@@ -59,11 +59,6 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool EnableNativeSearchIntegration { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether 4K requests are created by default.
-    /// </summary>
-    public bool DefaultRequest4K { get; set; }
-
-    /// <summary>
     /// Gets or sets a value indicating whether the trending movies rail is enabled.
     /// </summary>
     public bool EnableTrendingMovies { get; set; } = true;
