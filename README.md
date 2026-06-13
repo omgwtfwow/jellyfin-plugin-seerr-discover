@@ -126,7 +126,6 @@ Most installs only need the Seerr URLs, Seerr API key, companion plugin setup, a
 | User cache seconds | `60` | Cache TTL for mapped-user and quota lookups. |
 | Require mapped Seerr users | On | Requests must be created as the mapped Seerr user. |
 | Show Seerr results in Jellyfin search | On | Adds Seerr results to Jellyfin's native search page. |
-| Default 4K requests | Off | Creates 4K requests by default when enabled. |
 | Discover rails | Built-ins in default order, default headings, vertical poster artwork | Enables, renames, reorders, and sets artwork layout for built-in, request-based, and optional Discover rows. |
 | Detail page rails | Similar then Recommended, default headings, vertical poster artwork | Enables, renames, reorders, and sets artwork layout for related rows inside Discover modals and native Jellyfin movie/series detail pages. |
 | Optional rail catalog | none configured | Adds admin-selected genre, studio, network, language, or keyword rails to the Discover rail list. |

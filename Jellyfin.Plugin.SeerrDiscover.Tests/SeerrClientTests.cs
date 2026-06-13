@@ -96,11 +96,23 @@ public sealed class SeerrClientTests
         Assert.DoesNotContain("userId", payload.Keys);
     }
 
+    [Fact]
+    public void BuildRequestPayload_DefaultsMissingIs4KToFalse()
+    {
+        var payload = BuildPayload(new SeerrDiscoverRequest
+        {
+            MediaType = "movie",
+            MediaId = 1035190
+        }, null);
+
+        Assert.Equal(false, payload["is4k"]);
+    }
+
     private static Dictionary<string, object> BuildPayload(SeerrDiscoverRequest request, int? seerrUserId)
     {
         var method = typeof(SeerrClient).GetMethod("BuildRequestPayload", BindingFlags.NonPublic | BindingFlags.Static);
         Assert.NotNull(method);
-        return Assert.IsType<Dictionary<string, object>>(method!.Invoke(null, [request, seerrUserId, false]));
+        return Assert.IsType<Dictionary<string, object>>(method!.Invoke(null, [request, seerrUserId]));
     }
 
     private static string BuildDiscoverPath(string feed)

@@ -155,7 +155,6 @@ const configFields = [
   'UserCacheSeconds',
   'RequireMappedUser',
   'EnableNativeSearchIntegration',
-  'DefaultRequest4K',
 ];
 
 const configDiscoverRailDefinitions = [
