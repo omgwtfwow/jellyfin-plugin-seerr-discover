@@ -75,6 +75,7 @@ category="$(yaml_value category)"
 overview="$(yaml_value overview)"
 description="$(yaml_value description)"
 owner="$(yaml_value owner)"
+image_url="$(yaml_value imageUrl)"
 release_changelog="$(yaml_value changelog)"
 
 if [ -z "$version" ] || [ -z "$guid" ] || [ -z "$target_abi" ] || [ -z "$name" ] || [ -z "$category" ] || [ -z "$overview" ] || [ -z "$description" ] || [ -z "$owner" ] || [ -z "$release_changelog" ]; then
@@ -108,6 +109,11 @@ overview_json="$(printf '%s' "$overview" | json_escape)"
 description_json="$(printf '%s' "$description" | json_escape)"
 owner_json="$(printf '%s' "$owner" | json_escape)"
 release_changelog_json="$(printf '%s' "$release_changelog" | json_escape)"
+image_url_line=""
+if [ -n "$image_url" ]; then
+  image_url_json="$(printf '%s' "$image_url" | json_escape)"
+  image_url_line="    \"imageUrl\": \"$image_url_json\","
+fi
 
 cat >"$manifest_path" <<MANIFEST
 [
@@ -115,6 +121,7 @@ cat >"$manifest_path" <<MANIFEST
     "category": "$category_json",
     "description": "$description_json",
     "guid": "$guid",
+$image_url_line
     "name": "$name_json",
     "overview": "$overview_json",
     "owner": "$owner_json",
